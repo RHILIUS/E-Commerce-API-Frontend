@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 const LoginPage = () => {
   return (
@@ -34,27 +35,21 @@ const LoginPage = () => {
               <span className="text-card-foreground text-sm font-medium">
                 Email
               </span>
-              <input
-                name="email"
-                type="email"
-                autoComplete="email"
-                className="border-input bg-background text-foreground placeholder:text-muted-foreground focus:ring-ring/50 h-9 w-full rounded-md border px-3 text-sm shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] transition-colors outline-none focus:ring-2"
-              />
+              <Input name="email" type="email" autoComplete="email" />
             </label>
 
             <label className="block space-y-2">
               <span className="text-card-foreground text-sm font-medium">
                 Password
               </span>
-              <input
+              <Input
                 name="password"
                 type="password"
                 autoComplete="current-password"
-                className="border-input bg-background text-foreground placeholder:text-muted-foreground focus:ring-ring/50 h-9 w-full rounded-md border px-3 text-sm shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] transition-colors outline-none focus:ring-2"
               />
             </label>
 
-            <Button type="submit" size="lg" className="w-full rounded-md">
+            <Button type="submit" className="w-full rounded-md">
               Login
             </Button>
           </form>
@@ -70,7 +65,6 @@ const LoginPage = () => {
           <Button
             type="button"
             variant="outline"
-            size="lg"
             className="border-input hover:bg-accent hover:text-accent-foreground mt-4 w-full rounded-md"
           >
             <span className="inline-flex items-center gap-2">
