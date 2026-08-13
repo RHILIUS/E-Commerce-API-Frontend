@@ -1,8 +1,10 @@
+import { Link } from "react-router-dom";
+
 import { Button } from "@/components/ui/button";
 
 const LoginPage = () => {
   return (
-    <main className="dark bg-background text-foreground min-h-screen px-6 py-24 sm:py-28">
+    <main className="px-6 py-24 sm:py-28">
       <div className="mx-auto flex w-full max-w-150 min-w-60 flex-col items-stretch gap-10">
         <header className="space-y-2 text-center">
           <h1 className="text-foreground text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
@@ -19,12 +21,12 @@ const LoginPage = () => {
             <h2 className="text-card-foreground text-sm font-semibold">
               Login to E-Commerce
             </h2>
-            <a
-              href="#register"
+            <Link
+              to="/register"
               className="text-primary hover:text-primary/80 text-sm font-medium transition-colors"
             >
               Register
-            </a>
+            </Link>
           </div>
 
           <form className="mt-6 space-y-4" action="#" method="post">
@@ -52,10 +54,7 @@ const LoginPage = () => {
               />
             </label>
 
-            <Button
-              type="submit"
-              className="bg-primary text-primary-foreground hover:bg-primary/80 h-9 w-full rounded-md text-sm font-medium shadow-none"
-            >
+            <Button type="submit" size="lg" className="w-full rounded-md">
               Login
             </Button>
           </form>
@@ -71,7 +70,8 @@ const LoginPage = () => {
           <Button
             type="button"
             variant="outline"
-            className="border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground mt-4 h-9 w-full rounded-md text-sm font-medium shadow-none"
+            size="lg"
+            className="border-input hover:bg-accent hover:text-accent-foreground mt-4 w-full rounded-md"
           >
             <span className="inline-flex items-center gap-2">
               <span
@@ -84,12 +84,12 @@ const LoginPage = () => {
             </span>
           </Button>
 
-          <a
-            href="#terms"
+          <Link
+            to="/terms"
             className="text-primary hover:text-primary/80 mt-5 block text-center text-sm font-medium transition-colors"
           >
             Terms of Service
-          </a>
+          </Link>
         </section>
       </div>
     </main>
