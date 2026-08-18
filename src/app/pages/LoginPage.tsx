@@ -1,9 +1,40 @@
-import { Link } from "react-router-dom";
+import axios from "axios";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { login } from "@/app/api/auth";
+import { Button } from "@/app/components/ui/button";
+import { Input } from "@/app/components/ui/input";
 
 const LoginPage = () => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      const { access } = await login(formData.email, formData.password);
+      navigate("/");
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
+        setError("Invalid email or password");
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <main className="px-6 py-24 sm:py-28">
       <div className="mx-auto flex w-full max-w-150 min-w-60 flex-col items-stretch gap-10">
@@ -30,12 +61,19 @@ const LoginPage = () => {
             </Link>
           </div>
 
-          <form className="mt-6 space-y-4" action="#" method="post">
+          <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
             <label className="block space-y-2">
               <span className="text-card-foreground text-sm font-medium">
                 Email
               </span>
-              <Input name="email" type="email" autoComplete="email" />
+              <Input
+                name="email"
+                type="email"
+                autoComplete="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
             </label>
 
             <label className="block space-y-2">
@@ -46,11 +84,16 @@ const LoginPage = () => {
                 name="password"
                 type="password"
                 autoComplete="current-password"
+                value={formData.password}
+                onChange={handleChange}
+                required
               />
             </label>
 
+            {error && <p className="text-destructive text-sm">{error}</p>}
+
             <Button type="submit" className="w-full rounded-md">
-              Login
+              {isSubmitting ? "Logging in..." : "Login"}
             </Button>
           </form>
 
