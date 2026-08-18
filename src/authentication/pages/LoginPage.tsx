@@ -2,9 +2,9 @@ import axios from "axios";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { login } from "@/app/api/auth";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
+import { login } from "@/authentication/api";
 
 const LoginPage = () => {
   const navigate = useNavigate();

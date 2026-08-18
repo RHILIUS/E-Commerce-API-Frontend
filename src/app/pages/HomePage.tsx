@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import { login } from "@/app/api/auth";
+import { login } from "@/authentication/api";
 
 const HomePage = () => {
   useEffect(() => {
