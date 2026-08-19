@@ -6,11 +6,14 @@ import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
 import { login } from "@/authentication/api";
 
+import { useAuth } from "../contexts/Auth/useAuth";
+
 const LoginPage = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const authContext = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -23,6 +26,7 @@ const LoginPage = () => {
 
     try {
       const { access } = await login(formData.email, formData.password);
+      authContext?.setAccessToken(access);
       navigate("/");
     } catch (err) {
       if (axios.isAxiosError(err) && err.response?.status === 401) {
