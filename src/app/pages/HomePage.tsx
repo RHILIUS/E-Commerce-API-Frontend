@@ -1,16 +1,10 @@
-import { useEffect } from "react";
-
-import { login } from "@/authentication/api";
+import { useAuth } from "@/authentication/contexts/Auth/useAuth";
 
 const HomePage = () => {
-  useEffect(() => {
-    const fetch = async () => {
-      const { access } = await login("rhian@gmail.com", "rhian123");
-      console.log(access);
-    };
+  const authContext = useAuth();
+  console.log(authContext?.accessToken);
+  console.log(authContext?.user);
 
-    fetch();
-  }, []);
   return (
     <div className="flex min-h-screen flex-col justify-center">
       <div className="text-center">Hello World</div>

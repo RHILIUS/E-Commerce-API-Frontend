@@ -25,8 +25,9 @@ const LoginPage = () => {
     setIsSubmitting(true);
 
     try {
-      const { access } = await login(formData.email, formData.password);
+      const { access, user } = await login(formData.email, formData.password);
       authContext?.setAccessToken(access);
+      authContext?.setUser(user);
       navigate("/");
     } catch (err) {
       if (axios.isAxiosError(err) && err.response?.status === 401) {
