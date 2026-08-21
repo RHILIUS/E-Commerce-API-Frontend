@@ -1,6 +1,16 @@
 import api from "@/app/api/axios";
 
-export const login = async (email: string, password: string) => {
+import type { User } from "./contexts/Auth/AuthContext";
+
+type LoginResponse = {
+  access: string;
+  user: User;
+};
+
+export const loginApi = async (
+  email: string,
+  password: string,
+): Promise<LoginResponse> => {
   const response = await api.post("/api/auth/login/", { email, password });
 
   return response.data;

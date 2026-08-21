@@ -4,7 +4,6 @@ import { Link, useNavigate } from "react-router-dom";
 
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
-import { login } from "@/authentication/api";
 
 import { useAuth } from "../contexts/Auth/useAuth";
 
@@ -25,9 +24,7 @@ const LoginPage = () => {
     setIsSubmitting(true);
 
     try {
-      const { access, user } = await login(formData.email, formData.password);
-      authContext?.setAccessToken(access);
-      authContext?.setUser(user);
+      await authContext.login(formData.email, formData.password);
       navigate("/");
     } catch (err) {
       if (axios.isAxiosError(err) && err.response?.status === 401) {
