@@ -15,3 +15,9 @@ export const loginApi = async (
 
   return response.data;
 };
+
+export const refreshTokenApi = async (): Promise<LoginResponse> => {
+  const response = await api.post("/api/auth/refresh/");
+
+  return response.data;
+};
