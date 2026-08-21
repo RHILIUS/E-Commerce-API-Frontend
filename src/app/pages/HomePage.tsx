@@ -1,9 +1,9 @@
 import { useAuth } from "@/authentication/contexts/Auth/useAuth";
 
 const HomePage = () => {
-  const authContext = useAuth();
-  console.log(authContext?.accessToken);
-  console.log(authContext?.user);
+  const auth = useAuth();
+  console.log(auth?.accessToken);
+  console.log(auth?.user);
 
   return (
     <div className="flex min-h-screen flex-col justify-center">

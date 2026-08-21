@@ -12,7 +12,7 @@ const LoginPage = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const authContext = useAuth();
+  const auth = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -24,7 +24,7 @@ const LoginPage = () => {
     setIsSubmitting(true);
 
     try {
-      await authContext.login(formData.email, formData.password);
+      await auth.login(formData.email, formData.password);
       navigate("/");
     } catch (err) {
       if (axios.isAxiosError(err) && err.response?.status === 401) {
