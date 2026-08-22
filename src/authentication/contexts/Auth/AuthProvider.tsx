@@ -1,7 +1,7 @@
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { loginApi } from "@/authentication/api";
+import { loginApi, refreshTokenApi } from "@/authentication/api";
 
 import type { User } from "./AuthContext";
 import { AuthContext } from "./AuthContext";
@@ -23,6 +23,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setAccessToken(response.access);
     setUser(response.user);
   };
+
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        const { access, user } = await refreshTokenApi();
+        setAccessToken(access);
+        setUser(user);
+      } catch {
+        // Catch the error and don't do anything, the page will be navigated to LoginPage anyways
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initAuth();
+  }, []);
 
   return (
     <AuthContext.Provider

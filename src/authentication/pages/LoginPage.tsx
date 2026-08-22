@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
@@ -8,7 +8,11 @@ import { Input } from "@/app/components/ui/input";
 import { useAuth } from "../contexts/Auth/useAuth";
 
 const LoginPage = () => {
+  const location = useLocation();
   const navigate = useNavigate();
+
+  const from = location.state?.from?.pathname || "/";
+  console.log(from);
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -25,7 +29,7 @@ const LoginPage = () => {
 
     try {
       await auth.login(formData.email, formData.password);
-      navigate("/");
+      navigate(from, { replace: true });
     } catch (err) {
       if (axios.isAxiosError(err) && err.response?.status === 401) {
         setError("Invalid email or password");
