@@ -14,7 +14,7 @@ export type AuthContextType = {
   setAccessToken: React.Dispatch<React.SetStateAction<string | null>>;
   isLoading: boolean;
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
-  logout: () => void;
+  logout: () => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
 };
 
