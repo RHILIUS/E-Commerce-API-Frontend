@@ -12,7 +12,6 @@ const LoginPage = () => {
   const navigate = useNavigate();
 
   const from = location.state?.from?.pathname || "/";
-  console.log(from);
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
