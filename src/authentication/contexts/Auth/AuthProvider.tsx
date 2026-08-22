@@ -1,7 +1,7 @@
 import type React from "react";
 import { useEffect, useState } from "react";
 
-import { loginApi, refreshTokenApi } from "@/authentication/api";
+import { loginApi, logoutApi, refreshTokenApi } from "@/authentication/api";
 
 import type { User } from "./AuthContext";
 import { AuthContext } from "./AuthContext";
@@ -12,9 +12,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const isAuthenticated = accessToken !== null;
 
-  const logout = () => {
-    setAccessToken(null);
-    setUser(null);
+  const logout = async () => {
+    try {
+      await logoutApi();
+    } catch {
+      // Backend logout failure doesn't prevent local logout.
+    } finally {
+      setAccessToken(null);
+      setUser(null);
+    }
   };
 
   const login = async (email: string, password: string) => {

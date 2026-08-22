@@ -6,7 +6,7 @@ const ProtectedRoute = () => {
   const auth = useAuth();
   const location = useLocation();
 
-  if (auth?.isLoading) {
+  if (auth.isLoading) {
     return (
       <div className="text-destructive p-10 text-center text-sm">
         Loading...
@@ -14,7 +14,7 @@ const ProtectedRoute = () => {
     );
   }
 
-  if (!auth?.accessToken) {
+  if (!auth.isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace></Navigate>;
   }
 
