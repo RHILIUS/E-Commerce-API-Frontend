@@ -23,7 +23,5 @@ export const refreshTokenApi = async (): Promise<LoginResponse> => {
 };
 
 export const logoutApi = async () => {
-  const response = await api.post("/api/auth/logout/");
-
-  console.log(response);
+  await api.post("/api/auth/logout/");
 };
