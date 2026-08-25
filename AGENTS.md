@@ -47,3 +47,9 @@ Before introducing a new color or visual value:
 4. If no suitable token exists, consider whether a new semantic theme token should be added instead of hard-coding the value locally.
 
 When adding or modifying shadcn/ui components, preserve the project's existing theme integration, component variants, accessibility behavior, and styling conventions unless the task explicitly requires otherwise.
+
+## Maintaining This File
+
+If a code or configuration change makes any instruction in this `AGENTS.md` inaccurate or outdated, update this file as part of the same change. Keep the instructions aligned with the repository’s actual structure, tooling, conventions, and sources of truth.
+
+Do not update this file for changes that do not affect its guidance.
