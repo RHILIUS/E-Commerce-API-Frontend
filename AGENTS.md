@@ -77,6 +77,8 @@ Build responsive behavior as part of every UI implementation rather than treatin
 
 The application currently has a minimum supported width of 330px, defined at the document and React-root level in `src/app/index.css`. Do not duplicate this minimum width on individual pages. At widths of 330px and above, pages must not produce unintended horizontal scrolling, clipped content, uncovered root backgrounds, or whitespace caused by mismatched page and root dimensions.
 
+`src/app/layout/RootLayout.tsx` owns the application's minimum viewport height and uses a single-cell grid so the routed page rendered by `Outlet` stretches to fill the available height. Page-level root elements should rely on this grid stretching and should not repeat `min-h-screen`, `min-h-svh`, `min-h-dvh`, or `min-h-full`. A percentage-based `min-h-full` does not inherit a parent's `min-height` and must not be used for that purpose. Add a page-level height constraint only when the page intentionally requires behavior different from the shared application shell.
+
 When implementing or modifying a page:
 
 1. Use fluid page and container widths such as `w-full` with an appropriate `max-w-*` rather than fixed page widths.
@@ -84,7 +86,7 @@ When implementing or modifying a page:
 3. Add `min-w-0` to grid and flex children when their text or controls must be allowed to shrink, and allow rows to wrap or stack when their combined content may not fit.
 4. Keep text readable without truncating essential content. Allow headings, descriptions, actions, and validation messages to wrap gracefully.
 5. Make grouped controls, forms, buttons, dialogs, cards, tables, and navigation usable on narrow screens. Fixed-size controls may retain their intended size only when the complete group still fits within the available content width.
-6. Use dynamic viewport units such as `min-h-dvh` for full-page application shells when appropriate, and ensure the document, `#root`, layout, and page backgrounds cover the full rendered area.
+6. Keep viewport-height ownership in the document root and `RootLayout`. Ensure `html`, `body`, `#root`, and the layout background cover the full rendered area, while routed pages stretch through the layout grid.
 7. Preserve the Figma layout at the viewport size it represents while defining a deliberate adaptation for narrower and wider screens when those states are not provided.
 8. Keep interactive targets accessible and usable with touch, keyboard navigation, zoom, and text wrapping.
 
