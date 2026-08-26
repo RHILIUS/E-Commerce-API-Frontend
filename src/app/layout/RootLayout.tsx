@@ -2,7 +2,7 @@ import { Outlet } from "react-router-dom";
 
 const RootLayout = () => {
   return (
-    <div className="dark bg-background text-foreground min-h-screen">
+    <div className="bg-background text-foreground min-h-dvh w-full">
       <Outlet />
     </div>
   );
