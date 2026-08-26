@@ -1,5 +1,6 @@
 import axios from "axios";
-import React, { useState } from "react";
+import type { ChangeEvent, SyntheticEvent } from "react";
+import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { Button } from "@/app/components/ui/button";
@@ -17,11 +18,13 @@ const LoginPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const auth = useAuth();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (
+    e: SyntheticEvent<HTMLFormElement, SubmitEvent>,
+  ) => {
     e.preventDefault();
     setError(null);
     setIsSubmitting(true);
