@@ -62,7 +62,7 @@ const LoginPage = () => {
               Login to E-Commerce
             </h2>
             <Link
-              to="/register"
+              to="/register/enter-email"
               className="text-primary hover:text-primary/80 text-sm font-medium transition-colors"
             >
               Register
