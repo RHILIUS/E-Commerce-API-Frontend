@@ -1,5 +1,5 @@
 import type { SyntheticEvent } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { Button } from "@/app/components/ui/button";
 import {
@@ -13,14 +13,17 @@ import {
 import { Input } from "@/app/components/ui/input";
 
 const RegisterEmailPage = () => {
+  const navigate = useNavigate();
+
   const handleSubmit = (
     event: SyntheticEvent<HTMLFormElement, SubmitEvent>,
   ) => {
     event.preventDefault();
+    navigate("/register/verify-otp");
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-4 py-12 sm:px-6">
+    <main className="flex items-center justify-center px-4 py-12 sm:px-6">
       <div className="flex w-full max-w-150 flex-col items-center gap-2">
         <h1 className="text-foreground max-w-72.5 text-center text-4xl font-bold text-balance">
           Get Started with E-Commerce
