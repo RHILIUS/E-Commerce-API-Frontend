@@ -48,6 +48,8 @@ Before introducing a new color or visual value:
 
 When adding or modifying shadcn/ui components, preserve the project's existing theme integration, component variants, accessibility behavior, and styling conventions unless the task explicitly requires otherwise.
 
+When styling elements, ensure they are responsive across both mobile and web views (e.g., reducing the window width should adjust the UI to support smaller screens).
+
 ## Maintaining This File
 
 If a code or configuration change makes any instruction in this `AGENTS.md` inaccurate or outdated, update this file as part of the same change. Keep the instructions aligned with the repository’s actual structure, tooling, conventions, and sources of truth.
