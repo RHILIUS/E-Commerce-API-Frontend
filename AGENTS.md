@@ -29,17 +29,26 @@ The documentation repository is the central source of project-wide context. It d
 
 When implementing changes that depend on another part of the system, inspect the relevant sibling repository to confirm its current behavior. Do not assume that the documentation and implementation are always synchronized; report any inconsistencies you discover.
 
-## UI Component Selection
+## UI Component Selection and shadcn/ui Usage
 
 Before creating a new interactive or reusable UI element:
 
 1. Check `src/app/components/ui` for an existing component that meets the requirement.
 2. If no suitable local component exists, check whether shadcn/ui provides an appropriate component that can be added to the project.
-3. Add and use the shadcn/ui component when it substantially matches the required behavior.
-4. Customize it using the project's existing semantic theme tokens, component variants, and established conventions.
-5. Create a custom component only when no suitable shadcn/ui component exists or adapting one would introduce unnecessary complexity.
+3. Review the current official shadcn/ui documentation for the component's recommended composition, variants, and accessibility behavior.
+4. Add and use the shadcn/ui component when it substantially matches the required behavior.
+5. Customize it using the project's existing semantic theme tokens, component variants, and established conventions.
+6. Create a custom component only when no suitable shadcn/ui component exists or adapting one would introduce unnecessary complexity.
 
 Prefer shadcn/ui for common interface elements such as buttons, inputs, dialogs, dropdowns, selects, tabs, tooltips, alerts, and form controls. Do not recreate functionality already provided by an installed or suitable shadcn/ui component.
+
+Follow shadcn/ui's recommended component composition and use its defaults when they match the required design. Use only the component primitives that represent the interface being built; do not force an optional primitive into the markup when its built-in structure or appearance conflicts with the intended result.
+
+When a Figma design or wireframe is provided, treat it as the source of truth for the intended visual outcome, layout, spacing, sizing, hierarchy, and responsive behavior. Inspect the relevant Figma node before implementation. Use shadcn/ui as the implementation foundation, but do not allow its defaults to override explicit design requirements.
+
+Start with the shadcn/ui defaults, then add the smallest set of semantic, page-specific overrides needed to reproduce the Figma design. Avoid both extremes: do not recreate all of a shadcn/ui component's internal styling in page markup, and do not accept visibly incorrect defaults merely to keep the JSX concise. Visual fidelity, accessibility, and maintainability take precedence over minimizing class names.
+
+Prefer page-level overrides for one-off design differences. Modify a shared shadcn/ui component or add a reusable variant only when the change is intended to apply consistently across multiple usages, and review the effect on existing consumers first.
 
 Do not add shadcn/ui components that are unused. Review newly added component files and dependencies before accepting them to ensure they preserve the project's existing conventions, accessibility behavior, and theme integration.
 
