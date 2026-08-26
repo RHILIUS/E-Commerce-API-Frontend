@@ -29,6 +29,20 @@ The documentation repository is the central source of project-wide context. It d
 
 When implementing changes that depend on another part of the system, inspect the relevant sibling repository to confirm its current behavior. Do not assume that the documentation and implementation are always synchronized; report any inconsistencies you discover.
 
+## UI Component Selection
+
+Before creating a new interactive or reusable UI element:
+
+1. Check `src/app/components/ui` for an existing component that meets the requirement.
+2. If no suitable local component exists, check whether shadcn/ui provides an appropriate component that can be added to the project.
+3. Add and use the shadcn/ui component when it substantially matches the required behavior.
+4. Customize it using the project's existing semantic theme tokens, component variants, and established conventions.
+5. Create a custom component only when no suitable shadcn/ui component exists or adapting one would introduce unnecessary complexity.
+
+Prefer shadcn/ui for common interface elements such as buttons, inputs, dialogs, dropdowns, selects, tabs, tooltips, alerts, and form controls. Do not recreate functionality already provided by an installed or suitable shadcn/ui component.
+
+Do not add shadcn/ui components that are unused. Review newly added component files and dependencies before accepting them to ensure they preserve the project's existing conventions, accessibility behavior, and theme integration.
+
 ## UI Styling and Theme
 
 This project uses the shadcn/ui theming architecture with Tailwind CSS. The global design tokens, theme variables, typography, border radii, and light/dark mode colors are defined in `src/app/index.css`.
