@@ -71,7 +71,24 @@ Before introducing a new color or visual value:
 
 When adding or modifying shadcn/ui components, preserve the project's existing theme integration, component variants, accessibility behavior, and styling conventions unless the task explicitly requires otherwise.
 
-When styling elements, ensure they are responsive across both mobile and web views (e.g., reducing the window width should adjust the UI to support smaller screens).
+## Responsive UI Requirements
+
+Build responsive behavior as part of every UI implementation rather than treating it as a later refinement. Use mobile-first base styles and add breakpoint-specific enhancements only where the layout needs them.
+
+The application currently has a minimum supported width of 330px, defined at the document and React-root level in `src/app/index.css`. Do not duplicate this minimum width on individual pages. At widths of 330px and above, pages must not produce unintended horizontal scrolling, clipped content, uncovered root backgrounds, or whitespace caused by mismatched page and root dimensions.
+
+When implementing or modifying a page:
+
+1. Use fluid page and container widths such as `w-full` with an appropriate `max-w-*` rather than fixed page widths.
+2. Account for the combined width of viewport padding, container padding, gaps, borders, and fixed-size children at the 330px minimum width.
+3. Add `min-w-0` to grid and flex children when their text or controls must be allowed to shrink, and allow rows to wrap or stack when their combined content may not fit.
+4. Keep text readable without truncating essential content. Allow headings, descriptions, actions, and validation messages to wrap gracefully.
+5. Make grouped controls, forms, buttons, dialogs, cards, tables, and navigation usable on narrow screens. Fixed-size controls may retain their intended size only when the complete group still fits within the available content width.
+6. Use dynamic viewport units such as `min-h-dvh` for full-page application shells when appropriate, and ensure the document, `#root`, layout, and page backgrounds cover the full rendered area.
+7. Preserve the Figma layout at the viewport size it represents while defining a deliberate adaptation for narrower and wider screens when those states are not provided.
+8. Keep interactive targets accessible and usable with touch, keyboard navigation, zoom, and text wrapping.
+
+Before considering a UI change complete, verify it at representative widths of 330px, 375px, 768px, 1024px, and a wide desktop viewport. Also check at least one short viewport height, light and dark modes when both are supported, and confirm there is no unexpected overflow in either axis. Run the relevant type-check, lint, and production-build commands after implementation.
 
 ## Maintaining This File
 
