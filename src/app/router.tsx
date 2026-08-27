@@ -3,6 +3,7 @@ import { createBrowserRouter } from "react-router-dom";
 import RootLayout from "@/app/layout/RootLayout";
 import HomePage from "@/app/pages/HomePage";
 import LoginPage from "@/authentication/pages/LoginPage";
+import RegisterDetailsPage from "@/authentication/pages/RegisterDetailsPage";
 import RegisterEmailPage from "@/authentication/pages/RegisterEmailPage";
 import RegisterOTPPage from "@/authentication/pages/RegisterOTPPage";
 
@@ -15,6 +16,7 @@ export const router = createBrowserRouter([
       { path: "/login", element: <LoginPage /> },
       { path: "/register/enter-email", element: <RegisterEmailPage /> },
       { path: "/register/verify-otp", element: <RegisterOTPPage /> },
+      { path: "/register/account-details", element: <RegisterDetailsPage /> },
       {
         element: <ProtectedRoute />,
         children: [{ path: "/", element: <HomePage /> }],
