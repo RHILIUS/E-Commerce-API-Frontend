@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/app/components/ui/card";
 import { Input } from "@/app/components/ui/input";
+import PhoneNumberField from "@/authentication/components/PhoneNumberField";
 
 const RegisterDetailsPage = () => {
   const temporaryEmail = "rhian@gmail.com";
@@ -81,18 +82,7 @@ const RegisterDetailsPage = () => {
               />
             </label>
 
-            <label className="block min-w-0 space-y-2">
-              <span className="block text-sm font-medium">Phone number</span>
-              <Input
-                name="phoneNumber"
-                type="tel"
-                autoComplete="tel"
-                inputMode="tel"
-                placeholder="Enter your phone number"
-                className="h-10"
-                required
-              />
-            </label>
+            <PhoneNumberField />
 
             <label className="block min-w-0 space-y-2">
               <span className="block text-sm font-medium">Password</span>
