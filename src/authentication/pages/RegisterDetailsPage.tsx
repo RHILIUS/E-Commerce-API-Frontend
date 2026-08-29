@@ -17,12 +17,21 @@ import {
   PASSWORD_MIN_LENGTH,
   PASSWORD_PATTERN,
   PASSWORD_REGEX,
+  USERNAME_MAX_LENGTH,
+  USERNAME_MIN_LENGTH,
+  USERNAME_PATTERN,
+  USERNAME_REGEX,
 } from "@/authentication/constants";
 
 const RegisterDetailsPage = () => {
   const temporaryEmail = "rhian@gmail.com";
+  const [username, setUsername] = useState("");
+  const [hasUsernameBlurred, setHasUsernameBlurred] = useState(false);
   const [password, setPassword] = useState("");
   const [hasPasswordBlurred, setHasPasswordBlurred] = useState(false);
+
+  const isUsernameInvalid =
+    hasUsernameBlurred && username.length > 0 && !USERNAME_REGEX.test(username);
 
   const isPasswordInvalid =
     hasPasswordBlurred && password.length > 0 && !PASSWORD_REGEX.test(password);
@@ -78,8 +87,32 @@ const RegisterDetailsPage = () => {
                 autoComplete="username"
                 placeholder="Choose a username"
                 className="h-10"
+                value={username}
+                onChange={(event) => setUsername(event.currentTarget.value)}
+                onBlur={() => setHasUsernameBlurred(true)}
+                onInvalid={() => setHasUsernameBlurred(true)}
+                aria-invalid={isUsernameInvalid || undefined}
+                aria-describedby={
+                  isUsernameInvalid ? "username-error" : undefined
+                }
                 required
+                minLength={USERNAME_MIN_LENGTH}
+                maxLength={USERNAME_MAX_LENGTH}
+                pattern={USERNAME_PATTERN}
               />
+
+              {isUsernameInvalid && (
+                <span
+                  id="username-error"
+                  className="text-destructive block text-xs"
+                  role="alert"
+                >
+                  Username must be {USERNAME_MIN_LENGTH}–{USERNAME_MAX_LENGTH}{" "}
+                  characters, start with a letter or number, use only letters,
+                  numbers, underscores, hyphens, or periods, and contain no
+                  consecutive special characters.
+                </span>
+              )}
             </label>
 
             <label className="block min-w-0 space-y-2">
