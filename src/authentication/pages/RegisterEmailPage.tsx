@@ -1,4 +1,5 @@
-import type { SyntheticEvent } from "react";
+import axios from "axios";
+import { type ChangeEvent, type SyntheticEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { Button } from "@/app/components/ui/button";
@@ -12,14 +13,63 @@ import {
 } from "@/app/components/ui/card";
 import { Input } from "@/app/components/ui/input";
 
+import { sendOTPApi, type SendOTPErrorResponse } from "../api";
+
+const getSendOTPErrorMessage = (error: unknown) => {
+  if (!axios.isAxiosError<SendOTPErrorResponse>(error)) {
+    return "Something went wrong. Please try again.";
+  }
+
+  const emailError = error.response?.data?.email;
+
+  if (Array.isArray(emailError)) {
+    return emailError.join(" ");
+  }
+
+  if (emailError) {
+    return emailError;
+  }
+
+  if (error.response?.data?.detail) {
+    return error.response.data.detail;
+  }
+
+  if (!error.response) {
+    return "Unable to connect. Check your internet connection and try again.";
+  }
+
+  return "Unable to send the verification code. Please try again.";
+};
+
 const RegisterEmailPage = () => {
   const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (
+  const handleSubmit = async (
     event: SyntheticEvent<HTMLFormElement, SubmitEvent>,
   ) => {
     event.preventDefault();
-    navigate("/register/verify-otp");
+    setErrorMessage(null);
+    setIsSubmitting(true);
+
+    try {
+      await sendOTPApi(email.trim());
+      navigate("/register/verify-otp");
+    } catch (error) {
+      setErrorMessage(getSendOTPErrorMessage(error));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.currentTarget.value);
+
+    if (errorMessage) {
+      setErrorMessage(null);
+    }
   };
 
   return (
@@ -61,7 +111,11 @@ const RegisterEmailPage = () => {
           </CardHeader>
 
           <CardContent>
-            <form className="space-y-6" onSubmit={handleSubmit}>
+            <form
+              className="space-y-6"
+              onSubmit={handleSubmit}
+              aria-busy={isSubmitting}
+            >
               <label className="block space-y-3">
                 <span className="block text-sm font-medium">Email</span>
                 <Input
@@ -69,12 +123,34 @@ const RegisterEmailPage = () => {
                   type="email"
                   autoComplete="email"
                   className="h-9"
+                  onChange={handleChange}
+                  value={email}
+                  aria-invalid={errorMessage ? true : undefined}
+                  aria-describedby={
+                    errorMessage ? "register-email-error" : undefined
+                  }
+                  disabled={isSubmitting}
                   required
                 />
               </label>
 
-              <Button type="submit" size="lg" className="w-full">
-                Send OTP
+              {errorMessage && (
+                <p
+                  id="register-email-error"
+                  className="text-destructive text-sm"
+                  role="alert"
+                >
+                  {errorMessage}
+                </p>
+              )}
+
+              <Button
+                type="submit"
+                size="lg"
+                className="w-full"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Sending..." : "Send OTP"}
               </Button>
             </form>
           </CardContent>

@@ -7,6 +7,15 @@ type LoginResponse = {
   user: User;
 };
 
+type SendOTPResponse = {
+  message: string;
+};
+
+export type SendOTPErrorResponse = {
+  detail?: string;
+  email?: string | string[];
+};
+
 export const loginApi = async (
   email: string,
   password: string,
@@ -24,4 +33,12 @@ export const refreshTokenApi = async (): Promise<LoginResponse> => {
 
 export const logoutApi = async () => {
   await api.post("/api/auth/logout/");
+};
+
+export const sendOTPApi = async (email: string): Promise<SendOTPResponse> => {
+  const response = await api.post<SendOTPResponse>("/api/auth/send-otp/", {
+    email,
+  });
+
+  return response.data;
 };
