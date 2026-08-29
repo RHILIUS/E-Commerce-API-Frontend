@@ -1,6 +1,6 @@
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import type { SyntheticEvent } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { Button } from "@/app/components/ui/button";
 import {
@@ -16,13 +16,16 @@ import {
   InputOTPSlot,
 } from "@/app/components/ui/input-otp";
 
+import { INPUT_OTP_COUNT } from "../constants";
+
 const RegisterOTPPage = () => {
-  const INPUT_OTP_COUNT = 6;
+  const navigate = useNavigate();
 
   const handleSubmit = (
     event: SyntheticEvent<HTMLFormElement, SubmitEvent>,
   ) => {
     event.preventDefault();
+    navigate("/register/account-details");
   };
 
   return (

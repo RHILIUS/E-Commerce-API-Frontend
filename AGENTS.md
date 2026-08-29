@@ -52,6 +52,15 @@ Prefer page-level overrides for one-off design differences. Modify a shared shad
 
 Do not add shadcn/ui components that are unused. Review newly added component files and dependencies before accepting them to ensure they preserve the project's existing conventions, accessibility behavior, and theme integration.
 
+## Figma Wireframe Structure
+
+When creating or modifying Figma wireframes, structure parent containers according to the layout relationships they represent in the application:
+
+1. Use vertical or horizontal Auto Layout for containers whose children form a stack or row comparable to CSS flexbox. Use nested Auto Layout containers when sections require different padding, gaps, alignment, or sizing behavior.
+2. Represent grid-like repeated content with an appropriate grid or wrapping Auto Layout structure rather than manually positioning each item.
+3. Reserve freeform positioning for elements that intentionally overlap or behave like absolute-positioned content, such as decorative layers, badges, map pins, and canvas-style interfaces. Do not use freeform positioning for ordinary page, card, form, navigation, or section flow.
+4. Configure Hug, Fill, and Fixed sizing deliberately so containers respond predictably when text wraps, fields are added, or content changes. Scrollable pages should let their content containers grow while the viewport frame owns clipping and overflow behavior.
+
 ## UI Styling and Theme
 
 This project uses the shadcn/ui theming architecture with Tailwind CSS. The global design tokens, theme variables, typography, border radii, and light/dark mode colors are defined in `src/app/index.css`.
