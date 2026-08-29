@@ -12,8 +12,12 @@ import {
 import { Input } from "@/app/components/ui/input";
 import AddressCountryField from "@/authentication/components/AddressCountryField";
 import PhoneNumberField from "@/authentication/components/PhoneNumberField";
-
-import { PASSWORD_PATTERN } from "../constants";
+import {
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_PATTERN,
+  PASSWORD_REGEX,
+} from "@/authentication/constants";
 
 const RegisterDetailsPage = () => {
   const temporaryEmail = "rhian@gmail.com";
@@ -21,9 +25,7 @@ const RegisterDetailsPage = () => {
   const [hasPasswordBlurred, setHasPasswordBlurred] = useState(false);
 
   const isPasswordInvalid =
-    hasPasswordBlurred &&
-    password.length > 0 &&
-    !PASSWORD_PATTERN.test(password);
+    hasPasswordBlurred && password.length > 0 && !PASSWORD_REGEX.test(password);
 
   const handleSubmit = (
     event: SyntheticEvent<HTMLFormElement, SubmitEvent>,
@@ -187,9 +189,9 @@ const RegisterDetailsPage = () => {
                   isPasswordInvalid ? "password-error" : undefined
                 }
                 required
-                minLength={8}
-                maxLength={64}
-                pattern="(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{8,64}"
+                minLength={PASSWORD_MIN_LENGTH}
+                maxLength={PASSWORD_MAX_LENGTH}
+                pattern={PASSWORD_PATTERN}
               />
 
               {isPasswordInvalid && (
@@ -198,8 +200,9 @@ const RegisterDetailsPage = () => {
                   className="text-destructive block text-xs"
                   role="alert"
                 >
-                  Password must be 8–64 characters and include an uppercase
-                  letter, a lowercase letter, and a number.
+                  Password must be {PASSWORD_MIN_LENGTH}–{PASSWORD_MAX_LENGTH}
+                  characters and include an uppercase letter, a lowercase
+                  letter, and a number.
                 </span>
               )}
             </label>
@@ -215,9 +218,9 @@ const RegisterDetailsPage = () => {
                 placeholder="Confirm your password"
                 className="h-10"
                 required
-                minLength={8}
-                maxLength={64}
-                pattern="(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{8,}"
+                minLength={PASSWORD_MIN_LENGTH}
+                maxLength={PASSWORD_MAX_LENGTH}
+                pattern={PASSWORD_PATTERN}
               />
             </label>
 
