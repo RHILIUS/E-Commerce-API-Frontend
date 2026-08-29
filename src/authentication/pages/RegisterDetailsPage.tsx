@@ -1,4 +1,4 @@
-import type { SyntheticEvent } from "react";
+import { type SyntheticEvent, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { Button } from "@/app/components/ui/button";
@@ -13,8 +13,17 @@ import { Input } from "@/app/components/ui/input";
 import AddressCountryField from "@/authentication/components/AddressCountryField";
 import PhoneNumberField from "@/authentication/components/PhoneNumberField";
 
+import { PASSWORD_PATTERN } from "../constants";
+
 const RegisterDetailsPage = () => {
   const temporaryEmail = "rhian@gmail.com";
+  const [password, setPassword] = useState("");
+  const [hasPasswordBlurred, setHasPasswordBlurred] = useState(false);
+
+  const isPasswordInvalid =
+    hasPasswordBlurred &&
+    password.length > 0 &&
+    !PASSWORD_PATTERN.test(password);
 
   const handleSubmit = (
     event: SyntheticEvent<HTMLFormElement, SubmitEvent>,
@@ -169,8 +178,30 @@ const RegisterDetailsPage = () => {
                 autoComplete="new-password"
                 placeholder="Create a password"
                 className="h-10"
+                value={password}
+                onChange={(event) => setPassword(event.currentTarget.value)}
+                onBlur={() => setHasPasswordBlurred(true)}
+                onInvalid={() => setHasPasswordBlurred(true)}
+                aria-invalid={isPasswordInvalid || undefined}
+                aria-describedby={
+                  isPasswordInvalid ? "password-error" : undefined
+                }
                 required
+                minLength={8}
+                maxLength={64}
+                pattern="(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{8,64}"
               />
+
+              {isPasswordInvalid && (
+                <span
+                  id="password-error"
+                  className="text-destructive block text-xs"
+                  role="alert"
+                >
+                  Password must be 8–64 characters and include an uppercase
+                  letter, a lowercase letter, and a number.
+                </span>
+              )}
             </label>
 
             <label className="block min-w-0 space-y-2">
@@ -184,6 +215,9 @@ const RegisterDetailsPage = () => {
                 placeholder="Confirm your password"
                 className="h-10"
                 required
+                minLength={8}
+                maxLength={64}
+                pattern="(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{8,}"
               />
             </label>
 
