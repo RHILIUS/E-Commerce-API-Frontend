@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/app/components/ui/card";
 import { Input } from "@/app/components/ui/input";
+import AddressCountryField from "@/authentication/components/AddressCountryField";
 import PhoneNumberField from "@/authentication/components/PhoneNumberField";
 
 const RegisterDetailsPage = () => {
@@ -83,6 +84,17 @@ const RegisterDetailsPage = () => {
             </label>
 
             <PhoneNumberField />
+
+            <section
+              aria-labelledby="address-section-title"
+              className="border-border min-w-0 space-y-4 border-y py-4"
+            >
+              <h2 id="address-section-title" className="text-sm font-medium">
+                Address
+              </h2>
+
+              <AddressCountryField />
+            </section>
 
             <label className="block min-w-0 space-y-2">
               <span className="block text-sm font-medium">Password</span>
