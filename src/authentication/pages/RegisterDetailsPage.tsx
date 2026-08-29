@@ -94,6 +94,71 @@ const RegisterDetailsPage = () => {
               </h2>
 
               <AddressCountryField />
+
+              <label className="block min-w-0 space-y-2">
+                <span className="block text-sm font-medium">
+                  Address line 1
+                </span>
+                <Input
+                  name="addressLine1"
+                  type="text"
+                  autoComplete="address-line1"
+                  placeholder="House number, street name or area"
+                  className="h-10"
+                  required
+                />
+              </label>
+
+              <label className="block min-w-0 space-y-2">
+                <span className="block text-sm font-medium">
+                  Address line 2 (optional)
+                </span>
+                <Input
+                  name="addressLine2"
+                  type="text"
+                  autoComplete="address-line2"
+                  placeholder="Apartment, suite, unit, building, or floor"
+                  className="h-10"
+                />
+              </label>
+
+              <label className="block min-w-0 space-y-2">
+                <span className="block text-sm font-medium">City / Town</span>
+                <Input
+                  name="city"
+                  type="text"
+                  autoComplete="address-level2"
+                  placeholder="Enter your city or town"
+                  className="h-10"
+                  required
+                />
+              </label>
+
+              <label className="block min-w-0 space-y-2">
+                <span className="block text-sm font-medium">
+                  State / Province / Region (optional)
+                </span>
+                <Input
+                  name="stateProvinceRegion"
+                  type="text"
+                  autoComplete="address-level1"
+                  placeholder="Enter your state, province, or region"
+                  className="h-10"
+                />
+              </label>
+
+              <label className="block min-w-0 space-y-2">
+                <span className="block text-sm font-medium">
+                  Postal / ZIP code (optional)
+                </span>
+                <Input
+                  name="postalCode"
+                  type="text"
+                  autoComplete="postal-code"
+                  placeholder="Enter your postal or ZIP code"
+                  className="h-10"
+                />
+              </label>
             </section>
 
             <label className="block min-w-0 space-y-2">
