@@ -8,7 +8,7 @@ type LoginResponse = {
 };
 
 type SendOTPResponse = {
-  message: string;
+  email: string;
 };
 
 export type SendOTPErrorResponse = {
