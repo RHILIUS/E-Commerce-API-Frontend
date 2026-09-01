@@ -1,5 +1,10 @@
 import axios from "axios";
-import { type ChangeEvent, type SyntheticEvent, useState } from "react";
+import {
+  type ChangeEvent,
+  type SyntheticEvent,
+  useEffect,
+  useState,
+} from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { Button } from "@/app/components/ui/button";
@@ -18,6 +23,13 @@ import {
   type SendOTPApiError,
   type SendOTPValidationError,
 } from "../api";
+
+type Cooldown = {
+  email: string;
+  expiresAt: number;
+};
+
+const normalizeEmail = (email: string) => email.trim().toLowerCase();
 
 const getSendOTPErrorMessage = (error: unknown) => {
   if (!axios.isAxiosError<SendOTPApiError | SendOTPValidationError>(error)) {
@@ -49,11 +61,60 @@ const getSendOTPErrorMessage = (error: unknown) => {
   return "Unable to send the verification code. Please try again.";
 };
 
+const getRetryAfterSeconds = (error: unknown) => {
+  if (!axios.isAxiosError<SendOTPApiError>(error)) {
+    return null;
+  }
+
+  if (error.response?.status !== 429 && error.response?.status !== 503) {
+    return null;
+  }
+
+  return error.response.data.retry_after;
+};
+
 const RegisterEmailPage = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [cooldown, setCooldown] = useState<Cooldown | null>(null);
+  const [currentTime, setCurrentTime] = useState(() => Date.now());
+
+  // Start a cooldown timer whenver cooldown exist
+  useEffect(() => {
+    if (!cooldown) {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      const now = Date.now();
+
+      setCurrentTime(now);
+      setCooldown((currentCooldown) => {
+        if (currentCooldown && now >= currentCooldown.expiresAt) {
+          return null;
+        }
+
+        return currentCooldown;
+      });
+    }, 1000);
+
+    return () => window.clearInterval(intervalId);
+  }, [cooldown]);
+
+  const normalizedEmail = normalizeEmail(email);
+  const isCoolingDown =
+    cooldown?.email === normalizedEmail && cooldown.expiresAt > currentTime;
+  const cooldownSeconds = isCoolingDown
+    ? Math.ceil((cooldown.expiresAt - currentTime) / 1000)
+    : 0;
+  const emailDescribedBy = [
+    errorMessage ? "register-email-error" : null,
+    isCoolingDown ? "register-email-cooldown" : null,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   const handleSubmit = async (
     event: SyntheticEvent<HTMLFormElement, SubmitEvent>,
@@ -62,11 +123,25 @@ const RegisterEmailPage = () => {
     setErrorMessage(null);
     setIsSubmitting(true);
 
+    const requestedEmail = normalizeEmail(email);
+
     try {
-      await sendOTPApi(email.trim());
+      await sendOTPApi(requestedEmail);
       navigate("/register/verify-otp");
     } catch (error) {
       setErrorMessage(getSendOTPErrorMessage(error));
+
+      const retryAfter = getRetryAfterSeconds(error);
+
+      if (retryAfter) {
+        const now = Date.now();
+
+        setCurrentTime(now);
+        setCooldown({
+          email: requestedEmail,
+          expiresAt: now + retryAfter * 1000,
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -134,9 +209,7 @@ const RegisterEmailPage = () => {
                   onChange={handleChange}
                   value={email}
                   aria-invalid={errorMessage ? true : undefined}
-                  aria-describedby={
-                    errorMessage ? "register-email-error" : undefined
-                  }
+                  aria-describedby={emailDescribedBy || undefined}
                   disabled={isSubmitting}
                   required
                 />
@@ -152,13 +225,30 @@ const RegisterEmailPage = () => {
                 </p>
               )}
 
+              {isCoolingDown && (
+                <p
+                  id="register-email-cooldown"
+                  className="text-muted-foreground text-sm"
+                >
+                  You can request another code for this email in{" "}
+                  <span className="font-medium tabular-nums">
+                    {cooldownSeconds}s
+                  </span>
+                  .
+                </p>
+              )}
+
               <Button
                 type="submit"
                 size="lg"
                 className="w-full"
-                disabled={isSubmitting}
+                disabled={isSubmitting || isCoolingDown}
               >
-                {isSubmitting ? "Sending..." : "Send OTP"}
+                {isSubmitting
+                  ? "Sending..."
+                  : isCoolingDown
+                    ? `Try again in ${cooldownSeconds}s`
+                    : "Send OTP"}
               </Button>
             </form>
           </CardContent>
