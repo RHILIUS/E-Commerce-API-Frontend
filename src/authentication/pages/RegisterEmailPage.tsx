@@ -13,29 +13,37 @@ import {
 } from "@/app/components/ui/card";
 import { Input } from "@/app/components/ui/input";
 
-import { sendOTPApi, type SendOTPErrorResponse } from "../api";
+import {
+  sendOTPApi,
+  type SendOTPApiError,
+  type SendOTPValidationError,
+} from "../api";
 
 const getSendOTPErrorMessage = (error: unknown) => {
-  if (!axios.isAxiosError<SendOTPErrorResponse>(error)) {
+  if (!axios.isAxiosError<SendOTPApiError | SendOTPValidationError>(error)) {
     return "Something went wrong. Please try again.";
-  }
-
-  const emailError = error.response?.data?.email;
-
-  if (Array.isArray(emailError)) {
-    return emailError.join(" ");
-  }
-
-  if (emailError) {
-    return emailError;
-  }
-
-  if (error.response?.data?.detail) {
-    return error.response.data.detail;
   }
 
   if (!error.response) {
     return "Unable to connect. Check your internet connection and try again.";
+  }
+
+  const data = error.response.data;
+
+  // Type narrowing error SendOTPValidationError type
+  if ("email" in data) {
+    const emailError = data.email;
+
+    if (Array.isArray(emailError)) {
+      return emailError.join(" ");
+    }
+
+    return emailError;
+  }
+
+  // Type narrowing SendOTPApiError
+  if ("detail" in data) {
+    return data.detail;
   }
 
   return "Unable to send the verification code. Please try again.";

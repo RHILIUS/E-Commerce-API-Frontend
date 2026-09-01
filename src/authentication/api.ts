@@ -9,11 +9,17 @@ type LoginResponse = {
 
 type SendOTPResponse = {
   email: string;
+  message: string;
+  retry_after: number;
 };
 
-export type SendOTPErrorResponse = {
-  detail?: string;
-  email?: string | string[];
+export type SendOTPApiError = {
+  detail: string;
+  retry_after: number;
+};
+
+export type SendOTPValidationError = {
+  email: string[];
 };
 
 export const loginApi = async (
