@@ -23,11 +23,7 @@ import {
   type SendOTPApiError,
   type SendOTPValidationError,
 } from "../api";
-
-type Cooldown = {
-  email: string;
-  expiresAt: number;
-};
+import { useRegistration } from "../contexts/Registration/useRegistration";
 
 const normalizeEmail = (email: string) => email.trim().toLowerCase();
 
@@ -74,16 +70,21 @@ const getRetryAfterSeconds = (error: unknown) => {
 };
 
 const RegisterEmailPage = () => {
+  const {
+    email: registrationEmail,
+    cooldownEndsAt,
+    beginRegistration,
+  } = useRegistration();
+
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(registrationEmail ?? "");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [cooldown, setCooldown] = useState<Cooldown | null>(null);
   const [currentTime, setCurrentTime] = useState(() => Date.now());
 
-  // Start a cooldown timer whenver cooldown exist
+  // Start a cooldown timer whenever cooldown exist
   useEffect(() => {
-    if (!cooldown) {
+    if (!cooldownEndsAt || cooldownEndsAt <= Date.now()) {
       return;
     }
 
@@ -91,23 +92,22 @@ const RegisterEmailPage = () => {
       const now = Date.now();
 
       setCurrentTime(now);
-      setCooldown((currentCooldown) => {
-        if (currentCooldown && now >= currentCooldown.expiresAt) {
-          return null;
-        }
 
-        return currentCooldown;
-      });
+      if (now >= cooldownEndsAt) {
+        window.clearInterval(intervalId);
+      }
     }, 1000);
 
     return () => window.clearInterval(intervalId);
-  }, [cooldown]);
+  }, [cooldownEndsAt]);
 
   const normalizedEmail = normalizeEmail(email);
   const isCoolingDown =
-    cooldown?.email === normalizedEmail && cooldown.expiresAt > currentTime;
+    registrationEmail === normalizedEmail && // Only apply cooldown to the email that triggered it
+    cooldownEndsAt !== null &&
+    cooldownEndsAt > currentTime;
   const cooldownSeconds = isCoolingDown
-    ? Math.ceil((cooldown.expiresAt - currentTime) / 1000)
+    ? Math.ceil((cooldownEndsAt - currentTime) / 1000)
     : 0;
   const emailDescribedBy = [
     errorMessage ? "register-email-error" : null,
@@ -126,7 +126,9 @@ const RegisterEmailPage = () => {
     const requestedEmail = normalizeEmail(email);
 
     try {
-      await sendOTPApi(requestedEmail);
+      const response = await sendOTPApi(requestedEmail);
+
+      beginRegistration(response.email, response.retry_after);
       navigate("/register/verify-otp");
     } catch (error) {
       setErrorMessage(getSendOTPErrorMessage(error));
@@ -137,10 +139,7 @@ const RegisterEmailPage = () => {
         const now = Date.now();
 
         setCurrentTime(now);
-        setCooldown({
-          email: requestedEmail,
-          expiresAt: now + retryAfter * 1000,
-        });
+        beginRegistration(requestedEmail, retryAfter);
       }
     } finally {
       setIsSubmitting(false);
