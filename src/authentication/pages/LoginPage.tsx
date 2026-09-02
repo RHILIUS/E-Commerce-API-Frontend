@@ -6,7 +6,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
 
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../contexts/Auth/useAuth";
 
 const LoginPage = () => {
   const location = useLocation();
