@@ -1,10 +1,5 @@
 import axios from "axios";
-import {
-  type ChangeEvent,
-  type SyntheticEvent,
-  useEffect,
-  useState,
-} from "react";
+import { type ChangeEvent, type SyntheticEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { Button } from "@/app/components/ui/button";
@@ -24,6 +19,7 @@ import {
   type SendOTPValidationError,
 } from "../api";
 import { useRegistration } from "../contexts/Registration/useRegistration";
+import { useCountdown } from "../hooks/useCountdown";
 
 const normalizeEmail = (email: string) => email.trim().toLowerCase();
 
@@ -80,35 +76,12 @@ const RegisterEmailPage = () => {
   const [email, setEmail] = useState(registrationEmail ?? "");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [currentTime, setCurrentTime] = useState(() => Date.now());
-
-  // Start a cooldown timer whenever cooldown exist
-  useEffect(() => {
-    if (!cooldownEndsAt || cooldownEndsAt <= Date.now()) {
-      return;
-    }
-
-    const intervalId = window.setInterval(() => {
-      const now = Date.now();
-
-      setCurrentTime(now);
-
-      if (now >= cooldownEndsAt) {
-        window.clearInterval(intervalId);
-      }
-    }, 1000);
-
-    return () => window.clearInterval(intervalId);
-  }, [cooldownEndsAt]);
 
   const normalizedEmail = normalizeEmail(email);
+  const cooldownSeconds = useCountdown(cooldownEndsAt);
   const isCoolingDown =
     registrationEmail === normalizedEmail && // Only apply cooldown to the email that triggered it
-    cooldownEndsAt !== null &&
-    cooldownEndsAt > currentTime;
-  const cooldownSeconds = isCoolingDown
-    ? Math.ceil((cooldownEndsAt - currentTime) / 1000)
-    : 0;
+    cooldownSeconds > 0;
   const emailDescribedBy = [
     errorMessage ? "register-email-error" : null,
     isCoolingDown ? "register-email-cooldown" : null,
@@ -136,9 +109,6 @@ const RegisterEmailPage = () => {
       const retryAfter = getRetryAfterSeconds(error);
 
       if (retryAfter) {
-        const now = Date.now();
-
-        setCurrentTime(now);
         beginRegistration(requestedEmail, retryAfter);
       }
     } finally {
