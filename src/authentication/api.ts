@@ -13,13 +13,8 @@ type SendOTPResponse = {
   retry_after: number;
 };
 
-export type SendOTPApiError = {
-  detail: string;
-  retry_after: number;
-};
-
-export type SendOTPValidationError = {
-  email: string[];
+type VerifyOTPResponse = {
+  message: string;
 };
 
 export const loginApi = async (
@@ -44,6 +39,18 @@ export const logoutApi = async () => {
 export const sendOTPApi = async (email: string): Promise<SendOTPResponse> => {
   const response = await api.post<SendOTPResponse>("/api/auth/send-otp/", {
     email,
+  });
+
+  return response.data;
+};
+
+export const verifyOTPApi = async (
+  email: string,
+  otp: string,
+): Promise<VerifyOTPResponse> => {
+  const response = await api.post<VerifyOTPResponse>("/api/auth/verify-otp/", {
+    email,
+    otp,
   });
 
   return response.data;

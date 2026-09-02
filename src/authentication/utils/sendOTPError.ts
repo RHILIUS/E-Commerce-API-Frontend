@@ -1,6 +1,13 @@
 import axios from "axios";
 
-import { type SendOTPApiError, type SendOTPValidationError } from "../api";
+type SendOTPApiError = {
+  detail: string;
+  retry_after: number;
+};
+
+type SendOTPValidationError = {
+  email: string[];
+};
 
 export const getSendOTPErrorMessage = (error: unknown) => {
   if (!axios.isAxiosError<SendOTPApiError | SendOTPValidationError>(error)) {

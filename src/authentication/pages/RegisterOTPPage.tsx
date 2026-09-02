@@ -17,7 +17,7 @@ import {
   InputOTPSlot,
 } from "@/app/components/ui/input-otp";
 
-import { sendOTPApi } from "../api";
+import { sendOTPApi, verifyOTPApi } from "../api";
 import { INPUT_OTP_COUNT } from "../constants";
 import { useRegistration } from "../contexts/Registration/useRegistration";
 import { useCountdown } from "../hooks/useCountdown";
@@ -25,6 +25,7 @@ import {
   getRetryAfterSeconds,
   getSendOTPErrorMessage,
 } from "../utils/sendOTPError";
+import { getVerificationErrorMessage } from "../utils/verifyOTPError";
 
 const RegisterOTPPage = () => {
   const navigate = useNavigate();
@@ -33,30 +34,52 @@ const RegisterOTPPage = () => {
   const cooldownSeconds = useCountdown(cooldownEndsAt);
   const isCoolingDown = cooldownSeconds > 0;
 
+  const [otp, setOtp] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationError, setVerificationError] = useState<string | null>(
+    null,
+  );
   const [isResending, setIsResending] = useState(false);
   const [resendError, setResendError] = useState<string | null>(null);
   const [resendMessage, setResendMessage] = useState<string | null>(null);
 
-  const handleSubmit = (
+  const handleSubmit = async (
     event: SyntheticEvent<HTMLFormElement, SubmitEvent>,
   ) => {
     event.preventDefault();
-    navigate("/register/account-details");
+
+    if (!email || otp.length !== INPUT_OTP_COUNT || isVerifying) {
+      return;
+    }
+
+    setVerificationError(null);
+    setIsVerifying(true);
+
+    try {
+      await verifyOTPApi(email, otp);
+      navigate("/register/account-details");
+    } catch (error) {
+      setVerificationError(getVerificationErrorMessage(error));
+    } finally {
+      setIsVerifying(false);
+    }
   };
 
   const handleResend = async () => {
-    if (isCoolingDown || isResending) {
+    if (!email || isCoolingDown || isResending || isVerifying) {
       return;
     }
 
     setResendError(null);
     setResendMessage(null);
+    setVerificationError(null);
     setIsResending(true);
 
     try {
-      const response = await sendOTPApi(email as string); // email is always a string as defined in RegisterProtectedRoute
+      const response = await sendOTPApi(email);
 
       startOtpCooldown(response.retry_after);
+      setOtp("");
       setResendMessage("A new verification code was sent.");
     } catch (error) {
       setResendError(getSendOTPErrorMessage(error));
@@ -92,13 +115,28 @@ const RegisterOTPPage = () => {
         </CardHeader>
 
         <CardContent className="min-w-0">
-          <form className="min-w-0 space-y-6" onSubmit={handleSubmit}>
+          <form
+            className="min-w-0 space-y-6"
+            onSubmit={handleSubmit}
+            aria-busy={isVerifying}
+          >
             <div className="flex min-w-0 flex-col items-center gap-1">
               <div className="flex w-full min-w-0 flex-col items-center gap-2">
                 <InputOTP
                   maxLength={INPUT_OTP_COUNT}
                   pattern={REGEXP_ONLY_DIGITS}
+                  value={otp}
+                  onChange={(value) => {
+                    setOtp(value);
+
+                    if (verificationError) {
+                      setVerificationError(null);
+                    }
+                  }}
+                  disabled={isVerifying || isResending}
                   aria-label="Six-digit verification code"
+                  aria-invalid={verificationError ? true : undefined}
+                  aria-describedby={verificationError ? "otp-error" : undefined}
                   containerClassName="w-full justify-center"
                 >
                   <InputOTPGroup>
@@ -114,6 +152,15 @@ const RegisterOTPPage = () => {
                 <p className="text-center text-sm leading-5">
                   Enter your one-time password.
                 </p>
+                {verificationError && (
+                  <p
+                    id="otp-error"
+                    className="text-destructive text-center text-sm"
+                    role="alert"
+                  >
+                    {verificationError}
+                  </p>
+                )}
               </div>
 
               <div className="flex flex-wrap items-center justify-center gap-x-1 text-center text-xs leading-4 font-medium">
@@ -125,7 +172,7 @@ const RegisterOTPPage = () => {
                   variant="link"
                   size="sm"
                   className="h-auto p-0 text-xs"
-                  disabled={isCoolingDown || isResending}
+                  disabled={isCoolingDown || isResending || isVerifying}
                   onClick={handleResend}
                 >
                   {isResending
@@ -151,8 +198,13 @@ const RegisterOTPPage = () => {
               </p>
             )}
 
-            <Button type="submit" size="lg" className="w-full">
-              Verify Code
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full"
+              disabled={isVerifying || otp.length !== INPUT_OTP_COUNT}
+            >
+              {isVerifying ? "Verifying..." : "Verify Code"}
             </Button>
           </form>
         </CardContent>
