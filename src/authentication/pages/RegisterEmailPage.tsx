@@ -1,4 +1,3 @@
-import axios from "axios";
 import { type ChangeEvent, type SyntheticEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -13,57 +12,15 @@ import {
 } from "@/app/components/ui/card";
 import { Input } from "@/app/components/ui/input";
 
-import {
-  sendOTPApi,
-  type SendOTPApiError,
-  type SendOTPValidationError,
-} from "../api";
+import { sendOTPApi } from "../api";
 import { useRegistration } from "../contexts/Registration/useRegistration";
 import { useCountdown } from "../hooks/useCountdown";
+import {
+  getRetryAfterSeconds,
+  getSendOTPErrorMessage,
+} from "../utils/sendOTPError";
 
 const normalizeEmail = (email: string) => email.trim().toLowerCase();
-
-const getSendOTPErrorMessage = (error: unknown) => {
-  if (!axios.isAxiosError<SendOTPApiError | SendOTPValidationError>(error)) {
-    return "Something went wrong. Please try again.";
-  }
-
-  if (!error.response) {
-    return "Unable to connect. Check your internet connection and try again.";
-  }
-
-  const data = error.response.data;
-
-  // Type narrowing error SendOTPValidationError type
-  if ("email" in data) {
-    const emailError = data.email;
-
-    if (Array.isArray(emailError)) {
-      return emailError.join(" ");
-    }
-
-    return emailError;
-  }
-
-  // Type narrowing SendOTPApiError
-  if ("detail" in data) {
-    return data.detail;
-  }
-
-  return "Unable to send the verification code. Please try again.";
-};
-
-const getRetryAfterSeconds = (error: unknown) => {
-  if (!axios.isAxiosError<SendOTPApiError>(error)) {
-    return null;
-  }
-
-  if (error.response?.status !== 429 && error.response?.status !== 503) {
-    return null;
-  }
-
-  return error.response.data.retry_after;
-};
 
 const RegisterEmailPage = () => {
   const {

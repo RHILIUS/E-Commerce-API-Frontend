@@ -1,5 +1,6 @@
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import type { SyntheticEvent } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { Button } from "@/app/components/ui/button";
@@ -16,16 +17,57 @@ import {
   InputOTPSlot,
 } from "@/app/components/ui/input-otp";
 
+import { sendOTPApi } from "../api";
 import { INPUT_OTP_COUNT } from "../constants";
+import { useRegistration } from "../contexts/Registration/useRegistration";
+import { useCountdown } from "../hooks/useCountdown";
+import {
+  getRetryAfterSeconds,
+  getSendOTPErrorMessage,
+} from "../utils/sendOTPError";
 
 const RegisterOTPPage = () => {
   const navigate = useNavigate();
+
+  const { email, cooldownEndsAt, startOtpCooldown } = useRegistration();
+  const cooldownSeconds = useCountdown(cooldownEndsAt);
+  const isCoolingDown = cooldownSeconds > 0;
+
+  const [isResending, setIsResending] = useState(false);
+  const [resendError, setResendError] = useState<string | null>(null);
+  const [resendMessage, setResendMessage] = useState<string | null>(null);
 
   const handleSubmit = (
     event: SyntheticEvent<HTMLFormElement, SubmitEvent>,
   ) => {
     event.preventDefault();
     navigate("/register/account-details");
+  };
+
+  const handleResend = async () => {
+    if (isCoolingDown || isResending) {
+      return;
+    }
+
+    setResendError(null);
+    setResendMessage(null);
+    setIsResending(true);
+
+    try {
+      const response = await sendOTPApi(email as string); // email is always a string as defined in RegisterProtectedRoute
+
+      startOtpCooldown(response.retry_after);
+      setResendMessage("A new verification code was sent.");
+    } catch (error) {
+      setResendError(getSendOTPErrorMessage(error));
+      const retryAfter = getRetryAfterSeconds(error);
+
+      if (retryAfter) {
+        startOtpCooldown(retryAfter);
+      }
+    } finally {
+      setIsResending(false);
+    }
   };
 
   return (
@@ -45,8 +87,7 @@ const RegisterOTPPage = () => {
             Register
           </CardTitle>
           <CardDescription className="min-w-0 text-xs leading-4 font-medium wrap-break-word">
-            Kindly enter the six-digit verification code we sent to your email
-            address.
+            Enter the six-digit verification code sent to {email}.
           </CardDescription>
         </CardHeader>
 
@@ -79,14 +120,36 @@ const RegisterOTPPage = () => {
                 <span className="text-muted-foreground">
                   Didn&apos;t receive a code?
                 </span>
-                <button
+                <Button
                   type="button"
-                  className="text-primary hover:text-primary/80 rounded-lg transition-colors"
+                  variant="link"
+                  size="sm"
+                  className="h-auto p-0 text-xs"
+                  disabled={isCoolingDown || isResending}
+                  onClick={handleResend}
                 >
-                  Resend Code
-                </button>
+                  {isResending
+                    ? "Sending..."
+                    : isCoolingDown
+                      ? `Resend Code in ${cooldownSeconds}s`
+                      : "Resend Code"}
+                </Button>
               </div>
             </div>
+            {resendError && (
+              <p className="text-destructive text-center text-sm" role="alert">
+                {resendError}
+              </p>
+            )}
+
+            {resendMessage && (
+              <p
+                className="text-muted-foreground text-center text-sm"
+                role="status"
+              >
+                {resendMessage}
+              </p>
+            )}
 
             <Button type="submit" size="lg" className="w-full">
               Verify Code
