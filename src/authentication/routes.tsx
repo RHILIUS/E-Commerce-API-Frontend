@@ -6,6 +6,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterDetailsPage from "./pages/RegisterDetailsPage";
 import RegisterEmailPage from "./pages/RegisterEmailPage";
 import RegisterOTPPage from "./pages/RegisterOTPPage";
+import RegisterProtectedRoute from "./routes/RegisterProtectedRoute";
 
 export const authenticationRoutes: RouteObject[] = [
   // Login
@@ -18,10 +19,15 @@ export const authenticationRoutes: RouteObject[] = [
     children: [
       { index: true, element: <Navigate to="enter-email" replace /> },
       { path: "enter-email", element: <RegisterEmailPage /> },
-      { path: "verify-otp", element: <RegisterOTPPage /> },
       {
-        path: "account-details",
-        element: <RegisterDetailsPage />,
+        element: <RegisterProtectedRoute />,
+        children: [
+          { path: "verify-otp", element: <RegisterOTPPage /> },
+          {
+            path: "account-details",
+            element: <RegisterDetailsPage />,
+          },
+        ],
       },
     ],
   },
