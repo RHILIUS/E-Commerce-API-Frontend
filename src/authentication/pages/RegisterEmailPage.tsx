@@ -23,7 +23,7 @@ import {
   type SendOTPApiError,
   type SendOTPValidationError,
 } from "../api";
-import { useRegistration } from "../contexts/Registration/useRegistration";
+import { useRegistration } from "../hooks/useRegistration";
 
 const normalizeEmail = (email: string) => email.trim().toLowerCase();
 
