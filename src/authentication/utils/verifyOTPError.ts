@@ -14,7 +14,16 @@ export const getVerificationErrorMessage = (error: unknown) => {
     return "Unable to connect to the server. Please try again.";
   }
 
-  const validationErrors = error.response.data.otp ?? error.response.data.email;
+  const { otp, email } = error.response.data;
+  const validationErrors = otp ?? email;
 
-  return validationErrors?.join(" ") ?? "Unable to verify the code.";
+  if (Array.isArray(validationErrors)) {
+    return validationErrors.join(" ");
+  }
+
+  if (typeof validationErrors === "string") {
+    return validationErrors;
+  }
+
+  return "Unable to verify the code.";
 };
