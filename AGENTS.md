@@ -29,6 +29,19 @@ The documentation repository is the central source of project-wide context. It d
 
 When implementing changes that depend on another part of the system, inspect the relevant sibling repository to confirm its current behavior. Do not assume that the documentation and implementation are always synchronized; report any inconsistencies you discover.
 
+## Implementation Simplicity and Modularization
+
+Prefer the smallest clear implementation that satisfies the verified current requirement and contract.
+
+- Inspect the local producer, consumer, types, and documented contract before adding fallbacks, alternate parsing paths, compatibility branches, or abstractions.
+- When this project and the backend own a stable, explicit contract together, model that contract accurately and consume it directly. Do not handle speculative response shapes or duplicate equivalent body/header fallbacks unless a real compatibility requirement exists.
+- Add defensive behavior when the input crosses an untrusted or external boundary, the contract explicitly permits variation, backward compatibility requires it, or a demonstrated failure mode justifies it.
+- Keep page components focused on composing the interface and coordinating user actions. Move cohesive stateful mechanics such as timers, subscriptions, and lifecycle cleanup into focused custom hooks when doing so makes the page easier to understand or allows multiple pages to reuse the behavior.
+- Design hooks and modules around one clear responsibility and expose the smallest useful interface. For example, prefer a `useCountdown(deadline)` hook that owns timer effects and returns the current remaining seconds over duplicating interval management in each page.
+- Modularize along real feature boundaries so behavior can be reused and changed independently as the application grows. Keep simple one-off logic colocated; do not split code into extra files or abstractions merely in anticipation of possible future scale.
+- Introduce helpers and abstractions when they remove meaningful duplication, contain non-trivial implementation details, or isolate a real responsibility; avoid wrappers used only once when the inline behavior is clearer.
+- Any added complexity should correspond to a concrete case that can be explained and, where practical, tested. Simplicity must not weaken accessibility, security, data integrity, error handling, or required responsive behavior.
+
 ## UI Component Selection and shadcn/ui Usage
 
 Before creating a new interactive or reusable UI element:
