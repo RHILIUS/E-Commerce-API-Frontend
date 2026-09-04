@@ -4,7 +4,7 @@ import {
   parseDigits,
   parsePhoneNumberFromString,
 } from "libphonenumber-js";
-import { useId, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 
 import {
   Combobox,
@@ -45,6 +45,7 @@ const PhoneNumberField = () => {
   const [country, setCountry] = useState(DEFAULT_PHONE_COUNTRY);
   const [nationalNumber, setNationalNumber] = useState("");
   const [hasBlurred, setHasBlurred] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const formattedNationalNumber = useMemo(
     () => new AsYouType(country.code).input(nationalNumber),
@@ -62,10 +63,16 @@ const PhoneNumberField = () => {
     );
   }, [country, nationalNumber]);
 
-  const isInvalid =
-    hasBlurred &&
+  const hasInvalidNumber =
     nationalNumber.length > 0 &&
     !isValidPhoneNumber(nationalNumber, country.code);
+  const isInvalid = hasBlurred && hasInvalidNumber;
+
+  useEffect(() => {
+    inputRef.current?.setCustomValidity(
+      hasInvalidNumber ? `Enter a valid phone number for ${country.name}.` : "",
+    );
+  }, [country.name, hasInvalidNumber]);
 
   const handleNumberChange = (value: string) => {
     if (value.trimStart().startsWith("+")) {
@@ -110,6 +117,7 @@ const PhoneNumberField = () => {
       >
         <InputGroup className="h-10 overflow-hidden">
           <InputGroupInput
+            ref={inputRef}
             id={inputId}
             type="tel"
             inputMode="tel"
@@ -118,6 +126,7 @@ const PhoneNumberField = () => {
             value={formattedNationalNumber}
             onChange={(event) => handleNumberChange(event.currentTarget.value)}
             onBlur={() => setHasBlurred(true)}
+            onInvalid={() => setHasBlurred(true)}
             aria-invalid={isInvalid || undefined}
             aria-describedby={isInvalid ? errorId : undefined}
             className="h-10 min-w-0 px-3 text-base md:text-sm"

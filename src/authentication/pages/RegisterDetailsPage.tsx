@@ -1,4 +1,4 @@
-import { type SyntheticEvent, useState } from "react";
+import { type ChangeEvent, type SyntheticEvent, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { Button } from "@/app/components/ui/button";
@@ -29,12 +29,57 @@ const RegisterDetailsPage = () => {
   const [hasUsernameBlurred, setHasUsernameBlurred] = useState(false);
   const [password, setPassword] = useState("");
   const [hasPasswordBlurred, setHasPasswordBlurred] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [hasConfirmPasswordBlurred, setHasConfirmPasswordBlurred] =
+    useState(false);
+  const confirmPasswordInputRef = useRef<HTMLInputElement>(null);
 
   const isUsernameInvalid =
     hasUsernameBlurred && username.length > 0 && !USERNAME_REGEX.test(username);
 
   const isPasswordInvalid =
     hasPasswordBlurred && password.length > 0 && !PASSWORD_REGEX.test(password);
+
+  const doPasswordsMismatch =
+    confirmPassword.length > 0 && confirmPassword !== password;
+  const isConfirmPasswordInvalid =
+    hasConfirmPasswordBlurred && doPasswordsMismatch;
+
+  const setPasswordMismatchValidity = (
+    input: HTMLInputElement | null,
+    nextPassword: string,
+    nextConfirmPassword: string,
+  ) => {
+    input?.setCustomValidity(
+      nextConfirmPassword.length > 0 && nextConfirmPassword !== nextPassword
+        ? "Passwords do not match."
+        : "",
+    );
+  };
+
+  const handlePasswordChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const nextPassword = event.currentTarget.value;
+
+    setPassword(nextPassword);
+    setPasswordMismatchValidity(
+      confirmPasswordInputRef.current,
+      nextPassword,
+      confirmPassword,
+    );
+  };
+
+  const handleConfirmPasswordChange = (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
+    const nextConfirmPassword = event.currentTarget.value;
+
+    setConfirmPassword(nextConfirmPassword);
+    setPasswordMismatchValidity(
+      event.currentTarget,
+      password,
+      nextConfirmPassword,
+    );
+  };
 
   const handleSubmit = (
     event: SyntheticEvent<HTMLFormElement, SubmitEvent>,
@@ -214,7 +259,7 @@ const RegisterDetailsPage = () => {
                 placeholder="Create a password"
                 className="h-10"
                 value={password}
-                onChange={(event) => setPassword(event.currentTarget.value)}
+                onChange={handlePasswordChange}
                 onBlur={() => setHasPasswordBlurred(true)}
                 onInvalid={() => setHasPasswordBlurred(true)}
                 aria-invalid={isPasswordInvalid || undefined}
@@ -245,16 +290,37 @@ const RegisterDetailsPage = () => {
                 Confirm Password
               </span>
               <Input
+                ref={confirmPasswordInputRef}
                 name="confirmPassword"
                 type="password"
                 autoComplete="new-password"
                 placeholder="Confirm your password"
                 className="h-10"
+                value={confirmPassword}
+                onChange={handleConfirmPasswordChange}
+                onBlur={() => setHasConfirmPasswordBlurred(true)}
+                onInvalid={() => setHasConfirmPasswordBlurred(true)}
+                aria-invalid={isConfirmPasswordInvalid || undefined}
+                aria-describedby={
+                  isConfirmPasswordInvalid
+                    ? "confirm-password-error"
+                    : undefined
+                }
                 required
                 minLength={PASSWORD_MIN_LENGTH}
                 maxLength={PASSWORD_MAX_LENGTH}
                 pattern={PASSWORD_PATTERN}
               />
+
+              {isConfirmPasswordInvalid && (
+                <span
+                  id="confirm-password-error"
+                  className="text-destructive block text-xs"
+                  role="alert"
+                >
+                  Passwords do not match.
+                </span>
+              )}
             </label>
 
             <Button type="submit" size="lg" className="w-full">
