@@ -1,4 +1,4 @@
-import { type ChangeEvent, type SyntheticEvent, useRef, useState } from "react";
+import { type SyntheticEvent, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { Button } from "@/app/components/ui/button";
@@ -10,81 +10,63 @@ import {
   CardTitle,
 } from "@/app/components/ui/card";
 import { Input } from "@/app/components/ui/input";
+import { registerApi, type RegisterRequest } from "@/authentication/api";
 import AddressCountryField from "@/authentication/components/AddressCountryField";
+import PasswordFields from "@/authentication/components/PasswordFields";
 import PhoneNumberField from "@/authentication/components/PhoneNumberField";
-import {
-  PASSWORD_MAX_LENGTH,
-  PASSWORD_MIN_LENGTH,
-  PASSWORD_PATTERN,
-  PASSWORD_REGEX,
-  USERNAME_MAX_LENGTH,
-  USERNAME_MIN_LENGTH,
-  USERNAME_PATTERN,
-  USERNAME_REGEX,
-} from "@/authentication/constants";
+import UsernameField from "@/authentication/components/UsernameField";
+import { useRegistration } from "@/authentication/contexts/Registration/useRegistration";
+
+const getFormString = (formData: FormData, name: string) => {
+  const value = formData.get(name);
+
+  return typeof value === "string" ? value : "";
+};
 
 const RegisterDetailsPage = () => {
-  const temporaryEmail = "rhian@gmail.com";
-  const [username, setUsername] = useState("");
-  const [hasUsernameBlurred, setHasUsernameBlurred] = useState(false);
-  const [password, setPassword] = useState("");
-  const [hasPasswordBlurred, setHasPasswordBlurred] = useState(false);
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [hasConfirmPasswordBlurred, setHasConfirmPasswordBlurred] =
-    useState(false);
-  const confirmPasswordInputRef = useRef<HTMLInputElement>(null);
-
-  const isUsernameInvalid =
-    hasUsernameBlurred && username.length > 0 && !USERNAME_REGEX.test(username);
-
-  const isPasswordInvalid =
-    hasPasswordBlurred && password.length > 0 && !PASSWORD_REGEX.test(password);
-
-  const doPasswordsMismatch =
-    confirmPassword.length > 0 && confirmPassword !== password;
-  const isConfirmPasswordInvalid =
-    hasConfirmPasswordBlurred && doPasswordsMismatch;
-
-  const setPasswordMismatchValidity = (
-    input: HTMLInputElement | null,
-    nextPassword: string,
-    nextConfirmPassword: string,
-  ) => {
-    input?.setCustomValidity(
-      nextConfirmPassword.length > 0 && nextConfirmPassword !== nextPassword
-        ? "Passwords do not match."
-        : "",
-    );
-  };
-
-  const handlePasswordChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const nextPassword = event.currentTarget.value;
-
-    setPassword(nextPassword);
-    setPasswordMismatchValidity(
-      confirmPasswordInputRef.current,
-      nextPassword,
-      confirmPassword,
-    );
-  };
-
-  const handleConfirmPasswordChange = (
-    event: ChangeEvent<HTMLInputElement>,
-  ) => {
-    const nextConfirmPassword = event.currentTarget.value;
-
-    setConfirmPassword(nextConfirmPassword);
-    setPasswordMismatchValidity(
-      event.currentTarget,
-      password,
-      nextConfirmPassword,
-    );
-  };
-
-  const handleSubmit = (
+  const { email } = useRegistration();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
+  const [submissionMessage, setSubmissionMessage] = useState<string | null>(
+    null,
+  );
+  const handleSubmit = async (
     event: SyntheticEvent<HTMLFormElement, SubmitEvent>,
   ) => {
     event.preventDefault();
+
+    if (!email || isSubmitting) {
+      return;
+    }
+
+    const formData = new FormData(event.currentTarget);
+    const request: RegisterRequest = {
+      email,
+      username: getFormString(formData, "username"),
+      full_name: getFormString(formData, "fullName"),
+      phone_number: getFormString(formData, "phoneNumber"),
+      country_code: getFormString(formData, "addressCountry"),
+      address_line1: getFormString(formData, "addressLine1"),
+      address_line2: getFormString(formData, "addressLine2"),
+      city: getFormString(formData, "city"),
+      region: getFormString(formData, "stateProvinceRegion"),
+      postal_code: getFormString(formData, "postalCode"),
+      password: getFormString(formData, "password"),
+    };
+
+    setSubmissionError(null);
+    setSubmissionMessage(null);
+    setIsSubmitting(true);
+
+    try {
+      const response = await registerApi(request);
+
+      setSubmissionMessage(response.message);
+    } catch {
+      setSubmissionError("Unable to create your account. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -109,13 +91,17 @@ const RegisterDetailsPage = () => {
         </CardHeader>
 
         <CardContent className="min-w-0">
-          <form className="min-w-0 space-y-6" onSubmit={handleSubmit}>
+          <form
+            className="min-w-0 space-y-6"
+            onSubmit={handleSubmit}
+            aria-busy={isSubmitting}
+          >
             <label className="block min-w-0 space-y-2">
               <span className="block text-sm font-medium">Email</span>
               <Input
                 name="email"
                 type="email"
-                value={temporaryEmail}
+                value={email ?? ""}
                 autoComplete="email"
                 aria-readonly="true"
                 className="h-10"
@@ -124,41 +110,7 @@ const RegisterDetailsPage = () => {
               />
             </label>
 
-            <label className="block min-w-0 space-y-2">
-              <span className="block text-sm font-medium">Username</span>
-              <Input
-                name="username"
-                type="text"
-                autoComplete="username"
-                placeholder="Choose a username"
-                className="h-10"
-                value={username}
-                onChange={(event) => setUsername(event.currentTarget.value)}
-                onBlur={() => setHasUsernameBlurred(true)}
-                onInvalid={() => setHasUsernameBlurred(true)}
-                aria-invalid={isUsernameInvalid || undefined}
-                aria-describedby={
-                  isUsernameInvalid ? "username-error" : undefined
-                }
-                required
-                minLength={USERNAME_MIN_LENGTH}
-                maxLength={USERNAME_MAX_LENGTH}
-                pattern={USERNAME_PATTERN}
-              />
-
-              {isUsernameInvalid && (
-                <span
-                  id="username-error"
-                  className="text-destructive block text-xs"
-                  role="alert"
-                >
-                  Username must be {USERNAME_MIN_LENGTH}–{USERNAME_MAX_LENGTH}{" "}
-                  characters, start with a letter or number, use only letters,
-                  numbers, underscores, hyphens, or periods, and contain no
-                  consecutive special characters.
-                </span>
-              )}
-            </label>
+            <UsernameField />
 
             <label className="block min-w-0 space-y-2">
               <span className="block text-sm font-medium">Full name</span>
@@ -250,81 +202,27 @@ const RegisterDetailsPage = () => {
               </label>
             </section>
 
-            <label className="block min-w-0 space-y-2">
-              <span className="block text-sm font-medium">Password</span>
-              <Input
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                placeholder="Create a password"
-                className="h-10"
-                value={password}
-                onChange={handlePasswordChange}
-                onBlur={() => setHasPasswordBlurred(true)}
-                onInvalid={() => setHasPasswordBlurred(true)}
-                aria-invalid={isPasswordInvalid || undefined}
-                aria-describedby={
-                  isPasswordInvalid ? "password-error" : undefined
-                }
-                required
-                minLength={PASSWORD_MIN_LENGTH}
-                maxLength={PASSWORD_MAX_LENGTH}
-                pattern={PASSWORD_PATTERN}
-              />
+            <PasswordFields />
 
-              {isPasswordInvalid && (
-                <span
-                  id="password-error"
-                  className="text-destructive block text-xs"
-                  role="alert"
-                >
-                  Password must be {PASSWORD_MIN_LENGTH}–{PASSWORD_MAX_LENGTH}
-                  characters and include an uppercase letter, a lowercase
-                  letter, and a number.
-                </span>
-              )}
-            </label>
+            {submissionError && (
+              <p className="text-destructive text-sm" role="alert">
+                {submissionError}
+              </p>
+            )}
 
-            <label className="block min-w-0 space-y-2">
-              <span className="block text-sm font-medium">
-                Confirm Password
-              </span>
-              <Input
-                ref={confirmPasswordInputRef}
-                name="confirmPassword"
-                type="password"
-                autoComplete="new-password"
-                placeholder="Confirm your password"
-                className="h-10"
-                value={confirmPassword}
-                onChange={handleConfirmPasswordChange}
-                onBlur={() => setHasConfirmPasswordBlurred(true)}
-                onInvalid={() => setHasConfirmPasswordBlurred(true)}
-                aria-invalid={isConfirmPasswordInvalid || undefined}
-                aria-describedby={
-                  isConfirmPasswordInvalid
-                    ? "confirm-password-error"
-                    : undefined
-                }
-                required
-                minLength={PASSWORD_MIN_LENGTH}
-                maxLength={PASSWORD_MAX_LENGTH}
-                pattern={PASSWORD_PATTERN}
-              />
+            {submissionMessage && (
+              <p className="text-muted-foreground text-sm" role="status">
+                {submissionMessage}
+              </p>
+            )}
 
-              {isConfirmPasswordInvalid && (
-                <span
-                  id="confirm-password-error"
-                  className="text-destructive block text-xs"
-                  role="alert"
-                >
-                  Passwords do not match.
-                </span>
-              )}
-            </label>
-
-            <Button type="submit" size="lg" className="w-full">
-              Create account
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Creating account..." : "Create account"}
             </Button>
           </form>
         </CardContent>

@@ -2,6 +2,7 @@ import api from "@/app/api/axios";
 
 import type { User } from "./contexts/Auth/AuthContext";
 
+// -- TYPES --
 type LoginResponse = {
   access: string;
   user: User;
@@ -17,6 +18,25 @@ type VerifyOTPResponse = {
   message: string;
 };
 
+export type RegisterRequest = {
+  email: string;
+  username: string;
+  full_name: string;
+  phone_number: string;
+  country_code: string;
+  address_line1: string;
+  address_line2: string;
+  city: string;
+  region: string;
+  postal_code: string;
+  password: string;
+};
+
+type RegisterResponse = {
+  message: string;
+};
+
+// -- API --
 export const loginApi = async (
   email: string,
   password: string,
@@ -52,6 +72,17 @@ export const verifyOTPApi = async (
     email,
     otp,
   });
+
+  return response.data;
+};
+
+export const registerApi = async (
+  request: RegisterRequest,
+): Promise<RegisterResponse> => {
+  const response = await api.post<RegisterResponse>(
+    "/api/auth/register/",
+    request,
+  );
 
   return response.data;
 };
