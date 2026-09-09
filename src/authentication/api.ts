@@ -19,7 +19,6 @@ type VerifyOTPResponse = {
 };
 
 export type RegisterRequest = {
-  email: string;
   username: string;
   full_name: string;
   phone_number: string;

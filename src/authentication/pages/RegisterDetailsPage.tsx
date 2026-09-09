@@ -53,7 +53,6 @@ const RegisterDetailsPage = () => {
 
     const formData = new FormData(event.currentTarget);
     const request: RegisterRequest = {
-      email,
       username: getFormString(formData, "username"),
       full_name: getFormString(formData, "fullName"),
       phone_number: getFormString(formData, "phoneNumber"),
