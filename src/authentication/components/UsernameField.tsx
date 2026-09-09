@@ -8,7 +8,13 @@ import {
   USERNAME_REGEX,
 } from "@/authentication/constants";
 
-const UsernameField = () => {
+const UsernameField = ({
+  serverError,
+  onValueChange,
+}: {
+  serverError?: string;
+  onValueChange?: () => void;
+}) => {
   const [username, setUsername] = useState("");
   const [hasBlurred, setHasBlurred] = useState(false);
 
@@ -25,18 +31,36 @@ const UsernameField = () => {
         placeholder="Choose a username"
         className="h-10"
         value={username}
-        onChange={(event) => setUsername(event.currentTarget.value)}
+        onChange={(event) => {
+          setUsername(event.currentTarget.value);
+          onValueChange?.();
+        }}
         onBlur={() => setHasBlurred(true)}
         onInvalid={() => setHasBlurred(true)}
-        aria-invalid={isInvalid || undefined}
-        aria-describedby={isInvalid ? "username-error" : undefined}
+        aria-invalid={Boolean(serverError) || isInvalid || undefined}
+        aria-describedby={
+          serverError
+            ? "username-server-error"
+            : isInvalid
+              ? "username-error"
+              : undefined
+        }
         required
         minLength={USERNAME_MIN_LENGTH}
         maxLength={USERNAME_MAX_LENGTH}
         pattern={USERNAME_PATTERN}
       />
 
-      {isInvalid && (
+      {serverError && (
+        <span
+          id="username-server-error"
+          className="text-destructive block text-xs wrap-break-word"
+          role="alert"
+        >
+          {serverError}
+        </span>
+      )}
+      {!serverError && isInvalid && (
         <span
           id="username-error"
           className="text-destructive block text-xs"

@@ -20,7 +20,13 @@ const setPasswordMismatchValidity = (
   );
 };
 
-const PasswordFields = () => {
+const PasswordFields = ({
+  serverError,
+  onValueChange,
+}: {
+  serverError?: string;
+  onValueChange?: () => void;
+}) => {
   const [password, setPassword] = useState("");
   const [hasPasswordBlurred, setHasPasswordBlurred] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -39,6 +45,7 @@ const PasswordFields = () => {
     const nextPassword = event.currentTarget.value;
 
     setPassword(nextPassword);
+    onValueChange?.();
     setPasswordMismatchValidity(
       confirmPasswordInputRef.current,
       nextPassword,
@@ -73,15 +80,30 @@ const PasswordFields = () => {
           onChange={handlePasswordChange}
           onBlur={() => setHasPasswordBlurred(true)}
           onInvalid={() => setHasPasswordBlurred(true)}
-          aria-invalid={isPasswordInvalid || undefined}
-          aria-describedby={isPasswordInvalid ? "password-error" : undefined}
+          aria-invalid={Boolean(serverError) || isPasswordInvalid || undefined}
+          aria-describedby={
+            serverError
+              ? "password-server-error"
+              : isPasswordInvalid
+                ? "password-error"
+                : undefined
+          }
           required
           minLength={PASSWORD_MIN_LENGTH}
           maxLength={PASSWORD_MAX_LENGTH}
           pattern={PASSWORD_PATTERN}
         />
 
-        {isPasswordInvalid && (
+        {serverError && (
+          <span
+            id="password-server-error"
+            className="text-destructive block text-xs wrap-break-word"
+            role="alert"
+          >
+            {serverError}
+          </span>
+        )}
+        {!serverError && isPasswordInvalid && (
           <span
             id="password-error"
             className="text-destructive block text-xs"

@@ -20,7 +20,13 @@ const matchesCountry = (country: CountryOption, query: string) => {
   );
 };
 
-const AddressCountryField = () => {
+const AddressCountryField = ({
+  serverError,
+  onValueChange,
+}: {
+  serverError?: string;
+  onValueChange?: () => void;
+}) => {
   return (
     <div className="min-w-0 space-y-2">
       <label htmlFor="address-country" className="block text-sm font-medium">
@@ -30,6 +36,7 @@ const AddressCountryField = () => {
       <Combobox
         items={COUNTRY_OPTIONS}
         name="addressCountry"
+        onValueChange={() => onValueChange?.()}
         required
         autoComplete="country"
         autoHighlight
@@ -40,6 +47,8 @@ const AddressCountryField = () => {
       >
         <ComboboxInput
           id="address-country"
+          aria-invalid={Boolean(serverError) || undefined}
+          aria-describedby={serverError ? "address-country-error" : undefined}
           placeholder="Select a country"
           className="h-10 w-full"
         />
@@ -61,6 +70,15 @@ const AddressCountryField = () => {
           </ComboboxList>
         </ComboboxContent>
       </Combobox>
+      {serverError && (
+        <p
+          id="address-country-error"
+          className="text-destructive text-xs wrap-break-word"
+          role="alert"
+        >
+          {serverError}
+        </p>
+      )}
     </div>
   );
 };

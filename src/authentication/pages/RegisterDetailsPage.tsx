@@ -38,6 +38,35 @@ const RegisterDetailsPage = () => {
   const navigate = useNavigate();
   const [isVerificationInvalid, setIsVerificationInvalid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<keyof RegisterRequest, string>>
+  >({});
+  const clearFieldError = (field: keyof RegisterRequest) => {
+    setFieldErrors((previous) => {
+      const next = { ...previous };
+      delete next[field];
+      return next;
+    });
+  };
+
+  // builds a small set of props for one form field based on whether that field currently has an error
+  const fieldErrorProps = (field: keyof RegisterRequest) => ({
+    "aria-invalid": Boolean(fieldErrors[field]) || undefined,
+    "aria-describedby": fieldErrors[field]
+      ? `register-${field}-error`
+      : undefined,
+    onChange: () => clearFieldError(field),
+  });
+  const renderFieldError = (field: keyof RegisterRequest) =>
+    fieldErrors[field] && (
+      <span
+        id={`register-${field}-error`}
+        className="text-destructive block text-xs wrap-break-word"
+        role="alert"
+      >
+        {fieldErrors[field]}
+      </span>
+    );
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [submissionMessage, setSubmissionMessage] = useState<string | null>(
     null,
@@ -66,6 +95,7 @@ const RegisterDetailsPage = () => {
     };
 
     setSubmissionError(null);
+    setFieldErrors({});
     setSubmissionMessage(null);
     setIsSubmitting(true);
 
@@ -75,9 +105,31 @@ const RegisterDetailsPage = () => {
       setSubmissionMessage(response.message);
     } catch (error) {
       if (
+        axios.isAxiosError<Partial<Record<keyof RegisterRequest, string[]>>>(
+          error,
+        ) &&
+        error.response?.status === 400
+      ) {
+        const errors: Partial<Record<keyof RegisterRequest, string>> = {};
+        for (const field of Object.keys(request) as (keyof RegisterRequest)[]) {
+          const messages = error.response.data?.[field];
+          if (
+            Array.isArray(messages) &&
+            messages.every((message) => typeof message === "string")
+          ) {
+            const message = messages.join(" ");
+            if (message) errors[field] = message;
+          }
+        }
+        if (Object.keys(errors).length > 0) {
+          setFieldErrors(errors);
+          return;
+        }
+      }
+      if (
         axios.isAxiosError<{ detail: string }>(error) &&
         error.response?.status === 401 &&
-        error.response.data.detail === "Registration token is not valid"
+        error.response.data?.detail === "Registration token is not valid"
       ) {
         setIsVerificationInvalid(true);
         return;
@@ -130,21 +182,29 @@ const RegisterDetailsPage = () => {
               />
             </label>
 
-            <UsernameField />
+            <UsernameField
+              serverError={fieldErrors.username}
+              onValueChange={() => clearFieldError("username")}
+            />
 
             <label className="block min-w-0 space-y-2">
               <span className="block text-sm font-medium">Full name</span>
               <Input
                 name="fullName"
+                {...fieldErrorProps("full_name")}
                 type="text"
                 autoComplete="name"
                 placeholder="Enter your full name"
                 className="h-10"
                 required
               />
+              {renderFieldError("full_name")}
             </label>
 
-            <PhoneNumberField />
+            <PhoneNumberField
+              serverError={fieldErrors.phone_number}
+              onValueChange={() => clearFieldError("phone_number")}
+            />
 
             <section
               aria-labelledby="address-section-title"
@@ -154,7 +214,10 @@ const RegisterDetailsPage = () => {
                 Address
               </h2>
 
-              <AddressCountryField />
+              <AddressCountryField
+                serverError={fieldErrors.country_code}
+                onValueChange={() => clearFieldError("country_code")}
+              />
 
               <label className="block min-w-0 space-y-2">
                 <span className="block text-sm font-medium">
@@ -162,12 +225,14 @@ const RegisterDetailsPage = () => {
                 </span>
                 <Input
                   name="addressLine1"
+                  {...fieldErrorProps("address_line1")}
                   type="text"
                   autoComplete="address-line1"
                   placeholder="House number, street name or area"
                   className="h-10"
                   required
                 />
+                {renderFieldError("address_line1")}
               </label>
 
               <label className="block min-w-0 space-y-2">
@@ -176,23 +241,27 @@ const RegisterDetailsPage = () => {
                 </span>
                 <Input
                   name="addressLine2"
+                  {...fieldErrorProps("address_line2")}
                   type="text"
                   autoComplete="address-line2"
                   placeholder="Apartment, suite, unit, building, or floor"
                   className="h-10"
                 />
+                {renderFieldError("address_line2")}
               </label>
 
               <label className="block min-w-0 space-y-2">
                 <span className="block text-sm font-medium">City / Town</span>
                 <Input
                   name="city"
+                  {...fieldErrorProps("city")}
                   type="text"
                   autoComplete="address-level2"
                   placeholder="Enter your city or town"
                   className="h-10"
                   required
                 />
+                {renderFieldError("city")}
               </label>
 
               <label className="block min-w-0 space-y-2">
@@ -201,11 +270,13 @@ const RegisterDetailsPage = () => {
                 </span>
                 <Input
                   name="stateProvinceRegion"
+                  {...fieldErrorProps("region")}
                   type="text"
                   autoComplete="address-level1"
                   placeholder="Enter your state, province, or region"
                   className="h-10"
                 />
+                {renderFieldError("region")}
               </label>
 
               <label className="block min-w-0 space-y-2">
@@ -214,15 +285,20 @@ const RegisterDetailsPage = () => {
                 </span>
                 <Input
                   name="postalCode"
+                  {...fieldErrorProps("postal_code")}
                   type="text"
                   autoComplete="postal-code"
                   placeholder="Enter your postal or ZIP code"
                   className="h-10"
                 />
+                {renderFieldError("postal_code")}
               </label>
             </section>
 
-            <PasswordFields />
+            <PasswordFields
+              serverError={fieldErrors.password}
+              onValueChange={() => clearFieldError("password")}
+            />
 
             {submissionError && (
               <p className="text-destructive text-sm" role="alert">

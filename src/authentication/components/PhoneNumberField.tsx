@@ -39,7 +39,13 @@ const CountryFlag = ({ country }: CountryFlagProps) => {
   );
 };
 
-const PhoneNumberField = () => {
+const PhoneNumberField = ({
+  serverError,
+  onValueChange,
+}: {
+  serverError?: string;
+  onValueChange?: () => void;
+}) => {
   const inputId = useId();
   const errorId = `${inputId}-error`;
   const [country, setCountry] = useState(DEFAULT_PHONE_COUNTRY);
@@ -66,7 +72,7 @@ const PhoneNumberField = () => {
   const hasInvalidNumber =
     nationalNumber.length > 0 &&
     !isValidPhoneNumber(nationalNumber, country.code);
-  const isInvalid = hasBlurred && hasInvalidNumber;
+  const isInvalid = Boolean(serverError) || (hasBlurred && hasInvalidNumber);
 
   useEffect(() => {
     inputRef.current?.setCustomValidity(
@@ -75,6 +81,7 @@ const PhoneNumberField = () => {
   }, [country.name, hasInvalidNumber]);
 
   const handleNumberChange = (value: string) => {
+    onValueChange?.();
     if (value.trimStart().startsWith("+")) {
       const parsedNumber = parsePhoneNumberFromString(value);
       const parsedCountry = parsedNumber?.country
@@ -94,6 +101,7 @@ const PhoneNumberField = () => {
 
   const handleCountryChange = (nextCountry: CountryOption | null) => {
     if (nextCountry) {
+      onValueChange?.();
       setCountry(nextCountry);
     }
   };
@@ -177,8 +185,12 @@ const PhoneNumberField = () => {
       <input type="hidden" name="phoneNumber" value={internationalNumber} />
 
       {isInvalid && (
-        <p id={errorId} className="text-destructive text-xs" role="alert">
-          Enter a valid phone number for {country.name}.
+        <p
+          id={errorId}
+          className="text-destructive text-xs wrap-break-word"
+          role="alert"
+        >
+          {serverError || `Enter a valid phone number for ${country.name}.`}
         </p>
       )}
     </div>
