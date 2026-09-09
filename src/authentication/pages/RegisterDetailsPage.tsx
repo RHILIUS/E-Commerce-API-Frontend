@@ -1,6 +1,16 @@
+import axios from "axios";
 import { type SyntheticEvent, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/app/components/ui/alert-dialog";
 import { Button } from "@/app/components/ui/button";
 import {
   Card,
@@ -25,6 +35,8 @@ const getFormString = (formData: FormData, name: string) => {
 
 const RegisterDetailsPage = () => {
   const { email } = useRegistration();
+  const navigate = useNavigate();
+  const [isVerificationInvalid, setIsVerificationInvalid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [submissionMessage, setSubmissionMessage] = useState<string | null>(
@@ -62,7 +74,16 @@ const RegisterDetailsPage = () => {
       const response = await registerApi(request);
 
       setSubmissionMessage(response.message);
-    } catch {
+    } catch (error) {
+      if (
+        axios.isAxiosError<{ detail: string }>(error) &&
+        error.response?.status === 401 &&
+        error.response.data.detail === "Registration token is not valid"
+      ) {
+        setIsVerificationInvalid(true);
+        return;
+      }
+
       setSubmissionError("Unable to create your account. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -236,6 +257,29 @@ const RegisterDetailsPage = () => {
           </Link>
         </div>
       </Card>
+
+      <AlertDialog open={isVerificationInvalid}>
+        <AlertDialogContent className="max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] overflow-y-auto">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Verify your email again</AlertDialogTitle>
+            <AlertDialogDescription>
+              We couldn’t create your account because your email verification is
+              no longer valid. Please request a new code and verify your email
+              again to continue.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction
+              size="lg"
+              onClick={() =>
+                navigate("/register/enter-email", { replace: true })
+              }
+            >
+              Verify email again
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </main>
   );
 };
