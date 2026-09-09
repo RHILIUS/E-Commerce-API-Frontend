@@ -1,4 +1,3 @@
-import axios from "axios";
 import { type SyntheticEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -26,7 +25,13 @@ import PasswordFields from "@/authentication/components/PasswordFields";
 import PhoneNumberField from "@/authentication/components/PhoneNumberField";
 import UsernameField from "@/authentication/components/UsernameField";
 import { useRegistration } from "@/authentication/contexts/Registration/useRegistration";
+import {
+  getRegistrationError,
+  type RegistrationField,
+  type RegistrationFieldErrors,
+} from "@/authentication/utils/registerError";
 
+// Read text inputs for the request, treating missing or file values as empty.
 const getFormString = (formData: FormData, name: string) => {
   const value = formData.get(name);
 
@@ -38,10 +43,9 @@ const RegisterDetailsPage = () => {
   const navigate = useNavigate();
   const [isVerificationInvalid, setIsVerificationInvalid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [fieldErrors, setFieldErrors] = useState<
-    Partial<Record<keyof RegisterRequest, string>>
-  >({});
-  const clearFieldError = (field: keyof RegisterRequest) => {
+  const [fieldErrors, setFieldErrors] = useState<RegistrationFieldErrors>({});
+  // Editing one input clears its server error while preserving other field errors.
+  const clearFieldError = (field: RegistrationField) => {
     setFieldErrors((previous) => {
       const next = { ...previous };
       delete next[field];
@@ -49,15 +53,16 @@ const RegisterDetailsPage = () => {
     });
   };
 
-  // builds a small set of props for one form field based on whether that field currently has an error
-  const fieldErrorProps = (field: keyof RegisterRequest) => ({
+  // Connect an input to its accessible error message and clear that error on edit.
+  const fieldErrorProps = (field: RegistrationField) => ({
     "aria-invalid": Boolean(fieldErrors[field]) || undefined,
     "aria-describedby": fieldErrors[field]
       ? `register-${field}-error`
       : undefined,
     onChange: () => clearFieldError(field),
   });
-  const renderFieldError = (field: keyof RegisterRequest) =>
+  // Use the same message ID referenced by fieldErrorProps for screen readers.
+  const renderFieldError = (field: RegistrationField) =>
     fieldErrors[field] && (
       <span
         id={`register-${field}-error`}
@@ -104,38 +109,19 @@ const RegisterDetailsPage = () => {
 
       setSubmissionMessage(response.message);
     } catch (error) {
-      if (
-        axios.isAxiosError<Partial<Record<keyof RegisterRequest, string[]>>>(
-          error,
-        ) &&
-        error.response?.status === 400
-      ) {
-        const errors: Partial<Record<keyof RegisterRequest, string>> = {};
-        for (const field of Object.keys(request) as (keyof RegisterRequest)[]) {
-          const messages = error.response.data?.[field];
-          if (
-            Array.isArray(messages) &&
-            messages.every((message) => typeof message === "string")
-          ) {
-            const message = messages.join(" ");
-            if (message) errors[field] = message;
-          }
-        }
-        if (Object.keys(errors).length > 0) {
-          setFieldErrors(errors);
-          return;
-        }
+      const registrationError = getRegistrationError(error);
+
+      if (registrationError.kind === "validation") {
+        setFieldErrors(registrationError.fields);
+        return;
       }
-      if (
-        axios.isAxiosError<{ detail: string }>(error) &&
-        error.response?.status === 401 &&
-        error.response.data?.detail === "Registration token is not valid"
-      ) {
+
+      if (registrationError.kind === "verification") {
         setIsVerificationInvalid(true);
         return;
       }
 
-      setSubmissionError("Unable to create your account. Please try again.");
+      setSubmissionError(registrationError.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -172,6 +158,7 @@ const RegisterDetailsPage = () => {
               <span className="block text-sm font-medium">Email</span>
               <Input
                 name="email"
+                {...fieldErrorProps("email")}
                 type="email"
                 value={email ?? ""}
                 autoComplete="email"
@@ -180,7 +167,24 @@ const RegisterDetailsPage = () => {
                 required
                 disabled
               />
+              {renderFieldError("email")}
             </label>
+
+            {fieldErrors.email && (
+              <p className="text-sm">
+                <Link to="/login" className="text-primary underline">
+                  Log in
+                </Link>
+                {" or "}
+                <Link
+                  to="/register/enter-email"
+                  className="text-primary underline"
+                >
+                  use a different email
+                </Link>
+                .
+              </p>
+            )}
 
             <UsernameField
               serverError={fieldErrors.username}

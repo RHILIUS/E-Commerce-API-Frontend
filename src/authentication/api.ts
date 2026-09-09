@@ -31,7 +31,7 @@ export type RegisterRequest = {
   password: string;
 };
 
-type RegisterResponse = {
+export type RegisterResponse = {
   message: string;
 };
 
