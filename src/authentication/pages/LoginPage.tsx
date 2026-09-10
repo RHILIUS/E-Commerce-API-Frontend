@@ -8,12 +8,22 @@ import { Input } from "@/app/components/ui/input";
 
 import { useAuth } from "../contexts/Auth/useAuth";
 
+type LoginLocationState = {
+  from?: { pathname?: string };
+  email?: string;
+  registrationSucceeded?: boolean;
+};
+
 const LoginPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const locationState = location.state as LoginLocationState | null;
 
-  const from = location.state?.from?.pathname || "/";
-  const [formData, setFormData] = useState({ email: "", password: "" });
+  const from = locationState?.from?.pathname || "/";
+  const [formData, setFormData] = useState({
+    email: locationState?.email ?? "",
+    password: "",
+  });
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const auth = useAuth();
@@ -68,6 +78,13 @@ const LoginPage = () => {
               Register
             </Link>
           </div>
+
+          {locationState?.registrationSucceeded && (
+            <p className="text-muted-foreground mt-6 text-sm" role="status">
+              Your account was created, but we couldn&apos;t log you in
+              automatically. Please log in.
+            </p>
+          )}
 
           <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
             <label className="block space-y-2">

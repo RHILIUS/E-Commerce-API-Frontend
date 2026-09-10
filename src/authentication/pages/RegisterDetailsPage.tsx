@@ -24,6 +24,7 @@ import AddressCountryField from "@/authentication/components/AddressCountryField
 import PasswordFields from "@/authentication/components/PasswordFields";
 import PhoneNumberField from "@/authentication/components/PhoneNumberField";
 import UsernameField from "@/authentication/components/UsernameField";
+import { useAuth } from "@/authentication/contexts/Auth/useAuth";
 import { useRegistration } from "@/authentication/contexts/Registration/useRegistration";
 import {
   getRegistrationError,
@@ -39,8 +40,10 @@ const getFormString = (formData: FormData, name: string) => {
 };
 
 const RegisterDetailsPage = () => {
-  const { email } = useRegistration();
+  const { email, clearRegistration } = useRegistration();
+  const auth = useAuth();
   const navigate = useNavigate();
+
   const [isVerificationInvalid, setIsVerificationInvalid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<RegistrationFieldErrors>({});
@@ -106,9 +109,9 @@ const RegisterDetailsPage = () => {
 
     try {
       const response = await registerApi(request);
-
       setSubmissionMessage(response.message);
     } catch (error) {
+      setIsSubmitting(false);
       const registrationError = getRegistrationError(error);
 
       if (registrationError.kind === "validation") {
@@ -122,7 +125,20 @@ const RegisterDetailsPage = () => {
       }
 
       setSubmissionError(registrationError.message);
+      return;
+    }
+
+    // Establish a normal session after creating the account.
+    try {
+      await auth.login(email, request.password);
+      navigate("/", { replace: true });
+    } catch {
+      navigate("/login", {
+        replace: true,
+        state: { email, registrationSucceeded: true },
+      });
     } finally {
+      clearRegistration();
       setIsSubmitting(false);
     }
   };
