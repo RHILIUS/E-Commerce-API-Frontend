@@ -40,7 +40,7 @@ const getFormString = (formData: FormData, name: string) => {
 };
 
 const RegisterDetailsPage = () => {
-  const { email, clearRegistration } = useRegistration();
+  const { email } = useRegistration();
   const auth = useAuth();
   const navigate = useNavigate();
 
@@ -138,7 +138,6 @@ const RegisterDetailsPage = () => {
         state: { email, registrationSucceeded: true },
       });
     } finally {
-      clearRegistration();
       setIsSubmitting(false);
     }
   };
