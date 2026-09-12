@@ -7,6 +7,9 @@ export default mergeConfig(
   defineConfig({
     test: {
       environment: "jsdom",
+      env: {
+        VITE_API_URL: "http://localhost",
+      },
       setupFiles: "./src/test/setup.ts",
       restoreMocks: true,
     },
