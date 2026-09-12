@@ -1,8 +1,11 @@
 import { describe, expect, test } from "vitest";
 
-import { getRegistrationError } from "./registerError";
-import { getRetryAfterSeconds, getSendOTPErrorMessage } from "./sendOTPError";
-import { getVerificationErrorMessage } from "./verifyOTPError";
+import { getRegistrationError } from "@/authentication/utils/registerError";
+import {
+  getRetryAfterSeconds,
+  getSendOTPErrorMessage,
+} from "@/authentication/utils/sendOTPError";
+import { getVerificationErrorMessage } from "@/authentication/utils/verifyOTPError";
 
 const axiosError = (status: number, data: unknown) => ({
   isAxiosError: true,

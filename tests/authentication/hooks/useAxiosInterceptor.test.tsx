@@ -7,7 +7,8 @@ import { describe, expect, test } from "vitest";
 import api from "@/app/api/axios";
 import { AuthProvider } from "@/authentication/contexts/Auth/AuthProvider";
 import { useAuth } from "@/authentication/contexts/Auth/useAuth";
-import { server } from "@/test/server";
+
+import { server } from "../../server";
 
 const apiUrl = "http://localhost";
 const user = { id: 1, fullName: "Test User", email: "user@example.com" };

@@ -5,9 +5,9 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { describe, expect, test } from "vitest";
 
 import { AuthProvider } from "@/authentication/contexts/Auth/AuthProvider";
-import { server } from "@/test/server";
+import LoginPage from "@/authentication/pages/LoginPage";
 
-import LoginPage from "./LoginPage";
+import { server } from "../../server";
 
 const apiUrl = "http://localhost";
 const user = { id: 1, fullName: "Test User", email: "user@example.com" };

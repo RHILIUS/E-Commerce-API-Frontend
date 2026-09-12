@@ -6,9 +6,9 @@ import { expect, test } from "vitest";
 
 import { RegistrationProvider } from "@/authentication/contexts/Registration/RegistrationProvider";
 import { useRegistration } from "@/authentication/contexts/Registration/useRegistration";
-import { server } from "@/test/server";
+import RegisterEmailPage from "@/authentication/pages/RegisterEmailPage";
 
-import RegisterEmailPage from "./RegisterEmailPage";
+import { server } from "../../server";
 
 const apiUrl = "http://localhost";
 

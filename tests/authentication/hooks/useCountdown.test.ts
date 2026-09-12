@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
 
-import { useCountdown } from "./useCountdown";
+import { useCountdown } from "@/authentication/hooks/useCountdown";
 
 afterEach(() => vi.useRealTimers());
 

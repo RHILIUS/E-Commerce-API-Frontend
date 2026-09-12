@@ -10,7 +10,7 @@ export default mergeConfig(
       env: {
         VITE_API_URL: "http://localhost",
       },
-      setupFiles: "./src/test/setup.ts",
+      setupFiles: "./tests/setup.ts",
       restoreMocks: true,
     },
   }),
