@@ -1,7 +1,8 @@
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import { loginApi, logoutApi, refreshTokenApi } from "@/authentication/api";
+import { loginApi, logoutApi } from "@/authentication/api";
+import { useAxiosInterceptor } from "@/authentication/hooks/useAxiosInterceptor";
 
 import type { User } from "./AuthContext";
 import { AuthContext } from "./AuthContext";
@@ -10,7 +11,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const initialized = useRef(false);
   const isAuthenticated = accessToken !== null;
+  const refreshAccessToken = useAxiosInterceptor({
+    accessToken,
+    setAccessToken,
+    setUser,
+  });
 
   const logout = async () => {
     try {
@@ -31,20 +38,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
+    // Avoid rotating the refresh token twice in development under Strict Mode.
+    if (initialized.current) return;
+    initialized.current = true;
+
     const initAuth = async () => {
       try {
-        const { access, user } = await refreshTokenApi();
-        setAccessToken(access);
-        setUser(user);
+        await refreshAccessToken();
       } catch {
-        // Catch the error and don't do anything, the page will be navigated to LoginPage anyways
+        // Without a valid refresh cookie, protected routes navigate to LoginPage.
       } finally {
         setIsLoading(false);
       }
     };
 
     initAuth();
-  }, []);
+  }, [refreshAccessToken]);
 
   return (
     <AuthContext.Provider

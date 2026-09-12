@@ -3,7 +3,7 @@ import api from "@/app/api/axios";
 import type { User } from "./contexts/Auth/AuthContext";
 
 // -- TYPES --
-type LoginResponse = {
+export type AuthResponse = {
   access: string;
   user: User;
 };
@@ -39,13 +39,13 @@ export type RegisterResponse = {
 export const loginApi = async (
   email: string,
   password: string,
-): Promise<LoginResponse> => {
+): Promise<AuthResponse> => {
   const response = await api.post("/api/auth/login/", { email, password });
 
   return response.data;
 };
 
-export const refreshTokenApi = async (): Promise<LoginResponse> => {
+export const refreshTokenApi = async (): Promise<AuthResponse> => {
   const response = await api.post("/api/auth/refresh/");
 
   return response.data;
