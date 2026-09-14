@@ -1,19 +1,31 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { http, HttpResponse } from "msw";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, test } from "vitest";
 
+import { AuthProvider } from "@/authentication/contexts/Auth/AuthProvider";
 import { ProductGrid } from "@/ecommerce/components/ProductGrid";
 import { dummyProducts } from "@/ecommerce/data/products";
 import LandingPage from "@/ecommerce/pages/LandingPage";
 
+import { server } from "../server";
+
 // Mount the catalog with a real router so query parameters behave like navigation.
-const renderLandingPage = (entry = "/") =>
-  render(
-    <MemoryRouter initialEntries={[entry]}>
-      <LandingPage />
-    </MemoryRouter>,
+const renderLandingPage = (entry = "/") => {
+  server.use(
+    http.post("http://localhost/api/auth/refresh/", () =>
+      HttpResponse.json({}, { status: 401 }),
+    ),
   );
+  return render(
+    <AuthProvider>
+      <MemoryRouter initialEntries={[entry]}>
+        <LandingPage />
+      </MemoryRouter>
+    </AuthProvider>,
+  );
+};
 
 describe("LandingPage", () => {
   test("paginates eight products and preserves the search filter", async () => {
