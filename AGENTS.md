@@ -85,6 +85,8 @@ Before creating or modifying any user interface, inspect `src/app/index.css` and
 
 Use the semantic theme utilities generated from the variables in `src/app/index.css` whenever an appropriate token exists. Avoid hard-coded Tailwind palette colors, hexadecimal values, RGB values, or fixed light/dark colors for themed interface elements.
 
+Prefer Tailwind's canonical utilities over arbitrary values when they express the intended design using the project's theme and spacing scale. For example, use `lg:max-w-180` instead of `lg:max-w-[720px]` and `max-w-400` instead of `max-w-[1600px]`. Check editor suggestions against the actual theme before applying them: numeric spacing utilities use `--spacing` (normally `0.25rem`), so their pixel size changes with the root font size or spacing token. Keep arbitrary values when an exact pixel value, custom calculation, or layout expression is intentional. Do not round a design value to a nearby utility merely to avoid brackets. Apply this convention to new and edited code without unrelated repository-wide rewrites.
+
 All UI changes must remain visually correct in both light and dark modes. Do not assume that backgrounds are always light or that text is always dark.
 
 Before introducing a new color or visual value:
