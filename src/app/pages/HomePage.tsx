@@ -12,8 +12,6 @@ const HomePage = () => {
     try {
       setIsLoggingOut(true);
       await auth.logout();
-    } catch {
-      // pass error, we would be navigated to LoginPage anyways
     } finally {
       setIsLoggingOut(false);
     }
