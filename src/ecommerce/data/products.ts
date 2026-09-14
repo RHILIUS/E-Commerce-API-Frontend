@@ -1,0 +1,99 @@
+import productImage from "@/ecommerce/assets/product.webp";
+import type { Product } from "@/ecommerce/types";
+
+// Illustrative wireframe content, not a live catalog or an API response model.
+const featuredProducts: Product[] = [
+  {
+    id: "iphone-17-pro",
+    name: "iPhone 17 Pro",
+    description: "Pro camera system and fast all-day performance.",
+    price: 79990,
+    soldCount: 2400,
+    imageUrl: productImage,
+    imageAlt: "Orange iPhone 17 Pro promotional image",
+  },
+  {
+    id: "iphone-17-pro-max",
+    name: "iPhone 17 Pro Max",
+    description: "Larger display and longer battery life for power users.",
+    price: 89990,
+    soldCount: 1800,
+    imageUrl: productImage,
+    imageAlt: "Sample iPhone product image",
+  },
+  {
+    id: "iphone-17",
+    name: "iPhone 17",
+    description: "A bright display and effortless everyday performance.",
+    price: 59990,
+    soldCount: 5100,
+    imageUrl: productImage,
+    imageAlt: "Sample iPhone product image",
+  },
+  {
+    id: "iphone-17-air",
+    name: "iPhone 17 Air",
+    description: "Thin, light, and designed for life on the move.",
+    price: 69990,
+    soldCount: 3200,
+    imageUrl: productImage,
+    imageAlt: "Sample iPhone product image",
+  },
+  {
+    id: "iphone-17-pro-512",
+    name: "iPhone 17 Pro 512GB",
+    description: "Extra storage for photos, video, and creative work.",
+    price: 99990,
+    soldCount: 982,
+    imageUrl: productImage,
+    imageAlt: "Sample iPhone product image",
+  },
+  {
+    id: "iphone-17-pro-max-1tb",
+    name: "iPhone 17 Pro Max 1TB",
+    description: "Maximum storage and performance for demanding workflows.",
+    price: 129990,
+    soldCount: 614,
+    imageUrl: productImage,
+    imageAlt: "Sample iPhone product image",
+  },
+  {
+    id: "iphone-17-plus",
+    name: "iPhone 17 Plus",
+    description: "Roomy display with dependable all-day battery.",
+    price: 74990,
+    soldCount: 2100,
+    imageUrl: productImage,
+    imageAlt: "Sample iPhone product image",
+  },
+  {
+    id: "iphone-17-mini",
+    name: "iPhone 17 Mini",
+    description: "Compact design with flagship everyday essentials.",
+    price: 54990,
+    soldCount: 4700,
+    imageUrl: productImage,
+    imageAlt: "Sample iPhone product image",
+  },
+];
+
+// Additional sample bundles make pagination usable without a backend.
+export const dummyProducts: Product[] = [
+  ...featuredProducts,
+  ...featuredProducts.map((product) => ({
+    ...product,
+    id: `${product.id}-case-bundle`,
+    name: `${product.name} Case Bundle`,
+    description: "Sample bundle with a protective case for everyday use.",
+    price: product.price + 990,
+    soldCount: 120,
+  })),
+  ...featuredProducts.map((product) => ({
+    ...product,
+    id: `${product.id}-travel-bundle`,
+    name: `${product.name} Travel Bundle`,
+    description: "Sample bundle with charging accessories for your next trip.",
+    price: product.price + 1990,
+    soldCount: 86,
+  })),
+];
