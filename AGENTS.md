@@ -77,6 +77,21 @@ When creating or modifying Figma wireframes, structure parent containers accordi
 3. Reserve freeform positioning for elements that intentionally overlap or behave like absolute-positioned content, such as decorative layers, badges, map pins, and canvas-style interfaces. Do not use freeform positioning for ordinary page, card, form, navigation, or section flow.
 4. Configure Hug, Fill, and Fixed sizing deliberately so containers respond predictably when text wraps, fields are added, or content changes. Scrollable pages should let their content containers grow while the viewport frame owns clipping and overflow behavior.
 
+## Figma Workflow Efficiency
+
+- Before searching a Figma file, check `docs/figma-nodes.md` for known file and node IDs.
+- Update the registry whenever a stable frontend screen or reusable component is created, replaced, or removed in Figma.
+- Make code the source of truth after a wireframe has been approved.
+- Modify only the Figma node supplied by the user and its directly related components.
+- Reuse existing Figma components, variables, text styles, and effects.
+- Inspect only the target node and the specific reusable components needed.
+- Batch related Figma reads and small mutations into as few calls as practical.
+- Do not search every page or library unless the required component cannot be found locally.
+- Skip Code Connect unless the project later gains access to it.
+- For small UI changes, update the design and prototype interaction directly without rebuilding the entire page.
+- Validate the changed component and its containing screen with screenshots.
+- Avoid browser-to-Figma capture when the existing design can be updated directly.
+
 ## UI Styling and Theme
 
 This project uses the shadcn/ui theming architecture with Tailwind CSS. The global design tokens, theme variables, typography, border radii, and light/dark mode colors are defined in `src/app/index.css`.
