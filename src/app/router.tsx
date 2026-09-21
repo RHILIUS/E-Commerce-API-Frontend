@@ -14,13 +14,13 @@ export const router = createBrowserRouter([
       // Authentication
       ...authenticationRoutes,
 
+      // Public Landing
+      { path: "/", element: <LandingPage /> },
+
       // Protected
       {
         element: <ProtectedRoute />,
-        children: [
-          { path: "/home-test", element: <HomePage /> },
-          { path: "/", element: <LandingPage /> },
-        ],
+        children: [{ path: "/home-test", element: <HomePage /> }],
       },
     ],
   },

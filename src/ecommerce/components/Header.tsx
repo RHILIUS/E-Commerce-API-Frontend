@@ -15,6 +15,7 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from "@/app/components/ui/input-group";
+import { Skeleton } from "@/app/components/ui/skeleton";
 import { useAuth } from "@/authentication/contexts/Auth/useAuth";
 import avatarImage from "@/ecommerce/assets/avatar.webp";
 
@@ -80,64 +81,94 @@ export const Header = ({ searchQuery, onSearch }: HeaderProps) => {
           </InputGroup>
         </form>
         <div className="col-start-2 row-start-1 flex h-12 shrink-0 items-center gap-2 justify-self-end">
-          <Button
-            variant="secondary"
-            size="icon"
-            disabled
-            aria-label="Cart (coming soon)"
-            title="Cart — coming soon"
-            className="border-border size-11 rounded-md disabled:opacity-70"
-          >
-            <ShoppingCart className="size-5" aria-hidden="true" />
-          </Button>
-          <Button
-            variant="secondary"
-            size="icon"
-            disabled
-            aria-label="Notifications (coming soon)"
-            title="Notifications — coming soon"
-            className="border-border size-11 rounded-md disabled:opacity-70"
-          >
-            <Bell className="size-5" aria-hidden="true" />
-          </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label="Account"
-                  disabled={isLoggingOut}
-                  className="size-11 overflow-hidden rounded-lg p-0"
-                >
-                  <img
-                    src={avatarImage}
-                    alt=""
-                    width={44}
-                    height={44}
-                    className="size-11 object-cover"
-                  />
-                </Button>
-              }
-            />
-            <DropdownMenuContent
-              align="end"
-              sideOffset={8}
-              className="w-48 p-2"
-              aria-label="Account"
-            >
-              <DropdownMenuItem
-                onClick={handleLogout}
-                disabled={isLoggingOut}
-                closeOnClick={false}
-                className="bg-secondary text-secondary-foreground min-h-11 justify-center font-medium"
+          {auth.isLoading ? (
+            <div role="status" aria-label="Loading account">
+              <Skeleton className="h-11 w-32" aria-hidden="true" />
+            </div>
+          ) : auth.isAuthenticated ? (
+            // If Authenticated
+            <>
+              <Button
+                variant="secondary"
+                size="icon"
+                disabled
+                aria-label="Cart (coming soon)"
+                title="Cart — coming soon"
+                className="border-border size-11 rounded-md disabled:opacity-70"
               >
-                <span aria-live="polite">
-                  {isLoggingOut ? "Logging out…" : "Log out"}
-                </span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <ShoppingCart className="size-5" aria-hidden="true" />
+              </Button>
+              <Button
+                variant="secondary"
+                size="icon"
+                disabled
+                aria-label="Notifications (coming soon)"
+                title="Notifications — coming soon"
+                className="border-border size-11 rounded-md disabled:opacity-70"
+              >
+                <Bell className="size-5" aria-hidden="true" />
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Account"
+                      disabled={isLoggingOut}
+                      className="size-11 overflow-hidden rounded-lg p-0"
+                    >
+                      <img
+                        src={avatarImage}
+                        alt=""
+                        width={44}
+                        height={44}
+                        className="size-11 object-cover"
+                      />
+                    </Button>
+                  }
+                />
+                <DropdownMenuContent
+                  align="end"
+                  sideOffset={8}
+                  className="w-48 p-2"
+                  aria-label="Account"
+                >
+                  <DropdownMenuItem
+                    onClick={handleLogout}
+                    disabled={isLoggingOut}
+                    closeOnClick={false}
+                    className="bg-secondary text-secondary-foreground min-h-11 justify-center font-medium"
+                  >
+                    <span aria-live="polite">
+                      {isLoggingOut ? "Logging out…" : "Log out"}
+                    </span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          ) : (
+            // If Unauthenticated
+            <>
+              <Button
+                role="link"
+                nativeButton={false}
+                variant="ghost"
+                className="min-h-11 px-2"
+                render={<Link to="/login" />}
+              >
+                Log in
+              </Button>
+              <Button
+                role="link"
+                nativeButton={false}
+                className="min-h-11 px-2"
+                render={<Link to="/register/enter-email" />}
+              >
+                Sign up
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </header>
