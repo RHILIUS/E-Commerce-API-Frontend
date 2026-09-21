@@ -11,6 +11,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [didLogOut, setDidLogOut] = useState(false);
   const initialized = useRef(false);
   const isAuthenticated = accessToken !== null;
   const refreshAccessToken = useAxiosInterceptor({
@@ -20,6 +21,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   });
 
   const logout = async () => {
+    // Tell the route guard to discard the return destination for intentional logout.
+    setDidLogOut(true);
     try {
       await logoutApi();
     } catch {
@@ -35,6 +38,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     setAccessToken(response.access);
     setUser(response.user);
+    setDidLogOut(false);
   };
 
   useEffect(() => {
@@ -61,6 +65,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         user,
         accessToken,
         isAuthenticated,
+        didLogOut,
         setUser,
         setAccessToken,
         logout,

@@ -23,7 +23,9 @@ The other repositories should be available as sibling directories:
 - Backend: `../backend`
 - Documentation: `../docs`
 
-Before making changes that affect system architecture, database design, API contracts, shared data models, or cross-application workflows, review the relevant files and diagrams in the documentation repository.
+Frontend-specific documentation is maintained in this repository's `docs/` folder:
+
+Before making changes that affect system architecture, database design, API contracts, shared data models, or cross-application workflows, review the relevant files and diagrams in the documentation repository, review the relevant local documentation in `docs/`. The local `docs/` folder is distinct from the sibling documentation repository.
 
 The documentation repository is the central source of project-wide context. It describes the complete E-Commerce system through entity-relationship diagrams, UML diagrams, business-process flows, architecture descriptions, and other technical documentation.
 
@@ -77,6 +79,21 @@ When creating or modifying Figma wireframes, structure parent containers accordi
 3. Reserve freeform positioning for elements that intentionally overlap or behave like absolute-positioned content, such as decorative layers, badges, map pins, and canvas-style interfaces. Do not use freeform positioning for ordinary page, card, form, navigation, or section flow.
 4. Configure Hug, Fill, and Fixed sizing deliberately so containers respond predictably when text wraps, fields are added, or content changes. Scrollable pages should let their content containers grow while the viewport frame owns clipping and overflow behavior.
 
+## Figma Workflow Efficiency
+
+- Before searching a Figma file, check `docs/figma-nodes.md` for known file and node IDs.
+- Update the registry whenever a stable frontend screen or reusable component is created, replaced, or removed in Figma.
+- Make code the source of truth after a wireframe has been approved.
+- Modify only the Figma node supplied by the user and its directly related components.
+- Reuse existing Figma components, variables, text styles, and effects.
+- Inspect only the target node and the specific reusable components needed.
+- Batch related Figma reads and small mutations into as few calls as practical.
+- Do not search every page or library unless the required component cannot be found locally.
+- Skip Code Connect unless the project later gains access to it.
+- For small UI changes, update the design and prototype interaction directly without rebuilding the entire page.
+- Validate the changed component and its containing screen with screenshots.
+- Avoid browser-to-Figma capture when the existing design can be updated directly.
+
 ## UI Styling and Theme
 
 This project uses the shadcn/ui theming architecture with Tailwind CSS. The global design tokens, theme variables, typography, border radii, and light/dark mode colors are defined in `src/app/index.css`.
@@ -84,6 +101,8 @@ This project uses the shadcn/ui theming architecture with Tailwind CSS. The glob
 Before creating or modifying any user interface, inspect `src/app/index.css` and treat its current contents as the source of truth for the project's visual theme. Do not rely on a copied or predefined list of tokens in this file, because the theme may change over time.
 
 Use the semantic theme utilities generated from the variables in `src/app/index.css` whenever an appropriate token exists. Avoid hard-coded Tailwind palette colors, hexadecimal values, RGB values, or fixed light/dark colors for themed interface elements.
+
+Prefer Tailwind's canonical utilities over arbitrary values when they express the intended design using the project's theme and spacing scale. For example, use `lg:max-w-180` instead of `lg:max-w-[720px]` and `max-w-400` instead of `max-w-[1600px]`. Check editor suggestions against the actual theme before applying them: numeric spacing utilities use `--spacing` (normally `0.25rem`), so their pixel size changes with the root font size or spacing token. Keep arbitrary values when an exact pixel value, custom calculation, or layout expression is intentional. Do not round a design value to a nearby utility merely to avoid brackets. Apply this convention to new and edited code without unrelated repository-wide rewrites.
 
 All UI changes must remain visually correct in both light and dark modes. Do not assume that backgrounds are always light or that text is always dark.
 

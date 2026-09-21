@@ -4,12 +4,14 @@ export type User = {
   id: number;
   fullName: string;
   email: string;
+  country_code: string;
 };
 
 export type AuthContextType = {
   user: User | null;
   accessToken: string | null;
   isAuthenticated: boolean;
+  didLogOut: boolean;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
   setAccessToken: React.Dispatch<React.SetStateAction<string | null>>;
   isLoading: boolean;
