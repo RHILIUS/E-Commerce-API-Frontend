@@ -19,3 +19,14 @@ Guests see **Log in** and **Sign up** links; signed-in visitors see the existing
 account controls. Logging out on the landing page keeps its URL and search
 parameters, switches the header to guest controls, and reloads guest products.
 Protected pages such as `/home-test` still redirect guests to login.
+
+Cards display the backend's `display_price.amount` and `display_price.currency`,
+formatted with `Intl.NumberFormat`. The original `price` belongs to the store's
+`currency`; it is not necessarily USD. The frontend does not compute exchange rates.
+
+Guests receive prices converted to USD; signed-in users receive their account
+country's currency. Same-currency products retain their original amount. If the
+backend cannot convert a price, it returns the original store amount and currency,
+which the card displays without relabeling it. A page may then show multiple
+currencies. Logging out reloads guest prices; account country changes trigger a
+new request. Conversion is a display estimate, not a checkout currency guarantee.

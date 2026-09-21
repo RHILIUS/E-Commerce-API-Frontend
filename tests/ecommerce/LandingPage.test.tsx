@@ -15,6 +15,8 @@ const products = Array.from({ length: 12 }, (_, index) => ({
   name: `Laptop ${index + 1}`,
   short_description: "A portable computer",
   price: "1234.56",
+  currency: "USD",
+  display_price: { amount: "1234.56", currency: "USD" },
   sold_count: 25,
   default_image:
     index === 0
@@ -68,7 +70,7 @@ describe("LandingPage API integration", () => {
     ).toHaveAttribute("aria-busy", "true");
     expect(await screen.findAllByRole("article")).toHaveLength(8);
     expect(screen.getByText("No image available")).toBeVisible();
-    expect(screen.getAllByText("₱1,234.56")).toHaveLength(8);
+    expect(screen.getAllByText("$1,234.56")).toHaveLength(8);
     await userEvent.click(
       screen.getByRole("link", { name: "Go to next page" }),
     );

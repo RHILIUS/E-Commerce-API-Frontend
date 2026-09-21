@@ -4,6 +4,7 @@ export type Product = {
   name: string;
   description: string;
   price: number;
+  currency: string;
   soldCount: number;
   imageUrl: string | null;
   imageAlt: string;
@@ -19,6 +20,8 @@ export type ProductCatalogResponse = {
     name: string;
     short_description: string;
     price: string;
+    currency: string;
+    display_price: { amount: string; currency: string };
     sold_count: number;
     default_image: {
       image: string;

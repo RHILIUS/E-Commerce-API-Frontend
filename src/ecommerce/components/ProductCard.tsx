@@ -2,12 +2,6 @@ import { Card, CardContent } from "@/app/components/ui/card";
 import { Skeleton } from "@/app/components/ui/skeleton";
 import type { Product } from "@/ecommerce/types";
 
-const priceFormatter = new Intl.NumberFormat("en-PH", {
-  style: "currency",
-  currency: "PHP",
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
 const soldFormatter = new Intl.NumberFormat("en", {
   notation: "compact",
   maximumFractionDigits: 1,
@@ -52,8 +46,11 @@ export const ProductCard = ({
           {product.description}
         </p>
         <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
-          <p className="text-lg leading-7 font-semibold tabular-nums">
-            {priceFormatter.format(product.price)}
+          <p className="text-lg leading-7 font-semibold wrap-anywhere tabular-nums">
+            {new Intl.NumberFormat("en-PH", {
+              style: "currency",
+              currency: product.currency,
+            }).format(product.price)}
           </p>
           <p className="text-muted-foreground text-xs leading-4 whitespace-nowrap">
             {soldFormatter.format(product.soldCount).toLowerCase()} sold

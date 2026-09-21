@@ -9,9 +9,15 @@ export const CATALOG_PAGE_SIZE = 8;
 
 /** Fetch catalog pages after auth restoration and discard obsolete requests. */
 export const useProductCatalog = (page: number, query: string) => {
-  const { accessToken, isLoading: authLoading } = useAuth();
+  const { accessToken, user, isLoading: authLoading } = useAuth();
   const [attempt, setAttempt] = useState(0);
-  const key = JSON.stringify([page, query, accessToken, attempt]);
+  const key = JSON.stringify([
+    page,
+    query,
+    accessToken,
+    user?.country_code,
+    attempt,
+  ]);
   const [result, setResult] = useState<{
     key: string;
     data?: ProductCatalogResponse;
@@ -44,7 +50,8 @@ export const useProductCatalog = (page: number, query: string) => {
     id: String(product.id),
     name: product.name,
     description: product.short_description,
-    price: Number(product.price),
+    price: Number(product.display_price.amount),
+    currency: product.display_price.currency,
     soldCount: product.sold_count,
     imageUrl: product.default_image?.image ?? null,
     imageAlt: product.default_image?.alt_text || product.name,

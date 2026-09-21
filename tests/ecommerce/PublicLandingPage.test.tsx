@@ -49,6 +49,10 @@ beforeEach(() => {
             name: authorization ? "Personalized product" : "Popular product",
             short_description: "Product summary",
             price: "123.45",
+            currency: "USD",
+            display_price: authorization
+              ? { amount: "6913.20", currency: "PHP" }
+              : { amount: "123.45", currency: "USD" },
             sold_count: 2,
             default_image: null,
           },
@@ -107,6 +111,7 @@ describe("Public landing page", () => {
       screen.queryByRole("link", { name: "Sign up" }),
     ).not.toBeInTheDocument();
     expect(catalogHeaders).toEqual(["Bearer test-access"]);
+    expect(screen.getByText("₱6,913.20")).toBeVisible();
   });
 
   test.each([200, 500])(
@@ -134,6 +139,7 @@ describe("Public landing page", () => {
         screen.queryByRole("button", { name: "Account" }),
       ).not.toBeInTheDocument();
       expect(catalogHeaders).toEqual(["Bearer test-access", null]);
+      expect(screen.getByText("$123.45")).toBeVisible();
     },
   );
 
