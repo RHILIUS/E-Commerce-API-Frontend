@@ -5,7 +5,8 @@ import type { Product } from "@/ecommerce/types";
 const priceFormatter = new Intl.NumberFormat("en-PH", {
   style: "currency",
   currency: "PHP",
-  maximumFractionDigits: 0,
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
 });
 const soldFormatter = new Intl.NumberFormat("en", {
   notation: "compact",
@@ -26,15 +27,23 @@ export const ProductCard = ({
 }) => (
   <article className="min-w-0" aria-label={product.name}>
     <Card className={cardClassName}>
-      <img
-        src={product.imageUrl}
-        alt={product.imageAlt}
-        width={636}
-        height={392}
-        loading={priority ? "eager" : "lazy"}
-        decoding="async"
-        className={imageClassName}
-      />
+      {product.imageUrl ? (
+        <img
+          src={product.imageUrl}
+          alt={product.imageAlt}
+          width={636}
+          height={392}
+          loading={priority ? "eager" : "lazy"}
+          decoding="async"
+          className={imageClassName}
+        />
+      ) : (
+        <div
+          className={`${imageClassName} bg-muted text-muted-foreground flex items-center justify-center text-sm`}
+        >
+          No image available
+        </div>
+      )}
       <CardContent className={contentClassName}>
         <h2 className="text-base leading-6 font-semibold tracking-normal wrap-anywhere">
           {product.name}

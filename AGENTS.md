@@ -23,7 +23,9 @@ The other repositories should be available as sibling directories:
 - Backend: `../backend`
 - Documentation: `../docs`
 
-Before making changes that affect system architecture, database design, API contracts, shared data models, or cross-application workflows, review the relevant files and diagrams in the documentation repository.
+Frontend-specific documentation is maintained in this repository's `docs/` folder:
+
+Before making changes that affect system architecture, database design, API contracts, shared data models, or cross-application workflows, review the relevant files and diagrams in the documentation repository, review the relevant local documentation in `docs/`. The local `docs/` folder is distinct from the sibling documentation repository.
 
 The documentation repository is the central source of project-wide context. It describes the complete E-Commerce system through entity-relationship diagrams, UML diagrams, business-process flows, architecture descriptions, and other technical documentation.
 

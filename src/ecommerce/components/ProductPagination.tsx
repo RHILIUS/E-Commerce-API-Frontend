@@ -1,6 +1,9 @@
+import { Fragment } from "react";
+
 import {
   Pagination,
   PaginationContent,
+  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -26,9 +29,14 @@ export const ProductPagination = ({
     return `?${params.toString()}`;
   };
 
+  // Keep link count bounded even when the server has millions of products.
+  const pages = [...new Set([1, page - 1, page, page + 1, pageCount])]
+    .filter((number) => number >= 1 && number <= pageCount)
+    .sort((a, b) => a - b);
+
   return (
     <Pagination aria-label="Product pages">
-      <PaginationContent className="gap-1">
+      <PaginationContent className="flex-wrap gap-1">
         <PaginationItem>
           <PaginationPrevious
             to={pageUrl(Math.max(1, page - 1))}
@@ -40,9 +48,14 @@ export const ProductPagination = ({
             className="size-11 font-normal aria-disabled:pointer-events-none aria-disabled:opacity-40 sm:w-auto sm:px-3"
           />
         </PaginationItem>
-        {Array.from({ length: pageCount }, (_, index) => index + 1).map(
-          (number) => (
-            <PaginationItem key={number}>
+        {pages.map((number, index) => (
+          <Fragment key={number}>
+            {index > 0 && number - pages[index - 1] > 1 && (
+              <PaginationItem>
+                <PaginationEllipsis />
+              </PaginationItem>
+            )}
+            <PaginationItem>
               <PaginationLink
                 to={pageUrl(number)}
                 isActive={number === page}
@@ -52,8 +65,8 @@ export const ProductPagination = ({
                 {number}
               </PaginationLink>
             </PaginationItem>
-          ),
-        )}
+          </Fragment>
+        ))}
         <PaginationItem>
           <PaginationNext
             to={pageUrl(Math.min(pageCount, page + 1))}

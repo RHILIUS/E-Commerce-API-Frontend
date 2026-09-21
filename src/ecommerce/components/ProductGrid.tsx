@@ -9,7 +9,7 @@ type ProductGridProps = {
   isLoading?: boolean;
 };
 
-/** Keeps the same responsive grid when the future catalog request is pending. */
+/** Keeps the same responsive grid while a catalog request is pending. */
 export const ProductGrid = ({
   products,
   isLoading = false,
