@@ -70,6 +70,16 @@ Prefer page-level overrides for one-off design differences. Modify a shared shad
 
 Do not add shadcn/ui components that are unused. Review newly added component files and dependencies before accepting them to ensure they preserve the project's existing conventions, accessibility behavior, and theme integration.
 
+## Required Reading for Figma Tasks
+
+Whenever a task asks you to create, generate, modify, or synchronize a Figma page, screen, component, wireframe, prototype interaction, variable, or style, read the following before inspecting or changing the Figma canvas:
+
+1. [Figma agent workflow and design architecture](docs/figma-agent-guide.md) for the file structure, component reuse, local and remote variables, aliases, theme modes, typography, layout, validation, and handoff requirements.
+2. [Figma node registry](docs/figma-nodes.md) for known file, page, screen, and component IDs before searching Figma.
+3. The relevant feature documentation and design briefs in `docs/`. Design briefs follow `docs/<feature-area>/<subject>-design-brief.md`, using lowercase kebab-case for the feature area and screen, component, or flow name. Locate the briefs related to the requested task, read their requirements and unresolved decisions, and apply them only to their stated scope. If no matching brief exists, use the current user instructions and relevant project documentation; do not invent requirements.
+
+Then inspect the current `src/app/index.css` and relevant source components, and load the applicable Figma skills before using their tools. Treat documented Figma structure as a starting point: verify the target nodes, variable bindings, and mode inheritance in the live file. Do not treat proposals in feature briefs as approved requirements or as authorization to change the canvas. Current user instructions determine the authorized scope.
+
 ## Figma Wireframe Structure
 
 When creating or modifying Figma wireframes, structure parent containers according to the layout relationships they represent in the application:
