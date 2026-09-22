@@ -75,12 +75,14 @@ Landing-card navigation belongs to the feature requirement, but editing the Land
 
 ## Completed Figma design handoff
 
-The [node registry](../figma-nodes.md#product-page-designs) links all sixteen full-page references: Active, Archived, Draft, and Active / Out of stock, each in desktop/mobile and light/dark modes. A separate 375 × 568 Active viewport demonstrates vertical scrolling. Temporary responsive QA copies were removed after inspection.
+The [node registry](../figma-nodes.md#product-page-designs) links the eight retained full-page references: Active, Archived, Draft, and Active / Out of stock, each in Desktop and Mobile layouts. A separate 375 × 568 Active viewport demonstrates vertical scrolling. Temporary responsive QA copies were removed after inspection.
+
+The intended structure is one screen per state and viewport, with theme variables inheriting the parent page or enclosing frame mode through **Auto**. Agents should not create separate light/dark copies.
 
 ### Composition and theme
 
 - Shared gallery, purchase-panel, quantity, description, and store-card components compose the screens with Auto Layout. Desktop places gallery and purchase information side by side; mobile stacks them.
-- Existing semantic variables, spacing/radius tokens, and Geist text styles are reused. Each screen explicitly selects matching light/dark modes for the local collection and the remote collection used by the shared header. Existing palette differences from CSS were not changed globally.
+- Existing semantic variables, spacing/radius tokens, and Geist text styles are reused. Theme mode is inherited from the parent page or enclosing frame. Existing palette differences from CSS were not changed globally.
 - The desktop Header is reused. Its search field now fills available space up to 720px, with a minimum row gap, to keep account controls within narrower desktop widths. The Landing Page was visually checked after the search sizing correction. Mobile uses the related compact Header component.
 - Archived content remains readable, with a grayscale image, Archived watermark, unavailable notice, and disabled purchase controls. Draft includes a restricted-preview notice. Out of stock is shown as an Active availability condition.
 

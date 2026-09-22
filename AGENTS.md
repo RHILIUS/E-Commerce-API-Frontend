@@ -80,6 +80,8 @@ Whenever a task asks you to create, generate, modify, or synchronize a Figma pag
 
 Then inspect the current `src/app/index.css` and relevant source components, and load the applicable Figma skills before using their tools. Treat documented Figma structure as a starting point: verify the target nodes, variable bindings, and mode inheritance in the live file. Do not treat proposals in feature briefs as approved requirements or as authorization to change the canvas. Current user instructions determine the authorized scope.
 
+For Figma themes, create one screen per layout and product state. Bind themed properties to variables and leave theme mode on the screen and its nested instances set to **Auto/inherit**, so changing the parent page or enclosing frame mode updates the same screen. Do not create separate light and dark screen copies or set explicit theme modes on screens to make previews. Follow the mode inspection and temporary preview procedure in the Figma agent guide.
+
 ## Figma Wireframe Structure
 
 When creating or modifying Figma wireframes, structure parent containers according to the layout relationships they represent in the application:

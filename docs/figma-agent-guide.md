@@ -143,12 +143,12 @@ For every new or modified screen:
 
 1. Discover all theme collections actually used by its descendants, including remote component dependencies.
 2. Read inherited, explicit, and resolved modes. A parent setting for one collection does not set every collection with the same name.
-3. Use the relevant collection's real mode IDs. Configure the screen preview rather than changing Web's global mode and unintentionally changing unrelated screens.
-4. Check nested instances for explicit mode overrides that defeat inheritance.
-5. Validate both themes with screenshots, including menus, overlays, borders, icons, focus indicators, and disabled controls.
-6. If temporary preview copies or mode changes are used during an authorized design task, remove only your own temporary nodes and restore the intended preview state afterward.
+3. Bind themed properties to semantic variables. Keep the screen and nested instances on **Auto/inherit** for every theme collection they use; the parent page or enclosing frame controls the appearance. Do not set explicit light/dark modes on the screen or duplicate it for each theme.
+4. Check nested instances for explicit mode overrides that defeat inheritance. For remote collections, confirm the parent actually provides the intended mode; a similarly named local collection does not control them automatically.
+5. Validate both themes by temporarily changing the controlling parent mode, capturing screenshots of the **same screen**, and restoring the original parent mode. When changing a shared page would disturb other work, use a temporary enclosing preview frame and remove it after validation. Check menus, overlays, borders, icons, focus indicators, and disabled controls.
+6. Record the parent mode used for each check. Do not leave temporary theme overrides or preview copies in the final design.
 
-Do not create separate hard-coded light and dark components. Prefer the same component structure with variable modes. Do not invert product photos to make a dark preview. Avoid lowering opacity on a whole content page to communicate unavailability: essential information still needs to be readable. Product status and visual theme are independent dimensions.
+Use the same screen and component structure across themes. Existing theme-specific screen copies are historical references, not a pattern to repeat. Do not invert product photos to make a dark preview. Avoid lowering opacity on a whole content page to communicate unavailability: essential information still needs to be readable. Product status and visual theme are independent dimensions.
 
 ## 5. Components, typography, and effects
 
