@@ -43,7 +43,7 @@ Use one shared product-detail composition with status-dependent messaging and co
 
 Out of stock is an availability condition within Active. The three lifecycle states remain Active, Archived, and Draft. Theme is independent of status. Keep essential archived information readable rather than fading the entire page.
 
-Gallery interaction: main selected image plus selectable thumbnails, with a clear selected state and a horizontally scrollable thumbnail row on narrow screens. Specify behavior for a single image, long thumbnail lists, and missing images during design execution. A zoom modal is outside the accepted scope.
+Gallery interaction: main selected image plus selectable thumbnails, with a clear selected state and a horizontally scrollable thumbnail row on narrow screens. Specify behavior for a single image, long thumbnail lists, and missing images during design execution. The subsequently approved implementation scope includes an uncropped main image and a click-to-open, fit-to-screen image dialog. Pinch zoom, panning, and navigation within the viewer remain outside scope.
 
 Quantity boundaries: integer quantities starting at one for purchasable items; minus disabled at the minimum and plus disabled at available stock. If the verified backend contract imposes additional purchase limits, document and reconcile them before implementation. Communicate unavailability explicitly rather than displaying an enabled selector with zero purchasable stock.
 

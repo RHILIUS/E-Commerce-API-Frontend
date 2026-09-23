@@ -1,6 +1,13 @@
+import { Expand } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/app/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "@/app/components/ui/dialog";
 import { cn } from "@/app/lib/utils";
 import type { ProductDetailImage } from "@/ecommerce/types";
 
@@ -9,10 +16,12 @@ const GalleryImage = ({
   image,
   name,
   archived,
+  contain = false,
 }: {
   image: ProductDetailImage;
   name: string;
   archived: boolean;
+  contain?: boolean;
 }) => {
   const [failed, setFailed] = useState(false);
   return failed ? (
@@ -24,7 +33,11 @@ const GalleryImage = ({
       src={image.image}
       alt={image.alt_text || name}
       onError={() => setFailed(true)}
-      className={cn("size-full object-cover", archived && "grayscale")}
+      className={cn(
+        "size-full",
+        contain ? "object-contain" : "object-cover",
+        archived && "grayscale",
+      )}
     />
   );
 };
@@ -50,12 +63,40 @@ export const ProductGallery = ({
     >
       <div className="bg-muted relative aspect-154/116 overflow-hidden rounded-lg border">
         {selected ? (
-          <GalleryImage
-            key={selected.image}
-            image={selected}
-            name={name}
-            archived={archived}
-          />
+          <Dialog>
+            <DialogTrigger
+              aria-label="Expand product image"
+              className="focus-visible:ring-ring absolute inset-0 block size-full cursor-zoom-in outline-none focus-visible:ring-3 focus-visible:ring-inset"
+            >
+              <GalleryImage
+                key={selected.image}
+                image={selected}
+                name={name}
+                archived={archived}
+                contain
+              />
+              <span className="bg-background/90 text-foreground absolute right-3 bottom-3 rounded-md border p-2">
+                <Expand className="size-5" aria-hidden="true" />
+              </span>
+            </DialogTrigger>
+            <DialogContent className="inset-0 h-dvh w-full max-w-none translate-x-0 translate-y-0 grid-rows-[minmax(0,1fr)] rounded-none border-0 px-4 pt-16 pb-4 sm:px-8 sm:pb-8">
+              <DialogTitle className="sr-only">{name} — full image</DialogTitle>
+              <div className="relative min-h-0 min-w-0">
+                <GalleryImage
+                  key={selected.image}
+                  image={selected}
+                  name={name}
+                  archived={archived}
+                  contain
+                />
+                {archived && (
+                  <span className="bg-background pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg border p-4 font-semibold">
+                    ARCHIVED
+                  </span>
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
         ) : (
           <p className="text-muted-foreground flex h-full items-center justify-center text-sm">
             No image available

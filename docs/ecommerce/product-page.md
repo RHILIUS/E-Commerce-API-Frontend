@@ -19,8 +19,13 @@ same unavailable screen. Other request failures offer a retry.
 - The gallery preserves API ordering and initially selects the first marked
   default, or the first image when none is marked. Multiple images have selectable
   thumbnails in a horizontally scrollable row; a single image hides that row.
-  Empty and failed media show readable placeholders. Images use `object-cover`
-  like Figma; arbitrary `crop` metadata is not interpreted because its transform
+  Empty and failed media show readable placeholders. The main image uses
+  `object-contain` to show the entire photo; thumbnails retain `object-cover`.
+  Clicking or keyboard-activating the main image opens a viewport-filling dialog
+  with a fitted image. Close or Escape dismisses it and restores trigger focus;
+  the dialog locks background scrolling. Archived treatment also applies inside
+  the viewer. Pinch zoom, panning, and viewer navigation are outside this scope.
+  Arbitrary `crop` metadata is not interpreted because its transform
   format is not defined in the API contract.
 - Quantity starts at one and is bounded by stock. Purchase and quantity controls
   use `can_purchase` to disable unavailable products. Archived products include
@@ -49,3 +54,10 @@ selection, the upper stock limit, and unavailable purchase controls passed;
 no horizontal overflow or browser runtime errors were found. Desktop/mobile
 screenshots were visually compared with Figma. These checks used mocked HTTP
 responses, not a live backend/database session.
+
+The image-viewer update passed the production build (including TypeScript),
+ESLint, formatting, and all 53 tests. Chromium fixture checks covered wide,
+tall, and square images at 330, 375, 768, 1024, and 1440px in both themes,
+including 375 × 568. Checks verified viewport fitting without dialog overflow,
+keyboard focus containment and restoration, dismissal, and archived/missing
+media. Mobile light and desktop dark viewer screenshots were visually reviewed.

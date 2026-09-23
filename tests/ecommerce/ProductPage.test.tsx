@@ -83,6 +83,53 @@ beforeEach(() => {
 });
 
 describe("Product Page", () => {
+  test("opens the selected full image and restores focus after keyboard or button dismissal", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    const trigger = await screen.findByRole("button", {
+      name: "Expand product image",
+    });
+    await user.click(screen.getByRole("button", { name: "View image 1" }));
+    trigger.focus();
+    await user.keyboard("{Enter}");
+    const viewer = await screen.findByRole("dialog", {
+      name: `${product.name} — full image`,
+    });
+    expect(
+      within(viewer).getByRole("img", { name: "Front view" }),
+    ).toHaveAttribute("src", product.images[0].image);
+    await user.keyboard("{Escape}");
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
+    expect(trigger).toHaveFocus();
+    await user.click(trigger);
+    await user.click(
+      within(await screen.findByRole("dialog")).getByRole("button", {
+        name: "Close",
+      }),
+    );
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
+    expect(trigger).toHaveFocus();
+  });
+
+  test("keeps failed viewer media readable and dismissible", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(
+      await screen.findByRole("button", { name: "Expand product image" }),
+    );
+    const viewer = await screen.findByRole("dialog");
+    fireEvent.error(within(viewer).getByRole("img"));
+    expect(within(viewer).getByText("Image unavailable")).toBeVisible();
+    await user.click(within(viewer).getByRole("button", { name: "Close" }));
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
+  });
+
   test("loads a public product, chooses its default image and bounds quantity", async () => {
     const user = userEvent.setup();
     renderPage();
@@ -235,7 +282,7 @@ describe("Product Page", () => {
     renderPage();
     await screen.findByText("Draft · Preview");
     await user.click(screen.getByRole("button", { name: "Account" }));
-    await user.click(screen.getByRole("menuitem", { name: "Log out" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Log out" }));
     await screen.findByRole("heading", { name: "Product unavailable" });
     expect(screen.queryByText("Draft · Preview")).not.toBeInTheDocument();
   });
