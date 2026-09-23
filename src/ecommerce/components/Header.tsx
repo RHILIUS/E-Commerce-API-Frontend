@@ -91,9 +91,11 @@ export const Header = ({ searchQuery, onSearch }: HeaderProps) => {
               <Button
                 variant="secondary"
                 size="icon"
-                disabled
-                aria-label="Cart (coming soon)"
-                title="Cart — coming soon"
+                render={<Link to="/cart" />}
+                role="link"
+                nativeButton={false}
+                aria-label="Shopping cart"
+                title="Shopping cart"
                 className="border-border size-11 rounded-md disabled:opacity-70"
               >
                 <ShoppingCart className="size-5" aria-hidden="true" />

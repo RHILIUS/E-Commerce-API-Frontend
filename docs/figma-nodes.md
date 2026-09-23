@@ -22,6 +22,35 @@ Read the [Figma agent workflow and design architecture](figma-agent-guide.md) be
 
 Figma URLs use hyphenated node IDs in query parameters, while Figma APIs use colon-separated IDs. For example, `node-id=5569-353` corresponds to `5569:353`.
 
+## Cart and notification integration — pending Figma mapping
+
+The following UI is implemented in code. This documentation-only inventory was
+recorded on **2026-09-23**; the canvas was not inspected or changed for it.
+**Pending** means no matching node has been verified or registered, not that the
+Figma library necessarily lacks a suitable component. Inspect relevant existing
+components before creating new ones.
+
+| UI / scope                                               | Code source                                                                                                        | Figma mapping / next integration step                                                                                                                           |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Checkbox — new shared control                            | [Checkbox](../src/app/components/ui/checkbox.tsx)                                                                  | **Pending.** Match unchecked, checked, indeterminate, disabled, and focus states.                                                                               |
+| Toast — new shared notification                          | [Toaster](../src/app/components/ui/toast.tsx), [toast manager](../src/app/lib/toast.ts)                            | **Pending.** Map the implemented success popup, close control, and optional action; this is not a modal alert.                                                  |
+| Shopping Cart — new `/cart` screen                       | [CartPage](../src/ecommerce/pages/CartPage.tsx)                                                                    | **Pending.** Map populated, empty, loading, and failure states with responsive layout.                                                                          |
+| Store cart and product rows — feature composition        | [CartStoreCard](../src/ecommerce/cart/CartStoreCard.tsx)                                                           | **Pending.** Map store/item selection, stock states, quantity controls, and image fallbacks.                                                                    |
+| Cart summary and removal dialog — page compositions      | [CartPage](../src/ecommerce/pages/CartPage.tsx), [existing AlertDialog](../src/app/components/ui/alert-dialog.tsx) | **Pending.** Reuse existing controls/dialog primitives; these are not new exported shared code components.                                                      |
+| Header cart navigation — existing component update       | [Header](../src/ecommerce/components/Header.tsx)                                                                   | Existing Header `5569:950`; compact Header `5662:287`. Verify the cart action against code when those nodes are in scope.                                       |
+| Product add-to-cart feedback — existing component update | [ProductPurchasePanel](../src/ecommerce/components/ProductPurchasePanel.tsx)                                       | Existing purchase-panel set `5660:326`. Verify pending/disabled controls and connect success feedback to the toast rather than adding inline confirmation text. |
+
+See the [cart code-to-Figma handoff](ecommerce/cart.md#future-figma-integration)
+for implemented states, sizing, tokens, and prototype behavior. The existing
+Product Page handoff records an earlier prototype where Add to Cart was only a
+visual control; the frontend now saves to the cart and shows a success toast.
+That code change does not imply the Figma prototype has been synchronized.
+
+After an authorized Figma integration, replace pending entries with verified
+file/node links and record which states and interactions were actually checked.
+Follow the agent guide for Auto Layout, reuse, inherited theme modes, and scoped
+validation. Keep this manual mapping workflow; Code Connect remains out of scope.
+
 ## Product Page designs
 
 The [accepted brief and design handoff](ecommerce/product-page-design-brief.md) describe scope, sample content, validation, and prototype limitations. Desktop references are 1440px wide; mobile references are 375px wide.

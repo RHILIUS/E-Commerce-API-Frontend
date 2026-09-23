@@ -1,6 +1,11 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { Button } from "@/app/components/ui/button";
+import { toast } from "@/app/lib/toast";
+import { useAuth } from "@/authentication/contexts/Auth/useAuth";
+import { addToCart } from "@/ecommerce/cart/api";
+import { cartErrorMessage } from "@/ecommerce/cart/utils";
 import type { ProductDetail } from "@/ecommerce/types";
 
 /** Present availability independently of theme; never simulate successful purchases. */
@@ -11,6 +16,43 @@ export const ProductPurchasePanel = ({
 }) => {
   const [quantity, setQuantity] = useState(1);
   const [message, setMessage] = useState("");
+  const [adding, setAdding] = useState(false);
+  const [addError, setAddError] = useState("");
+  const inFlight = useRef(false);
+  const auth = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const handleAdd = async () => {
+    if (!auth.isAuthenticated) {
+      navigate("/login", { state: { from: location } });
+      return;
+    }
+    if (inFlight.current) return;
+    inFlight.current = true;
+    setAdding(true);
+    setAddError("");
+    setMessage("");
+    try {
+      await addToCart(product.id, quantity);
+      toast.add({
+        id: "cart-added",
+        type: "success",
+        title: "Added to your cart.",
+        actionProps: {
+          children: "View cart",
+          onClick: () => {
+            toast.close("cart-added");
+            navigate("/cart");
+          },
+        },
+      });
+    } catch (error) {
+      setAddError(cartErrorMessage(error));
+    } finally {
+      setAdding(false);
+      inFlight.current = false;
+    }
+  };
   const archived = product.status === "archived";
   const draft = product.status === "draft";
   const unavailable = !product.can_purchase;
@@ -117,13 +159,11 @@ export const ProductPurchasePanel = ({
       <div className="grid grid-cols-2 gap-3">
         <Button
           variant="outline"
-          disabled={unavailable}
+          disabled={unavailable || adding || auth.isLoading}
           className="disabled:bg-muted disabled:text-muted-foreground h-12 min-w-0 whitespace-normal disabled:opacity-70"
-          onClick={() =>
-            setMessage("Adding items to the cart is not available yet.")
-          }
+          onClick={() => void handleAdd()}
         >
-          Add to Cart
+          {adding ? "Adding…" : "Add to Cart"}
         </Button>
         <Button
           disabled={unavailable}
@@ -140,6 +180,11 @@ export const ProductPurchasePanel = ({
       {message && (
         <p role="status" className="text-muted-foreground text-sm">
           {message}
+        </p>
+      )}
+      {addError && (
+        <p role="alert" className="text-destructive text-sm">
+          {addError}
         </p>
       )}
     </section>
