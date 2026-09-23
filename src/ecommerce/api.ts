@@ -1,5 +1,23 @@
 import api from "@/app/api/axios";
-import type { ProductCatalogResponse } from "@/ecommerce/types";
+import type { ProductCatalogResponse, ProductDetail } from "@/ecommerce/types";
+
+/** Load a detail page; the server controls draft visibility and purchase eligibility. */
+export const productDetailApi = async (
+  id: string,
+  signal: AbortSignal,
+  accessToken: string | null,
+) => {
+  const response = await api.get<ProductDetail>(
+    `/api/shop/products/${encodeURIComponent(id)}/`,
+    {
+      signal,
+      headers: accessToken
+        ? { Authorization: `Bearer ${accessToken}` }
+        : undefined,
+    },
+  );
+  return response.data;
+};
 
 /** Fetch one ranked catalog page through the shared authenticated API client. */
 export const productCatalogApi = async (

@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { describe, expect, test } from "vitest";
 
 import { ProductCard } from "@/ecommerce/components/ProductCard";
@@ -11,19 +12,25 @@ describe("ProductCard currency formatting", () => {
     ["KWD", 0.308, "KWD 0.308"],
   ])("formats %s with its currency precision", (currency, price, expected) => {
     render(
-      <ProductCard
-        product={{
-          id: "1",
-          name: "Product",
-          description: "Summary",
-          price,
-          currency,
-          soldCount: 1,
-          imageUrl: null,
-          imageAlt: "",
-        }}
-      />,
+      <MemoryRouter>
+        <ProductCard
+          product={{
+            id: "1",
+            name: "Product",
+            description: "Summary",
+            price,
+            currency,
+            soldCount: 1,
+            imageUrl: null,
+            imageAlt: "",
+          }}
+        />
+      </MemoryRouter>,
     );
     expect(screen.getByText(expected)).toBeVisible();
+    expect(screen.getByRole("link", { name: "View Product" })).toHaveAttribute(
+      "href",
+      "/products/1",
+    );
   });
 });
