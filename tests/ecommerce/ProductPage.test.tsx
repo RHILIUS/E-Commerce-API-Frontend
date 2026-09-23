@@ -11,6 +11,7 @@ import { delay, http, HttpResponse } from "msw";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import { beforeEach, describe, expect, test } from "vitest";
 
+import { Toaster } from "@/app/components/ui/toast";
 import { AuthProvider } from "@/authentication/contexts/Auth/AuthProvider";
 import { ecommercePublicRoutes } from "@/ecommerce/routes";
 import type { ProductDetail } from "@/ecommerce/types";
@@ -62,12 +63,16 @@ const product: ProductDetail = {
 
 // Exercise real routing, auth restoration, and the HTTP client against mocked responses.
 const renderPage = (path = "/products/1") => {
-  const router = createMemoryRouter(ecommercePublicRoutes, {
-    initialEntries: [path],
-  });
+  const router = createMemoryRouter(
+    [...ecommercePublicRoutes, { path: "/login", element: <h1>Sign in</h1> }],
+    {
+      initialEntries: [path],
+    },
+  );
   render(
     <AuthProvider>
       <RouterProvider router={router} />
+      <Toaster />
     </AuthProvider>,
   );
   return router;
@@ -83,6 +88,78 @@ beforeEach(() => {
 });
 
 describe("Product Page", () => {
+  test("sends guests to sign in before adding and preserves the product destination", async () => {
+    const user = userEvent.setup();
+    const router = renderPage("/products/1?ref=catalog");
+    await user.click(
+      await screen.findByRole("button", { name: "Add to Cart" }),
+    );
+    expect(
+      await screen.findByRole("heading", { name: "Sign in" }),
+    ).toBeVisible();
+    expect(router.state.location.state.from).toMatchObject({
+      pathname: "/products/1",
+      search: "?ref=catalog",
+    });
+  });
+
+  test("shows add conflicts without success and prevents duplicate pending adds", async () => {
+    server.use(
+      http.post("http://localhost/api/auth/refresh/", () =>
+        HttpResponse.json({
+          access: "token",
+          user: {
+            id: 1,
+            fullName: "Buyer",
+            email: "buyer@example.com",
+            country_code: "PH",
+          },
+        }),
+      ),
+      http.post("http://localhost/api/shop/carts/items/", () =>
+        HttpResponse.json(
+          { detail: "Only 1 available. Choose a smaller quantity." },
+          { status: 409 },
+        ),
+      ),
+    );
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(
+      await screen.findByRole("button", { name: "Add to Cart" }),
+    );
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Only 1 available.",
+    );
+    expect(
+      screen.queryByRole("button", { name: "View cart" }),
+    ).not.toBeInTheDocument();
+    let additions = 0;
+    server.use(
+      http.post("http://localhost/api/shop/carts/items/", async () => {
+        additions += 1;
+        await delay(250);
+        return HttpResponse.json({ carts: [] });
+      }),
+    );
+    await user.dblClick(screen.getByRole("button", { name: "Add to Cart" }));
+    expect(await screen.findByText("Added to your cart.")).toBeVisible();
+    expect(additions).toBe(1);
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(
+      within(
+        screen.getByRole("region", { name: "Product information" }),
+      ).queryByText("Added to your cart."),
+    ).not.toBeInTheDocument();
+    await user.hover(screen.getByText("Added to your cart."));
+    await user.click(
+      screen.getByRole("button", { name: "Close notification" }),
+    );
+    await waitFor(() =>
+      expect(screen.queryByText("Added to your cart.")).not.toBeInTheDocument(),
+    );
+  });
+
   test("opens the selected full image and restores focus after keyboard or button dismissal", async () => {
     const user = userEvent.setup();
     renderPage();

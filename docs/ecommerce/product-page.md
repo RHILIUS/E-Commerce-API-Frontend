@@ -32,9 +32,11 @@ same unavailable screen. Other request failures offer a retry.
   a grayscale gallery and watermark; draft and out-of-stock notices match Figma.
 - Store logos have an initials fallback. The creation timestamp is labeled
   **Store created**, since the API does not provide a selling-start date.
-- Add to Cart and Checkout currently display an availability message when clicked.
-  They do not mutate a cart or create an order; those write endpoints are not yet
-  implemented. No purchase success is simulated.
+- Add to Cart saves the chosen quantity through the authenticated cart API.
+  Guests are sent to sign in with the product URL as their return destination.
+  Successful additions show a dismissible toast popup with a View cart action; stock conflicts
+  and request failures show an error. See [Shopping cart](cart.md).
+- Checkout still displays an availability message. It does not create an order.
 
 Layouts stack below the desktop breakpoint and share semantic theme tokens for
 light and dark modes. The existing Header retains its guest/member behavior.
