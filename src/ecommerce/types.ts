@@ -10,6 +10,45 @@ export type Product = {
   imageAlt: string;
 };
 
+/** Product Page response; monetary amounts remain decimal strings. */
+export type ProductDetail = {
+  id: number;
+  name: string;
+  short_description: string;
+  description: string | null;
+  price: string;
+  currency: string;
+  display_price: { amount: string; currency: string };
+  sold_count: number;
+  stock: number;
+  status: "active" | "archived" | "draft";
+  archived_at: string | null;
+  can_purchase: boolean;
+  default_image: {
+    image: string;
+    alt_text: string;
+    crop: Record<string, unknown>;
+  } | null;
+  images: ProductDetailImage[];
+  store: {
+    id: number;
+    name: string;
+    profile_image: string | null;
+    profile_image_crop: Record<string, unknown>;
+    listed_product_count: number;
+    created_at: string;
+  };
+};
+
+export type ProductDetailImage = {
+  id: number;
+  image: string;
+  alt_text: string;
+  crop: Record<string, unknown>;
+  is_default: boolean;
+  order: number;
+};
+
 /** Exact response from GET /api/shop/products/. Prices remain decimal strings. */
 export type ProductCatalogResponse = {
   count: number;

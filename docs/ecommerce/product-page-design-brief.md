@@ -1,5 +1,7 @@
 # Product Page design brief
 
+Frontend implementation and verification: [Product Page implementation](product-page.md).
+
 Status: **Accepted design brief**, confirmed by the user on 2026-09-22. The requirements, layout, and state behavior below are the accepted direction for Product Page design work. Read the [Figma agent guide](../figma-agent-guide.md) before execution. The Figma screens have now been created and checked as described in the design handoff below. Acceptance of the brief is distinct from user review of the rendered screens.
 
 ## References and destination
@@ -49,17 +51,20 @@ Quantity boundaries: integer quantities starting at one for purchasable items; m
 
 The accepted design above does not supply answers to the following questions. Resolve them when the corresponding interaction or integration is implemented; do not reopen the accepted layout or state model as a proposal.
 
+Archived access is decided: anyone with the link may view it, and purchasing is disabled. Draft access requires membership in the product's store (admin or staff in the current backend model).
+
 1. Does Checkout buy only this product and selected quantity, independently of the cart?
-2. Who can open an archived product: anyone with the link, previous purchasers, or another verified audience?
-3. Does Draft include an Edit product action, or remain a pure preview? Which staff roles can edit/publish?
-4. Which price and stock information should archived and draft previews show, and how is historical transaction information distinguished from current product information?
-5. What should guests experience when attempting purchase actions? Do not invent an authentication flow.
+2. Does Draft include an Edit product action, or remain a pure preview? Which staff roles can edit/publish?
+3. How should historical transaction information be distinguished from the current price and stock returned by the product-detail API?
+4. What should guests experience when attempting purchase actions? Do not invent an authentication flow.
 
 Ask only for decisions that block the current work, and continue independent design work within the assigned scope. Record unresolved behavior in the handoff without inventing answers or presenting these open questions as completed integration.
 
 ## Data and prototype boundaries
 
 The [catalog integration document](product-catalog.md) describes landing-page display currency and conversion estimates. It does not establish a product-detail API or checkout-currency guarantee. Use realistic sample content and explicit currencies; do not assume every price is USD or PHP. Confirm detail fields and store metadata against the backend before implementation.
+
+The backend now provides `GET /api/shop/products/<id>/`; see the [product-detail API contract](../../../backend/docs/ecommerce/product-detail.md). It returns product details, ordered images, store metadata, and `can_purchase`. Store `created_at` records creation, not a verified first-sale date; use an accurate label such as “Store created” until selling-start data exists. The store listing count covers active products only. Archived access is public, and unauthorized draft requests return 404. Cart/checkout integration and hard-delete retention remain outside this endpoint.
 
 The design task should demonstrate gallery selection, quantity states, availability messages, and the three requested lifecycle presentations. Purchase actions may remain prototype-only until their behavior is decided; never imply an actual order or cart operation occurred. Restrict draft visibility in the real application through verified authorization, not merely a visual badge or hidden link.
 
@@ -99,4 +104,4 @@ The intended structure is one screen per state and viewport, with theme variable
 
 Screenshots were inspected at 330px, 375px, 768px, 1024px, and 1920px widths across light/dark checks, alongside the desktop references and a short 375 × 568 scrolling viewport. The narrower desktop check exposed a header sizing issue that was corrected and rechecked. Shared disabled-state panels were checked for inactive reactions; screen typography was audited for Geist. Screenshots were viewed through Figma tools, not committed as standalone image files.
 
-The three-thumbnail gallery fits the minimum supported width. Single-image, missing-image, and long-gallery cases do not yet have dedicated visual variants; their production behavior remains to be specified. The open implementation decisions above still apply, including checkout behavior, archived access, draft authorization, and historical product information. No frontend route, API, cart, checkout, archive retention, or authorization behavior was implemented in this design task.
+The three-thumbnail gallery fits the minimum supported width. Single-image, missing-image, and long-gallery cases do not yet have dedicated visual variants; their production behavior remains to be specified. The open implementation decisions above still apply, including checkout behavior, draft editing permissions, and historical product information. The original design task did not implement application behavior; the subsequent backend detail endpoint is documented in Data and prototype boundaries above.

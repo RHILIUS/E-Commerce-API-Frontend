@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 import { Card, CardContent } from "@/app/components/ui/card";
 import { Skeleton } from "@/app/components/ui/skeleton";
 import type { Product } from "@/ecommerce/types";
@@ -11,7 +13,7 @@ const contentClassName = "flex flex-1 flex-col gap-3 p-3 sm:p-4";
 const imageClassName =
   "h-32 w-full shrink-0 rounded-none! object-cover sm:h-49";
 
-/** Read-only product summary until ProductPage navigation is implemented. */
+/** Link the entire catalog card to its corresponding product detail page. */
 export const ProductCard = ({
   product,
   priority = false,
@@ -20,44 +22,50 @@ export const ProductCard = ({
   priority?: boolean;
 }) => (
   <article className="min-w-0" aria-label={product.name}>
-    <Card className={cardClassName}>
-      {product.imageUrl ? (
-        <img
-          src={product.imageUrl}
-          alt={product.imageAlt}
-          width={636}
-          height={392}
-          loading={priority ? "eager" : "lazy"}
-          decoding="async"
-          className={imageClassName}
-        />
-      ) : (
-        <div
-          className={`${imageClassName} bg-muted text-muted-foreground flex items-center justify-center text-sm`}
-        >
-          No image available
-        </div>
-      )}
-      <CardContent className={contentClassName}>
-        <h2 className="text-base leading-6 font-semibold tracking-normal wrap-anywhere">
-          {product.name}
-        </h2>
-        <p className="text-muted-foreground min-h-8 flex-1 text-xs leading-4 wrap-anywhere">
-          {product.description}
-        </p>
-        <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
-          <p className="text-lg leading-7 font-semibold wrap-anywhere tabular-nums">
-            {new Intl.NumberFormat("en-PH", {
-              style: "currency",
-              currency: product.currency,
-            }).format(product.price)}
+    <Link
+      to={`/products/${encodeURIComponent(product.id)}`}
+      aria-label={`View ${product.name}`}
+      className="focus-visible:ring-ring/50 block h-full rounded-lg outline-none focus-visible:ring-3"
+    >
+      <Card className={cardClassName}>
+        {product.imageUrl ? (
+          <img
+            src={product.imageUrl}
+            alt={product.imageAlt}
+            width={636}
+            height={392}
+            loading={priority ? "eager" : "lazy"}
+            decoding="async"
+            className={imageClassName}
+          />
+        ) : (
+          <div
+            className={`${imageClassName} bg-muted text-muted-foreground flex items-center justify-center text-sm`}
+          >
+            No image available
+          </div>
+        )}
+        <CardContent className={contentClassName}>
+          <h2 className="text-base leading-6 font-semibold tracking-normal wrap-anywhere">
+            {product.name}
+          </h2>
+          <p className="text-muted-foreground min-h-8 flex-1 text-xs leading-4 wrap-anywhere">
+            {product.description}
           </p>
-          <p className="text-muted-foreground text-xs leading-4 whitespace-nowrap">
-            {soldFormatter.format(product.soldCount).toLowerCase()} sold
-          </p>
-        </div>
-      </CardContent>
-    </Card>
+          <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+            <p className="text-lg leading-7 font-semibold wrap-anywhere tabular-nums">
+              {new Intl.NumberFormat("en-PH", {
+                style: "currency",
+                currency: product.currency,
+              }).format(product.price)}
+            </p>
+            <p className="text-muted-foreground text-xs leading-4 whitespace-nowrap">
+              {soldFormatter.format(product.soldCount).toLowerCase()} sold
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
   </article>
 );
 
