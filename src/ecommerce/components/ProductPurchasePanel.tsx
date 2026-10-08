@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/app/components/ui/button";
 import { toast } from "@/app/lib/toast";
 import { useAuth } from "@/authentication/contexts/Auth/useAuth";
+import { checkoutPath } from "@/checkout/utils/source";
 import { addToCart } from "@/ecommerce/cart/api";
 import { cartErrorMessage } from "@/ecommerce/cart/utils";
 import type { ProductDetail } from "@/ecommerce/types";
@@ -15,7 +16,6 @@ export const ProductPurchasePanel = ({
   product: ProductDetail;
 }) => {
   const [quantity, setQuantity] = useState(1);
-  const [message, setMessage] = useState("");
   const [adding, setAdding] = useState(false);
   const [addError, setAddError] = useState("");
   const inFlight = useRef(false);
@@ -31,7 +31,6 @@ export const ProductPurchasePanel = ({
     inFlight.current = true;
     setAdding(true);
     setAddError("");
-    setMessage("");
     try {
       await addToCart(product.id, quantity);
       toast.add({
@@ -166,22 +165,23 @@ export const ProductPurchasePanel = ({
           {adding ? "Adding…" : "Add to Cart"}
         </Button>
         <Button
-          disabled={unavailable}
+          disabled={
+            unavailable || quantity < 1 || quantity > product.stock || adding
+          }
           className="disabled:border-border disabled:bg-muted disabled:text-muted-foreground h-12 min-w-0 whitespace-normal disabled:opacity-70"
           onClick={() =>
-            setMessage(
-              "Checkout is not available yet. No order has been placed.",
+            navigate(
+              checkoutPath({
+                source: "product",
+                product_id: product.id,
+                quantity,
+              }),
             )
           }
         >
           Checkout
         </Button>
       </div>
-      {message && (
-        <p role="status" className="text-muted-foreground text-sm">
-          {message}
-        </p>
-      )}
       {addError && (
         <p role="alert" className="text-destructive text-sm">
           {addError}

@@ -39,9 +39,10 @@ viewport bottom at heights of 640px and above; on shorter screens it stays in
 document flow so products remain accessible. The removal dialog scrolls within
 the viewport when needed.
 
-Checkout is disabled. Order placement, payment, shipping, inventory reservation,
-and persistent selection are outside this feature. Adding to cart does not
-reserve or reduce stock.
+Checkout is enabled for 1–500 selected products and links to the separate
+[COD checkout feature](../checkout/README.md). Selected overstock quantities are reset to
+one on checkout, with a review message. Adding to cart does not reserve or
+reduce stock. Shipping and persistent cart-page selection remain outside this feature.
 
 ## Future Figma integration
 
@@ -52,7 +53,7 @@ notes. Start with the [pending registry entries](../figma-nodes.md#cart-and-noti
 and [Figma agent guide](../figma-agent-guide.md). Re-read source and
 [the current theme](../../src/app/index.css) before integration.
 
-### New shared controls
+### Added shared controls
 
 - **Checkbox:** [source](../../src/app/components/ui/checkbox.tsx) wraps Base UI.
   Represent unchecked, checked (Lucide Check), and indeterminate (Lucide Minus)
@@ -106,7 +107,7 @@ Cover the following implemented states without generating every combination:
   use the generic unavailable name, no detail link, and no price. Include missing
   or failed product/store images and long names/prices.
 - Separate totals by currency, no-selection dash, unavailable-item explanatory
-  text, disabled Checkout, and the over-500-products removal notice.
+  text, selection-dependent Checkout, and the over-500-products notice.
 - Loading skeletons, empty-cart Browse products action, initial-load/refresh
   failure with Retry, and mutation errors.
 - Removal confirmation, pending “Removing…”, failed removal with retry, and

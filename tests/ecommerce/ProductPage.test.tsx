@@ -12,7 +12,9 @@ import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import { beforeEach, describe, expect, test } from "vitest";
 
 import { Toaster } from "@/app/components/ui/toast";
+import ProtectedRoute from "@/app/routes/ProtectedRoute";
 import { AuthProvider } from "@/authentication/contexts/Auth/AuthProvider";
+import { checkoutProtectedRoutes } from "@/checkout/routes";
 import { ecommercePublicRoutes } from "@/ecommerce/routes";
 import type { ProductDetail } from "@/ecommerce/types";
 
@@ -64,7 +66,11 @@ const product: ProductDetail = {
 // Exercise real routing, auth restoration, and the HTTP client against mocked responses.
 const renderPage = (path = "/products/1") => {
   const router = createMemoryRouter(
-    [...ecommercePublicRoutes, { path: "/login", element: <h1>Sign in</h1> }],
+    [
+      ...ecommercePublicRoutes,
+      { element: <ProtectedRoute />, children: checkoutProtectedRoutes },
+      { path: "/login", element: <h1>Sign in</h1> },
+    ],
     {
       initialEntries: [path],
     },
@@ -209,7 +215,7 @@ describe("Product Page", () => {
 
   test("loads a public product, chooses its default image and bounds quantity", async () => {
     const user = userEvent.setup();
-    renderPage();
+    const router = renderPage();
     expect(
       screen.getByRole("status", { name: "Loading product" }),
     ).toBeVisible();
@@ -229,11 +235,10 @@ describe("Product Page", () => {
     await user.click(minus);
     expect(screen.getByLabelText("Selected quantity")).toHaveTextContent("2");
     await user.click(screen.getByRole("button", { name: "Checkout" }));
-    expect(
-      screen.getByText(
-        "Checkout is not available yet. No order has been placed.",
-      ),
-    ).toBeVisible();
+    await screen.findByRole("heading", { name: "Sign in" });
+    expect(router.state.location.state.from.search).toBe(
+      "?source=product&product_id=1&quantity=2",
+    );
   });
 
   test.each(["archived", "draft", "out-of-stock"])(

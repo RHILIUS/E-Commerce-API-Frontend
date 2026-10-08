@@ -13,6 +13,7 @@ import { beforeEach, describe, expect, test } from "vitest";
 import { Toaster } from "@/app/components/ui/toast";
 import ProtectedRoute from "@/app/routes/ProtectedRoute";
 import { AuthProvider } from "@/authentication/contexts/Auth/AuthProvider";
+import { checkoutProtectedRoutes } from "@/checkout/routes";
 import type { CartResponse } from "@/ecommerce/cart/types";
 import { formatMoney, selectedTotals } from "@/ecommerce/cart/utils";
 import {
@@ -20,6 +21,7 @@ import {
   ecommercePublicRoutes,
 } from "@/ecommerce/routes";
 
+import { preview, recipient } from "../checkout/fixtures";
 import { server } from "../server";
 
 const member = {
@@ -37,7 +39,10 @@ const renderCart = (path = "/cart") => {
     [
       ...ecommercePublicRoutes,
       { path: "/login", element: <h1>Sign in</h1> },
-      { element: <ProtectedRoute />, children: ecommerceProtectedRoutes },
+      {
+        element: <ProtectedRoute />,
+        children: [...ecommerceProtectedRoutes, ...checkoutProtectedRoutes],
+      },
     ],
     { initialEntries: [path] },
   );
@@ -181,7 +186,7 @@ describe("Shopping cart", () => {
     const actions = screen.getByRole("region", { name: "Cart actions" });
     expect(within(actions).getByText("₱34.68")).toBeVisible();
     expect(within(actions).getByText("$5.00")).toBeVisible();
-    expect(screen.getByRole("button", { name: "Checkout" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Checkout" })).toBeEnabled();
     await user.click(
       screen.getByRole("checkbox", { name: "Select all from Camera Store" }),
     );
@@ -341,7 +346,7 @@ describe("Shopping cart", () => {
     );
     expect(screen.getByRole("button", { name: "Remove" })).toBeDisabled();
     expect(
-      screen.getByText("Select up to 500 products to remove at a time."),
+      screen.getByText("Select up to 500 products at a time."),
     ).toBeVisible();
     await user.click(
       screen.getByRole("checkbox", { name: "Select Product 501" }),
@@ -407,4 +412,45 @@ describe("Shopping cart", () => {
     ]);
     expect(formatMoney(totals[0])).toBe("₱10,000,000,000,000,000.01");
   });
+});
+
+test("sends only selected cart IDs to the checkout preview", async () => {
+  let body: unknown;
+  server.use(
+    http.post(
+      "http://localhost/api/shop/checkout/preview/",
+      async ({ request }) => {
+        body = await request.json();
+        return HttpResponse.json(preview());
+      },
+    ),
+    http.get("http://localhost/api/account/recipients/", () =>
+      HttpResponse.json({ recipients: [recipient] }),
+    ),
+  );
+  const user = userEvent.setup();
+  renderCart();
+  await screen.findByRole("checkbox", { name: "Select Camera" });
+  expect(screen.getByRole("button", { name: "Checkout" })).toBeDisabled();
+  await user.click(screen.getByRole("checkbox", { name: "Select Camera" }));
+  await user.click(screen.getByRole("button", { name: "Checkout" }));
+  await screen.findByRole("button", { name: "Place Order" });
+  expect(body).toEqual({ source: "cart", item_ids: [1] });
+});
+
+test("resets selected overstock quantities to one before checkout and asks for review", async () => {
+  data.carts[0].items[0].quantity = 5;
+  const user = userEvent.setup();
+  const router = renderCart();
+  await user.click(
+    await screen.findByRole("checkbox", { name: "Select Camera" }),
+  );
+  await user.click(screen.getByRole("button", { name: "Checkout" }));
+  expect(
+    await screen.findByText(
+      /quantities exceeded available stock and were reset to 1/,
+    ),
+  ).toBeVisible();
+  expect(data.carts[0].items[0].quantity).toBe(1);
+  expect(router.state.location.pathname).toBe("/cart");
 });
