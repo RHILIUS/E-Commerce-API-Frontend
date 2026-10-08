@@ -57,7 +57,7 @@ export const confirmation: Confirmation = {
   orders: [
     {
       id: 12,
-      store: { id: 1, name: "Camera Store" },
+      store: { id: 1, name: "Camera Store", profile_image: null },
       status: "pending",
       payment_status: "unpaid",
       recipient,
@@ -69,6 +69,7 @@ export const confirmation: Confirmation = {
           id: 3,
           product_id: 2,
           name: "Camera",
+          image: null,
           quantity: 2,
           unit_price: { amount: "120.00", currency: "PHP" },
           original_unit_price: { amount: "120.00", currency: "PHP" },

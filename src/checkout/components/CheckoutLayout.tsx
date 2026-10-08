@@ -9,7 +9,7 @@ export function CheckoutLayout({
   backLink = { to: "/cart", label: "Back to cart" },
 }: {
   children: ReactNode;
-  backLink?: { to: string; label: string };
+  backLink?: { to: string; label: string } | null;
 }) {
   const navigate = useNavigate();
   return (
@@ -21,12 +21,14 @@ export function CheckoutLayout({
         }
       />
       <main className="mx-auto w-full max-w-4xl flex-1 space-y-6 px-3 py-6 sm:px-6 sm:py-10">
-        <Link
-          to={backLink.to}
-          className="text-muted-foreground focus-visible:outline-ring inline-flex min-h-11 items-center rounded-sm text-sm underline focus-visible:outline-2"
-        >
-          {backLink.label}
-        </Link>
+        {backLink && (
+          <Link
+            to={backLink.to}
+            className="text-muted-foreground focus-visible:outline-ring inline-flex min-h-11 items-center rounded-sm text-sm underline focus-visible:outline-2"
+          >
+            {backLink.label}
+          </Link>
+        )}
         {children}
       </main>
     </div>

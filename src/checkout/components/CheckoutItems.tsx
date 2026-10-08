@@ -1,28 +1,8 @@
-import { ImageOff } from "lucide-react";
-import { useState } from "react";
-
 import { formatMoney } from "@/ecommerce/cart/utils";
 
 import type { Preview } from "../types";
+import { CheckoutImage } from "./CheckoutImage";
 
-// Missing or broken product images must not obscure the item identity.
-function ItemImage({ src, alt }: { src?: string; alt: string }) {
-  const [failed, setFailed] = useState(false);
-  return (
-    <div className="bg-muted flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-lg sm:size-20">
-      {src && !failed ? (
-        <img
-          src={src}
-          alt={alt}
-          onError={() => setFailed(true)}
-          className="size-full object-cover"
-        />
-      ) : (
-        <ImageOff className="text-muted-foreground size-6" aria-hidden="true" />
-      )}
-    </div>
-  );
-}
 export function CheckoutItems({ preview }: { preview: Preview }) {
   return (
     <section aria-labelledby="items-heading" className="space-y-4">
@@ -44,7 +24,7 @@ export function CheckoutItems({ preview }: { preview: Preview }) {
                 key={item.cart_item_id ?? item.product.id}
                 className="bg-muted/50 flex min-w-0 flex-wrap gap-3 rounded-lg p-3"
               >
-                <ItemImage
+                <CheckoutImage
                   src={item.product.image?.image}
                   alt={item.product.image?.alt_text || item.product.name}
                 />

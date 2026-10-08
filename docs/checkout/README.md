@@ -8,7 +8,7 @@ This version supports Cash on Delivery. Stripe/e-wallet integration is deferred 
 
 - `/checkout?source=product&product_id=2&quantity=1` purchases that product independently of the cart.
 - `/checkout?source=cart&item_ids=1,4` purchases only the selected saved cart items. The server reads their quantities.
-- `/checkout/confirmation/:reference` retrieves the authenticated owner's persisted purchase snapshots.
+- `/checkout/confirmation/:reference` retrieves the authenticated owner's persisted purchase snapshots, with current store/product images. Images are presentation-only and may change with catalog updates; missing, deleted, or broken images use placeholders. Purchase names, recipient details, and prices remain historical.
 
 The checkout back link follows its source: Back to product returns to the selected product; Back to cart returns to the cart. This works after reload and sign-in because the source is retained in the URL.
 

@@ -67,7 +67,7 @@ export type Confirmation = {
   total: Money;
   orders: {
     id: number;
-    store: { id: number; name: string };
+    store: { id: number; name: string; profile_image: string | null };
     status: string;
     payment_status: string;
     recipient: RecipientDetails;
@@ -78,6 +78,11 @@ export type Confirmation = {
       id: number;
       product_id: number | null;
       name: string;
+      image: {
+        image: string;
+        alt_text: string;
+        crop: Record<string, unknown>;
+      } | null;
       quantity: number;
       unit_price: Money;
       original_unit_price: Money;

@@ -1,4 +1,10 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
@@ -16,6 +22,40 @@ import { confirmation, member, preview, recipient } from "./fixtures";
 const previewUrl = "http://localhost/api/shop/checkout/preview/";
 const placementUrl = "http://localhost/api/shop/checkouts/";
 const recipientsUrl = "http://localhost/api/account/recipients/";
+
+test("confirmation renders API images and falls back when media fails", async () => {
+  server.use(
+    http.get(`${placementUrl}:reference/`, () =>
+      HttpResponse.json({
+        ...confirmation,
+        orders: confirmation.orders.map((order) => ({
+          ...order,
+          store: {
+            ...order.store,
+            profile_image: "https://example.com/store.jpg",
+          },
+          items: order.items.map((item) => ({
+            ...item,
+            image: {
+              image: "https://example.com/camera.jpg",
+              alt_text: "Camera front",
+              crop: {},
+            },
+          })),
+        })),
+      }),
+    ),
+  );
+  renderCheckout(`/checkout/confirmation/${confirmation.reference}`);
+  const product = await screen.findByRole("img", { name: "Camera front" });
+  const store = screen.getByRole("img", { name: "Camera Store" });
+  expect(product).toHaveAttribute("src", "https://example.com/camera.jpg");
+  expect(store).toHaveAttribute("src", "https://example.com/store.jpg");
+  fireEvent.error(product);
+  fireEvent.error(store);
+  expect(screen.queryByRole("img")).not.toBeInTheDocument();
+  expect(screen.getByText("Camera")).toBeVisible();
+});
 const path = "/checkout?source=product&product_id=2&quantity=2";
 const request: PlacementRequest = {
   preview_token: "old-signed-preview",
@@ -79,7 +119,7 @@ describe("COD checkout", () => {
     await waitFor(() => expect(button).toBeEnabled());
     await user.dblClick(button);
     expect(
-      await screen.findByRole("heading", { name: "Order placed" }),
+      await screen.findByRole("heading", { name: "Order placed successfully" }),
     ).toBeVisible();
     expect(body).toEqual({
       preview_token: "signed-preview",
@@ -90,11 +130,7 @@ describe("COD checkout", () => {
     expect(router.state.location.pathname).toBe(
       `/checkout/confirmation/${confirmation.reference}`,
     );
-    expect(
-      screen.getByText(
-        "Payment is due on delivery. No online payment was collected.",
-      ),
-    ).toBeVisible();
+    expect(screen.getByText("Payment due on delivery")).toBeVisible();
     expect(sessionStorage.getItem("checkout:cod:1")).toBeNull();
   });
   test("preserves product quantity through sign in", async () => {
@@ -221,7 +257,7 @@ describe("COD checkout", () => {
     await user.click(
       await screen.findByRole("button", { name: "Retry saved order" }),
     );
-    await screen.findByRole("heading", { name: "Order placed" });
+    await screen.findByRole("heading", { name: "Order placed successfully" });
     expect(bodies).toHaveLength(2);
     expect(bodies[1]).toEqual(bodies[0]);
   });
@@ -258,7 +294,7 @@ describe("COD checkout", () => {
       expect(screen.getByRole("button", { name: "Place Order" })).toBeEnabled(),
     );
     await user.click(screen.getByRole("button", { name: "Place Order" }));
-    await screen.findByRole("heading", { name: "Order placed" });
+    await screen.findByRole("heading", { name: "Order placed successfully" });
     expect(bodies[1].idempotency_key).not.toBe(bodies[0].idempotency_key);
   });
   test("keeps idempotency conflicts locked to the original request", async () => {
@@ -321,11 +357,79 @@ describe("COD checkout", () => {
       await screen.findByRole("button", { name: "Retry confirmation" }),
     );
     expect(
-      await screen.findByRole("heading", { name: "Order placed" }),
+      await screen.findByRole("heading", { name: "Order placed successfully" }),
     ).toBeVisible();
     expect(screen.getByText(recipient.name)).toBeVisible();
   });
 });
+
+test("renders every store and recipient snapshot in the receipt", async () => {
+  const secondOrder = {
+    ...confirmation.orders[0],
+    id: 13,
+    store: { id: 2, name: "Second Store", profile_image: null },
+    recipient: { ...recipient, name: "Joan Dela Cruz" },
+  };
+  server.use(
+    http.get(`${placementUrl}:reference/`, () =>
+      HttpResponse.json({
+        ...confirmation,
+        total: { amount: "480.00", currency: "PHP" },
+        orders: [...confirmation.orders, secondOrder],
+      }),
+    ),
+  );
+  renderCheckout(`/checkout/confirmation/${confirmation.reference}`);
+  await screen.findByRole("heading", { name: "Order placed successfully" });
+  expect(
+    within(screen.getByRole("region", { name: "Camera Store" })).getByText(
+      recipient.name,
+    ),
+  ).toBeVisible();
+  expect(
+    within(screen.getByRole("region", { name: "Second Store" })).getByText(
+      "Joan Dela Cruz",
+    ),
+  ).toBeVisible();
+  expect(
+    within(screen.getByRole("region", { name: "Order summary" })).getByText(
+      "Order total",
+    ),
+  ).toBeVisible();
+  const amountDue = within(
+    screen.getByRole("region", { name: "Order summary" }),
+  ).getByText("Amount due on delivery").nextElementSibling;
+  expect(amountDue).toHaveTextContent("₱480.00");
+  expect(amountDue).toHaveClass("text-2xl", "sm:text-3xl");
+  expect(
+    screen.getByRole("link", { name: "Continue shopping" }),
+  ).toHaveAttribute("href", "/");
+  expect(
+    screen.queryByRole("link", { name: "Back to cart" }),
+  ).not.toBeInTheDocument();
+});
+
+test.each(["cancelled", "pending"])(
+  "does not claim successful placement or payment due for a %s checkout",
+  async (status) => {
+    server.use(
+      http.get(`${placementUrl}:reference/`, () =>
+        HttpResponse.json({ ...confirmation, status }),
+      ),
+    );
+    renderCheckout(`/checkout/confirmation/${confirmation.reference}`);
+    await screen.findByText("Cash on Delivery");
+    expect(
+      screen.getByRole("heading", { name: "Order confirmation" }),
+    ).toBeVisible();
+    expect(
+      screen.queryByText("Payment due on delivery"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/Amount due on delivery/),
+    ).not.toBeInTheDocument();
+  },
+);
 
 test("creates and selects a recipient using the normalized phone and address country", async () => {
   let body: unknown;
