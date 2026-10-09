@@ -549,3 +549,194 @@ test.each([
     await screen.findByRole("button", { name: "Place Order" });
   },
 );
+
+test("editing prefills contact fields, saves the existing recipient and updates checkout", async () => {
+  const user = userEvent.setup();
+  const saved = { ...recipient, phone_number: "+16502532222" };
+  let submitted: unknown;
+  server.use(
+    http.get(recipientsUrl, () => HttpResponse.json({ recipients: [saved] })),
+    http.patch(`${recipientsUrl}${recipient.id}/`, async ({ request }) => {
+      submitted = await request.json();
+      return HttpResponse.json({ ...saved, name: "Updated recipient" });
+    }),
+  );
+  renderCheckout();
+  await user.click(await screen.findByRole("button", { name: "Change" }));
+  await user.click(
+    screen.getByRole("button", { name: `Edit ${recipient.name}` }),
+  );
+  expect(screen.getByLabelText("Full name")).toHaveValue(recipient.name);
+  expect(screen.getByLabelText("Address line 1")).toHaveValue(
+    recipient.address_line1,
+  );
+  expect(screen.getByLabelText("Country", { exact: true })).toHaveValue(
+    "Philippines",
+  );
+  expect(screen.getByLabelText(/Phone country: United States/)).toBeVisible();
+  expect(
+    screen.getByRole("checkbox", { name: "Default recipient" }),
+  ).toHaveAttribute("aria-disabled", "true");
+  await user.clear(screen.getByLabelText("Full name"));
+  await user.type(screen.getByLabelText("Full name"), "Updated recipient");
+  await user.click(screen.getByRole("button", { name: "Save changes" }));
+  await screen.findByRole("heading", { name: "Choose recipient" });
+  expect(submitted).toEqual({
+    ...saved,
+    id: undefined,
+    name: "Updated recipient",
+  });
+  await user.click(screen.getByRole("button", { name: "Done" }));
+  expect(screen.getByText("Updated recipient")).toBeVisible();
+  expect(screen.getByRole("button", { name: "Place Order" })).toBeEnabled();
+});
+
+test("editing an unselected recipient and making it default preserves checkout selection", async () => {
+  const user = userEvent.setup();
+  const second = {
+    ...recipient,
+    id: 8,
+    name: "Second recipient",
+    is_default: false,
+  };
+  server.use(
+    http.get(recipientsUrl, () =>
+      HttpResponse.json({ recipients: [recipient, second] }),
+    ),
+    http.patch(`${recipientsUrl}8/`, () =>
+      HttpResponse.json({ ...second, is_default: true }),
+    ),
+  );
+  renderCheckout();
+  await user.click(await screen.findByRole("button", { name: "Change" }));
+  await user.click(
+    screen.getByRole("button", { name: "Edit Second recipient" }),
+  );
+  await user.click(
+    screen.getByRole("checkbox", { name: "Make this my default recipient" }),
+  );
+  await user.click(screen.getByRole("button", { name: "Save changes" }));
+  await screen.findByRole("heading", { name: "Choose recipient" });
+  expect(
+    screen.getByRole("radio", { name: new RegExp(recipient.name) }),
+  ).toBeChecked();
+  expect(
+    screen.getByRole("radio", { name: /Second recipient/ }),
+  ).not.toBeChecked();
+  await user.click(screen.getByRole("button", { name: "Done" }));
+  expect(screen.getByText(recipient.name)).toBeVisible();
+});
+
+test("edit cancellation discards changes and validation retains the draft", async () => {
+  const user = userEvent.setup();
+  let calls = 0;
+  server.use(
+    http.patch(`${recipientsUrl}${recipient.id}/`, () => {
+      calls++;
+      return HttpResponse.json(
+        { name: ["This name is invalid."] },
+        { status: 400 },
+      );
+    }),
+  );
+  renderCheckout();
+  await user.click(await screen.findByRole("button", { name: "Change" }));
+  await user.click(
+    screen.getByRole("button", { name: `Edit ${recipient.name}` }),
+  );
+  await user.clear(screen.getByLabelText("Full name"));
+  await user.type(screen.getByLabelText("Full name"), "Draft");
+  await user.click(screen.getByRole("button", { name: "Save changes" }));
+  await waitFor(() =>
+    expect(screen.getByLabelText("Full name")).toHaveAttribute(
+      "aria-invalid",
+      "true",
+    ),
+  );
+  expect(screen.getByLabelText("Full name")).toHaveValue("Draft");
+  await user.click(screen.getByRole("button", { name: "Cancel" }));
+  await user.click(
+    screen.getByRole("button", { name: `Edit ${recipient.name}` }),
+  );
+  expect(screen.getByLabelText("Full name")).toHaveValue(recipient.name);
+  expect(calls).toBe(1);
+});
+
+test("an unknown edit result reloads saved recipients without changing checkout selection", async () => {
+  const user = userEvent.setup();
+  let saved = [
+    recipient,
+    { ...recipient, id: 8, name: "Second", is_default: false },
+  ];
+  server.use(
+    http.get(recipientsUrl, () => HttpResponse.json({ recipients: saved })),
+    http.patch(`${recipientsUrl}8/`, () => {
+      saved = [
+        { ...recipient, is_default: false },
+        { ...recipient, id: 8, name: "Edited second", is_default: true },
+      ];
+      return HttpResponse.error();
+    }),
+  );
+  renderCheckout();
+  await user.click(await screen.findByRole("button", { name: "Change" }));
+  await user.click(screen.getByRole("button", { name: "Edit Second" }));
+  await user.click(screen.getByRole("button", { name: "Save changes" }));
+  await screen.findByRole("button", { name: "Edit Edited second" });
+  expect(
+    screen.getByRole("radio", { name: new RegExp(recipient.name) }),
+  ).toBeChecked();
+  expect(screen.getByRole("alert")).toHaveTextContent(
+    "The save result is unknown.",
+  );
+});
+
+test("editing blocks repeated saves and dialog dismissal while a save is pending", async () => {
+  const user = userEvent.setup();
+  let finish!: () => void;
+  const pending = new Promise<void>((resolve) => {
+    finish = resolve;
+  });
+  let calls = 0;
+  server.use(
+    http.patch(`${recipientsUrl}${recipient.id}/`, async () => {
+      calls++;
+      await pending;
+      return HttpResponse.json(recipient);
+    }),
+  );
+  renderCheckout();
+  await user.click(await screen.findByRole("button", { name: "Change" }));
+  await user.click(
+    screen.getByRole("button", { name: `Edit ${recipient.name}` }),
+  );
+  await user.dblClick(screen.getByRole("button", { name: "Save changes" }));
+  expect(screen.getByRole("button", { name: "Saving…" })).toBeDisabled();
+  await user.keyboard("{Escape}");
+  expect(screen.getByRole("heading", { name: "Edit recipient" })).toBeVisible();
+  expect(calls).toBe(1);
+  finish();
+  await screen.findByRole("heading", { name: "Choose recipient" });
+});
+
+test("editing preserves API-supported non-geographic international phone numbers", async () => {
+  const user = userEvent.setup();
+  const saved = { ...recipient, phone_number: "+80012345678" };
+  let submitted: unknown;
+  server.use(
+    http.get(recipientsUrl, () => HttpResponse.json({ recipients: [saved] })),
+    http.patch(`${recipientsUrl}${recipient.id}/`, async ({ request }) => {
+      submitted = await request.json();
+      return HttpResponse.json(saved);
+    }),
+  );
+  renderCheckout();
+  await user.click(await screen.findByRole("button", { name: "Change" }));
+  await user.click(
+    screen.getByRole("button", { name: `Edit ${recipient.name}` }),
+  );
+  expect(screen.getByLabelText("Phone number")).toHaveValue(saved.phone_number);
+  await user.click(screen.getByRole("button", { name: "Save changes" }));
+  await screen.findByRole("heading", { name: "Choose recipient" });
+  expect(submitted).toMatchObject({ phone_number: saved.phone_number });
+});

@@ -50,3 +50,13 @@ export async function fetchConfirmation(
     )
   ).data;
 }
+
+/** Update an owned saved recipient without changing its identity. */
+export async function updateRecipient(
+  id: number,
+  recipient: Omit<Recipient, "id">,
+) {
+  return (
+    await api.patch<Recipient>(`/api/account/recipients/${id}/`, recipient)
+  ).data;
+}

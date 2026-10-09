@@ -176,8 +176,9 @@ function CheckoutReview({
       />
       {selected && !completeRecipient && (
         <p role="alert" className="text-destructive text-sm">
-          This recipient has incomplete details. Choose or add a recipient with
-          a name, phone number, country, street address, and city.
+          This recipient has incomplete details. Edit it, or choose or add a
+          recipient with a name, phone number, country, street address, and
+          city.
         </p>
       )}
       <CheckoutItems preview={preview} />

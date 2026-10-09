@@ -1,16 +1,16 @@
-import { type SyntheticEvent, useRef, useState } from "react";
+import { type SyntheticEvent, useEffect, useRef, useState } from "react";
 
 import { Button } from "@/app/components/ui/button";
-import { Checkbox } from "@/app/components/ui/checkbox";
 import { Dialog, DialogContent, DialogTitle } from "@/app/components/ui/dialog";
-import { Input } from "@/app/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/app/components/ui/radio-group";
-import AddressCountryField from "@/authentication/components/AddressCountryField";
-import PhoneNumberField from "@/authentication/components/PhoneNumberField";
 
-import { createRecipient, fetchRecipients } from "../api";
+import { createRecipient, fetchRecipients, updateRecipient } from "../api";
 import type { Recipient, RecipientDetails } from "../types";
 import { checkoutError } from "../utils/errors";
+import { RecipientForm } from "./RecipientForm";
+
+type RecipientView =
+  { mode: "choose" } | { mode: "add" } | { mode: "edit"; recipient: Recipient };
 
 /** Show the saved address or immutable confirmation snapshot without inferring phone-country location. */
 export function RecipientAddress({
@@ -52,11 +52,22 @@ export function RecipientSection({
   disabled: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const [adding, setAdding] = useState(false);
+  const [view, setView] = useState<RecipientView>({ mode: "choose" });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [fields, setFields] = useState<Record<string, string>>({});
   const inFlight = useRef(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const returnToRecipient = useRef<number | null>(null);
+  // Restore keyboard focus when the edit form returns to the saved-recipient list.
+  useEffect(() => {
+    if (open && view.mode === "choose" && returnToRecipient.current !== null) {
+      document
+        .getElementById(`edit-recipient-${returnToRecipient.current}`)
+        ?.focus();
+      returnToRecipient.current = null;
+    }
+  }, [open, view.mode]);
   const save = async (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (inFlight.current) return;
@@ -67,7 +78,7 @@ export function RecipientSection({
     setError("");
     setFields({});
     try {
-      const recipient = await createRecipient({
+      const payload = {
         name: value("name"),
         phone_number: value("phoneNumber"),
         country_code: value("addressCountry"),
@@ -76,31 +87,54 @@ export function RecipientSection({
         city: value("city"),
         region: value("region"),
         postal_code: value("postal_code"),
-        is_default: form.has("is_default"),
-      });
-      onRecipients([
-        ...recipients.map((item) =>
-          recipient.is_default ? { ...item, is_default: false } : item,
-        ),
-        recipient,
-      ]);
-      onSelect(recipient.id);
-      setAdding(false);
-      setOpen(false);
+        is_default:
+          (view.mode === "edit" && view.recipient.is_default) ||
+          form.has("is_default"),
+      };
+      const recipient =
+        view.mode === "edit"
+          ? await updateRecipient(view.recipient.id, payload)
+          : await createRecipient(payload);
+      onRecipients(
+        view.mode === "edit"
+          ? recipients.map((item) =>
+              item.id === recipient.id
+                ? recipient
+                : recipient.is_default
+                  ? { ...item, is_default: false }
+                  : item,
+            )
+          : [
+              ...recipients.map((item) =>
+                recipient.is_default ? { ...item, is_default: false } : item,
+              ),
+              recipient,
+            ],
+      );
+      if (view.mode === "add") {
+        onSelect(recipient.id);
+        setOpen(false);
+      } else if (selected) {
+        // Keep checkout selection stable if editing changes the saved default.
+        onSelect(selected.id);
+      }
+      setView({ mode: "choose" });
     } catch (failure) {
       const parsed = checkoutError(failure);
       setFields(parsed.fields);
       setError(parsed.message);
       if (parsed.uncertain) {
-        // Recipient creation has no idempotency key: reload saved addresses before another submission.
-        setAdding(false);
+        // Reload saved recipients to reconcile an unknown save outcome before retrying.
+        setView({ mode: "choose" });
         try {
-          onRecipients(await fetchRecipients());
+          const saved = await fetchRecipients();
+          onRecipients(saved);
+          if (view.mode === "edit" && selected) onSelect(selected.id);
         } catch {
           /* Keep the original actionable failure. */
         }
         setError(
-          "The save result is unknown. Check your saved recipients before adding this address again.",
+          "The save result is unknown. Check your saved recipients before trying again.",
         );
       }
     } finally {
@@ -108,14 +142,6 @@ export function RecipientSection({
       setBusy(false);
     }
   };
-  const inputs = [
-    ["name", "Full name", 100, true, "name"],
-    ["address_line1", "Address line 1", 150, true, "address-line1"],
-    ["address_line2", "Address line 2 (optional)", 150, false, "address-line2"],
-    ["city", "City", 100, true, "address-level2"],
-    ["region", "Province / region (optional)", 100, false, "address-level1"],
-    ["postal_code", "Postal code (optional)", 20, false, "postal-code"],
-  ] as const;
   return (
     <section
       className="bg-card space-y-4 rounded-xl border p-4 sm:p-6"
@@ -126,6 +152,7 @@ export function RecipientSection({
           Recipient info
         </h2>
         <Button
+          ref={triggerRef}
           variant="outline"
           disabled={disabled}
           onClick={() => {
@@ -148,73 +175,39 @@ export function RecipientSection({
         onOpenChange={(value) => {
           if (!busy) {
             setOpen(value);
-            if (!value) setAdding(false);
+            if (!value) setView({ mode: "choose" });
           }
         }}
       >
-        <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto">
+        <DialogContent
+          finalFocus={triggerRef}
+          className="max-h-[calc(100dvh-2rem)] overflow-y-auto"
+        >
           <DialogTitle className="pr-10">
-            {adding ? "Add recipient" : "Choose recipient"}
+            {view.mode === "edit"
+              ? "Edit recipient"
+              : view.mode === "add"
+                ? "Add recipient"
+                : "Choose recipient"}
           </DialogTitle>
           {error && (
             <p role="alert" className="text-destructive text-sm wrap-anywhere">
               {error}
             </p>
           )}
-          {adding ? (
-            <form onSubmit={(event) => void save(event)} className="space-y-4">
-              <fieldset disabled={busy} className="min-w-0 space-y-4">
-                {inputs.map(
-                  ([name, label, maxLength, required, autoComplete]) => (
-                    <div key={name} className="space-y-2">
-                      <label
-                        htmlFor={`recipient-${name}`}
-                        className="text-sm font-medium"
-                      >
-                        {label}
-                      </label>
-                      <Input
-                        id={`recipient-${name}`}
-                        name={name}
-                        required={required}
-                        maxLength={maxLength}
-                        autoComplete={autoComplete}
-                        aria-invalid={Boolean(fields[name]) || undefined}
-                        aria-describedby={
-                          fields[name] ? `${name}-error` : undefined
-                        }
-                      />
-                      {fields[name] && (
-                        <p
-                          id={`${name}-error`}
-                          className="text-destructive text-sm"
-                        >
-                          {fields[name]}
-                        </p>
-                      )}
-                    </div>
-                  ),
-                )}
-                <AddressCountryField serverError={fields.country_code} />
-                <PhoneNumberField serverError={fields.phone_number} />
-                <label className="flex min-h-11 items-center gap-3 text-sm">
-                  <Checkbox name="is_default" />
-                  Make this my default recipient
-                </label>
-                <div className="flex flex-wrap gap-3">
-                  <Button type="submit">
-                    {busy ? "Saving…" : "Save recipient"}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setAdding(false)}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </fieldset>
-            </form>
+          {view.mode !== "choose" ? (
+            <RecipientForm
+              key={view.mode === "edit" ? view.recipient.id : "add"}
+              recipient={view.mode === "edit" ? view.recipient : undefined}
+              busy={busy}
+              fields={fields}
+              onSubmit={(event) => void save(event)}
+              onCancel={() => {
+                setView({ mode: "choose" });
+                setError("");
+                setFields({});
+              }}
+            />
           ) : (
             <>
               {recipients.length === 0 && (
@@ -228,27 +221,43 @@ export function RecipientSection({
                 onValueChange={(id) => onSelect(Number(id))}
               >
                 {recipients.map((recipient) => (
-                  <label
+                  <div
                     key={recipient.id}
-                    className="flex cursor-pointer items-start gap-3 rounded-lg border p-3"
+                    className="flex flex-wrap items-start gap-3 rounded-lg border p-3"
                   >
-                    <RadioGroupItem className="mt-1" value={recipient.id} />
-                    <div className="min-w-0">
-                      <RecipientAddress recipient={recipient} />
-                      {recipient.is_default && (
-                        <span className="text-muted-foreground text-xs">
-                          Default
-                        </span>
-                      )}
-                    </div>
-                  </label>
+                    <label className="flex min-w-0 flex-1 cursor-pointer items-start gap-3">
+                      <RadioGroupItem className="mt-1" value={recipient.id} />
+                      <div className="min-w-0">
+                        <RecipientAddress recipient={recipient} />
+                        {recipient.is_default && (
+                          <span className="text-muted-foreground text-xs">
+                            Default
+                          </span>
+                        )}
+                      </div>
+                    </label>
+                    <Button
+                      id={`edit-recipient-${recipient.id}`}
+                      variant="outline"
+                      size="sm"
+                      aria-label={`Edit ${recipient.name}`}
+                      onClick={() => {
+                        returnToRecipient.current = recipient.id;
+                        setView({ mode: "edit", recipient });
+                        setError("");
+                        setFields({});
+                      }}
+                    >
+                      Edit
+                    </Button>
+                  </div>
                 ))}
               </RadioGroup>
               <div className="flex flex-wrap gap-3">
                 <Button
                   variant="outline"
                   onClick={() => {
-                    setAdding(true);
+                    setView({ mode: "add" });
                     setError("");
                     setFields({});
                   }}

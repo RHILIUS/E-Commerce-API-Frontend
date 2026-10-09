@@ -18,7 +18,16 @@ API contracts: [recipients](../../../backend/docs/checkout/recipients-api.md), [
 
 ## Review and recipient selection
 
-The page loads the server preview and saved recipients. A saved default is selected initially; customers can choose exactly one recipient or create a new one. New recipients use the existing international phone and address-country controls. Choosing a recipient does not change the saved default. Required fields and server field errors remain visible in the recipient form.
+The page loads the server preview and saved recipients. A saved default is selected initially; customers can choose exactly one recipient, create a new one, or edit a saved recipient. New recipients use the existing international phone and address-country controls. Choosing a recipient does not change the saved default. Required fields and server field errors remain visible in the recipient form.
+
+Each saved recipient has an Edit action that opens the shared, prefilled form in
+the same dialog. Saving updates the existing recipient and returns to the list;
+cancel discards the draft. Editing preserves the checkout selection, including
+when another recipient becomes default. The current default cannot be unchecked;
+choose another recipient as default to replace it. Phone country is derived from
+the saved phone independently of the delivery country. Existing order snapshots
+are unchanged. Duplicate submissions and dialog dismissal are blocked during saves;
+unknown outcomes reload saved recipients before the customer retries.
 
 Prices are decimal strings formatted without floating-point totals. The frontend does not convert currencies or infer currency from phone country. Item issues and unavailable totals block placement. Preview expiry is tracked internally without a customer-facing countdown or stock-check message. Place Order is the normal payment-section action. When the preview expires or placement requires another review, checkout shows “Please update your order details before continuing.” and an Update order details button. This fetches fresh prices and availability for review; it never automatically places the order. No background polling silently changes the accepted price.
 
@@ -43,3 +52,12 @@ Integration tests live in `tests/checkout/`, with product/cart entry tests in `t
 Verified responsive checkout, recipient selection/form, and confirmation at 330, 375, 768, 1024, and 1440px in light and dark themes; the recipient form also fits a 375×400 viewport with internal scrolling. These 41 browser layout/interaction checks found no horizontal page overflow or browser page errors.
 
 Keyboard checks verified arrow-key recipient selection, Escape closing the dialog and returning focus to Change, country selection, and recipient form validity.
+
+Recipient editing regression coverage verifies prefilled contact/address fields,
+save/cancel behavior, selected and unselected recipient edits, default replacement,
+field validation, duplicate submissions, and unknown-save reconciliation. Valid
+non-geographic E.164 numbers (such as `+800`) retain their full international value.
+Chromium checks cover checkout, recipient list, edit form, and saved state at 330,
+375, 768, 1024, and 1440px in both themes, with a 375×400 short viewport, keyboard
+focus restoration, Escape dismissal, and no horizontal overflow. A further 330×400
+check verifies saving a non-geographic number. Browser APIs are mocked.

@@ -21,9 +21,11 @@ const matchesCountry = (country: CountryOption, query: string) => {
 };
 
 const AddressCountryField = ({
+  defaultValue,
   serverError,
   onValueChange,
 }: {
+  defaultValue?: string;
   serverError?: string;
   onValueChange?: () => void;
 }) => {
@@ -34,6 +36,10 @@ const AddressCountryField = ({
       </label>
 
       <Combobox
+        defaultValue={
+          COUNTRY_OPTIONS.find((country) => country.code === defaultValue) ??
+          null
+        }
         items={COUNTRY_OPTIONS}
         name="addressCountry"
         onValueChange={() => onValueChange?.()}
