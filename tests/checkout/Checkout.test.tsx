@@ -114,7 +114,12 @@ describe("COD checkout", () => {
     const user = userEvent.setup();
     const { router } = renderCheckout();
     expect(await screen.findByText(recipient.name)).toBeVisible();
-    expect(source).toEqual({ source: "product", product_id: 2, quantity: 2 });
+    expect(source).toEqual({
+      source: "product",
+      product_id: 2,
+      quantity: 2,
+      payment_method: "cod",
+    });
     const button = screen.getByRole("button", { name: "Place Order" });
     await waitFor(() => expect(button).toBeEnabled());
     await user.dblClick(button);
@@ -131,7 +136,7 @@ describe("COD checkout", () => {
       `/checkout/confirmation/${confirmation.reference}`,
     );
     expect(screen.getByText("Payment due on delivery")).toBeVisible();
-    expect(sessionStorage.getItem("checkout:cod:1")).toBeNull();
+    expect(sessionStorage.getItem("checkout:attempt:1:product:2")).toBeNull();
   });
   test("preserves product quantity through sign in", async () => {
     server.use(
@@ -252,8 +257,8 @@ describe("COD checkout", () => {
       ).toBeEnabled(),
     );
     first.unmount();
-    // Recovery must work without the old source URL or a fresh purchasable preview.
-    renderCheckout("/checkout");
+    // Reopening the same selection must retry without a fresh purchasable preview.
+    renderCheckout();
     await user.click(
       await screen.findByRole("button", { name: "Retry saved order" }),
     );

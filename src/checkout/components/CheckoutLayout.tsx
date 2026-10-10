@@ -6,7 +6,7 @@ import { Header } from "@/ecommerce/components/Header";
 /** Match the store shell while allowing long addresses and references to wrap on mobile. */
 export function CheckoutLayout({
   children,
-  backLink = { to: "/cart", label: "Back to cart" },
+  backLink = { to: "/", label: "Back to product catalog" },
 }: {
   children: ReactNode;
   backLink?: { to: string; label: string } | null;

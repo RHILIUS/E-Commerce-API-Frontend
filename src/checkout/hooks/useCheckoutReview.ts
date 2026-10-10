@@ -1,14 +1,19 @@
 import { useEffect, useState } from "react";
 
 import { fetchPreview, fetchRecipients } from "../api";
-import type { Preview, Recipient } from "../types";
+import type { PaymentMethod, Preview, Recipient } from "../types";
 import { checkoutError } from "../utils/errors";
 import { parseSource } from "../utils/source";
 
 /** Load a review without polling or silently replacing the prices the customer accepted. */
-export function useCheckoutReview(search: string, paused: boolean) {
+export function useCheckoutReview(
+  search: string,
+  paused: boolean,
+  paymentMethod: PaymentMethod = "cod",
+) {
   const [version, setVersion] = useState(0);
   const [data, setData] = useState<{
+    paymentMethod: PaymentMethod;
     preview: Preview;
     recipients: Recipient[];
   } | null>(null);
@@ -26,10 +31,11 @@ export function useCheckoutReview(search: string, paused: boolean) {
       setData(null);
       try {
         const [preview, recipients] = await Promise.all([
-          fetchPreview(source, controller.signal),
+          fetchPreview(source, controller.signal, paymentMethod),
           fetchRecipients(controller.signal),
         ]);
-        if (!controller.signal.aborted) setData({ preview, recipients });
+        if (!controller.signal.aborted)
+          setData({ paymentMethod, preview, recipients });
       } catch (failure) {
         if (!controller.signal.aborted)
           setError(checkoutError(failure).message);
@@ -38,9 +44,9 @@ export function useCheckoutReview(search: string, paused: boolean) {
       }
     });
     return () => controller.abort();
-  }, [search, paused, version]);
+  }, [search, paused, version, paymentMethod]);
   return {
-    data,
+    data: data?.paymentMethod === paymentMethod ? data : null,
     loading,
     error,
     refresh: () => {

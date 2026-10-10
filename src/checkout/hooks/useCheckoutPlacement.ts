@@ -1,44 +1,26 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { placeCOD } from "../api";
-import type { PlacementRequest } from "../types";
+import { placeCOD, placeStripe } from "../api";
+import type { CheckoutSource, PlacementRequest } from "../types";
 import { checkoutError } from "../utils/errors";
+import { readAttempt, recoveryKey, type SavedAttempt } from "../utils/recovery";
 
-type SavedAttempt = { request: PlacementRequest; reference?: string };
-// Reject unreadable recovery data instead of silently allowing a second purchase.
-function readAttempt(key: string): {
-  attempt: SavedAttempt | null;
-  error: string;
-} {
-  try {
-    const raw = sessionStorage.getItem(key);
-    if (!raw) return { attempt: null, error: "" };
-    const data = JSON.parse(raw) as SavedAttempt;
-    if (
-      !data?.request ||
-      typeof data.request.preview_token !== "string" ||
-      !Number.isSafeInteger(data.request.recipient_id) ||
-      data.request.recipient_id < 1 ||
-      data.request.payment_method !== "cod" ||
-      typeof data.request.idempotency_key !== "string" ||
-      (data.reference !== undefined && typeof data.reference !== "string")
-    )
-      throw new Error("Invalid attempt");
-    return { attempt: data, error: "" };
-  } catch {
-    return {
-      attempt: null,
-      error:
-        "Checkout recovery storage is unavailable. Restore this tab’s storage before placing an order; an earlier purchase may still need confirmation.",
-    };
-  }
-}
-
-/** Persist an account-scoped request before sending; ambiguous failures retain its identity across reloads. */
-export function useCODPlacement(userId: number) {
-  const key = `checkout:cod:${userId}`;
-  const [initial] = useState(() => readAttempt(key));
+/** Persist selection-scoped requests; retain legacy unknown outcomes for explicit recovery. */
+export function useCheckoutPlacement(
+  userId: number,
+  source: CheckoutSource | null,
+) {
+  const scopedKey = recoveryKey(userId, source);
+  const legacyKey = `checkout:cod:${userId}`;
+  const [legacy] = useState(() => readAttempt(legacyKey));
+  // Legacy records lack a selection. Known references remain accessible without
+  // blocking review; unknown outcomes must be resolved before another purchase.
+  const [recoverLegacy, setRecoverLegacy] = useState(() =>
+    Boolean(legacy.error || (legacy.attempt && !legacy.attempt.reference)),
+  );
+  const key = recoverLegacy ? legacyKey : scopedKey;
+  const [initial] = useState(() => (recoverLegacy ? legacy : readAttempt(key)));
   const [attempt, setAttempt] = useState(initial.attempt);
   const [error, setError] = useState(initial.error);
   const [busy, setBusy] = useState(false);
@@ -55,15 +37,19 @@ export function useCODPlacement(userId: number) {
 
   const submit = async (input?: Omit<PlacementRequest, "idempotency_key">) => {
     if (
+      !key ||
       inFlight.current ||
       initial.error ||
       (!attempt && (!input || needsReview))
     )
       return;
     if (attempt?.reference) {
-      navigate(`/checkout/confirmation/${attempt.reference}`, {
-        replace: true,
-      });
+      navigate(
+        `/checkout/${attempt.request.payment_method === "stripe" ? "payment" : "confirmation"}/${attempt.reference}`,
+        {
+          replace: true,
+        },
+      );
       return;
     }
     inFlight.current = true;
@@ -85,7 +71,11 @@ export function useCODPlacement(userId: number) {
       return;
     }
     try {
-      const confirmation = await placeCOD(saved.request);
+      const payment =
+        saved.request.payment_method === "stripe"
+          ? await placeStripe(saved.request)
+          : null;
+      const confirmation = payment ?? (await placeCOD(saved.request));
       // Keep the successful reference until confirmation loads, including when navigation is interrupted.
       const completed = { ...saved, reference: confirmation.reference };
       setAttempt(completed);
@@ -94,10 +84,23 @@ export function useCODPlacement(userId: number) {
       } catch {
         /* The persisted original request remains safe to replay. */
       }
-      if (mounted.current)
-        navigate(`/checkout/confirmation/${confirmation.reference}`, {
-          replace: true,
-        });
+      if (mounted.current) {
+        if (
+          payment?.status === "pending" &&
+          payment.checkout_url &&
+          !payment.cancel_requested
+        ) {
+          // Persist recovery before leaving the app; return visits stay on the status page.
+          location.assign(payment.checkout_url);
+          return;
+        }
+        navigate(
+          `/checkout/${saved.request.payment_method === "stripe" ? "payment" : "confirmation"}/${confirmation.reference}`,
+          {
+            replace: true,
+          },
+        );
+      }
     } catch (failure) {
       const parsed = checkoutError(failure);
       setError(parsed.message);
@@ -105,6 +108,7 @@ export function useCODPlacement(userId: number) {
         try {
           sessionStorage.removeItem(key);
           setAttempt(null);
+          setRecoverLegacy(false);
           setNeedsReview(true);
         } catch {
           setError(
@@ -119,6 +123,7 @@ export function useCODPlacement(userId: number) {
   };
   return {
     attempt,
+    previousAttempt: legacy.attempt?.reference ? legacy.attempt : null,
     busy,
     error,
     storageBlocked: Boolean(initial.error),
@@ -129,17 +134,4 @@ export function useCODPlacement(userId: number) {
       setError("");
     },
   };
-}
-
-/** Clear only the confirmed request for this account, leaving other pending purchases intact. */
-export function clearConfirmedAttempt(userId: number, reference: string) {
-  const key = `checkout:cod:${userId}`;
-  const { attempt } = readAttempt(key);
-  if (attempt?.reference === reference) {
-    try {
-      sessionStorage.removeItem(key);
-    } catch {
-      /* A later visit can still open the stored confirmation. */
-    }
-  }
 }

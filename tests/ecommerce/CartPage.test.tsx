@@ -435,7 +435,11 @@ test("sends only selected cart IDs to the checkout preview", async () => {
   await user.click(screen.getByRole("checkbox", { name: "Select Camera" }));
   await user.click(screen.getByRole("button", { name: "Checkout" }));
   await screen.findByRole("button", { name: "Place Order" });
-  expect(body).toEqual({ source: "cart", item_ids: [1] });
+  expect(body).toEqual({
+    source: "cart",
+    item_ids: [1],
+    payment_method: "cod",
+  });
 });
 
 test("resets selected overstock quantities to one before checkout and asks for review", async () => {

@@ -55,7 +55,7 @@ export type Preview = {
 export type PlacementRequest = {
   preview_token: string;
   recipient_id: number;
-  payment_method: "cod";
+  payment_method: "cod" | "stripe";
   idempotency_key: string;
 };
 export type Confirmation = {
@@ -89,4 +89,13 @@ export type Confirmation = {
       subtotal: Money;
     }[];
   }[];
+};
+
+export type PaymentMethod = "cod" | "stripe";
+export type StripePayment = {
+  reference: string;
+  status: "pending" | "completed" | "cancelled" | "expired";
+  checkout_url: string | null;
+  expires_at: string | null;
+  cancel_requested: boolean;
 };

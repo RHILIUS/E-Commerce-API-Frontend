@@ -7,9 +7,9 @@ import { fetchConfirmation } from "@/checkout/api";
 import { CheckoutImage } from "@/checkout/components/CheckoutImage";
 import { CheckoutLayout } from "@/checkout/components/CheckoutLayout";
 import { RecipientAddress } from "@/checkout/components/RecipientSection";
-import { clearConfirmedAttempt } from "@/checkout/hooks/useCODPlacement";
 import type { Confirmation } from "@/checkout/types";
 import { checkoutError } from "@/checkout/utils/errors";
+import { clearConfirmedAttempt } from "@/checkout/utils/recovery";
 import { formatMoney } from "@/ecommerce/cart/utils";
 
 export default function CheckoutConfirmationPage() {
@@ -67,6 +67,12 @@ function ConfirmationContent({
           </h1>
           {data && (
             <>
+              {data.payment_method === "stripe" &&
+                data.status === "completed" && (
+                  <p className="text-muted-foreground">
+                    Stripe test payment received. No real money moved.
+                  </p>
+                )}
               {paymentDue && (
                 <p className="text-muted-foreground">Payment due on delivery</p>
               )}
@@ -193,7 +199,7 @@ function ConfirmationContent({
                 <dd className="mb-2 sm:mb-0">
                   {data.payment_method === "cod"
                     ? "Cash on Delivery"
-                    : data.payment_method}
+                    : "Card (Stripe test)"}
                 </dd>
                 <dt className="text-muted-foreground">Checkout status</dt>
                 <dd className="mb-2 capitalize sm:mb-0">{data.status}</dd>

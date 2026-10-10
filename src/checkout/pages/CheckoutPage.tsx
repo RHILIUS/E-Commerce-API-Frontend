@@ -1,15 +1,17 @@
 import { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 import { Button } from "@/app/components/ui/button";
+import { RadioGroup, RadioGroupItem } from "@/app/components/ui/radio-group";
 import { useAuth } from "@/authentication/contexts/Auth/useAuth";
 import { useCountdown } from "@/authentication/hooks/useCountdown";
 import { CheckoutItems } from "@/checkout/components/CheckoutItems";
 import { CheckoutLayout } from "@/checkout/components/CheckoutLayout";
 import { RecipientSection } from "@/checkout/components/RecipientSection";
+import { SavedCheckoutSummary } from "@/checkout/components/SavedCheckoutSummary";
+import { useCheckoutPlacement } from "@/checkout/hooks/useCheckoutPlacement";
 import { useCheckoutReview } from "@/checkout/hooks/useCheckoutReview";
-import { useCODPlacement } from "@/checkout/hooks/useCODPlacement";
-import type { Preview, Recipient } from "@/checkout/types";
+import type { PaymentMethod, Preview, Recipient } from "@/checkout/types";
 import { parseSource } from "@/checkout/utils/source";
 import { formatMoney } from "@/ecommerce/cart/utils";
 
@@ -31,13 +33,15 @@ function CheckoutContent({
   userId: number;
   search: string;
 }) {
-  const placement = useCODPlacement(userId);
+  const source = parseSource(search);
+  const placement = useCheckoutPlacement(userId, source);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cod");
   const [recipientId, setRecipientId] = useState<number | undefined>();
   const review = useCheckoutReview(
     search,
     Boolean(placement.attempt) || placement.storageBlocked,
+    paymentMethod,
   );
-  const source = parseSource(search);
   const refresh = () => {
     review.refresh();
     placement.reviewed();
@@ -56,16 +60,29 @@ function CheckoutContent({
           {placement.error}
         </p>
       )}
+      {placement.previousAttempt && (
+        <p className="text-muted-foreground text-sm">
+          An earlier checkout is still saved.{" "}
+          <Link
+            className="text-foreground underline underline-offset-4"
+            to={`/checkout/${placement.previousAttempt.request.payment_method === "stripe" ? "payment" : "confirmation"}/${placement.previousAttempt.reference}`}
+          >
+            {placement.previousAttempt.request.payment_method === "stripe"
+              ? "View previous payment"
+              : "View previous order"}
+          </Link>
+        </p>
+      )}
       {placement.attempt ? (
         <section className="bg-card space-y-4 rounded-xl border p-4 sm:p-6">
           <h2 className="text-xl">
             {placement.attempt.reference
-              ? "Your order was placed"
+              ? "Your checkout is saved"
               : "Confirm your previous order request"}
           </h2>
           <p className="text-muted-foreground text-sm">
             {placement.attempt.reference
-              ? "Open the saved confirmation to review your purchase."
+              ? "Open your saved checkout to review its status."
               : "An order request is saved in this tab. Retry that same request to check its result before starting another purchase. This will not create a duplicate order."}
           </p>
           <Button
@@ -73,11 +90,22 @@ function CheckoutContent({
             onClick={() => void placement.submit()}
           >
             {placement.busy
-              ? "Checking order…"
+              ? placement.attempt.request.payment_method === "stripe"
+                ? "Redirecting to payment…"
+                : "Checking order…"
               : placement.attempt.reference
-                ? "View confirmation"
+                ? placement.attempt.request.payment_method === "stripe"
+                  ? "View payment"
+                  : "View confirmation"
                 : "Retry saved order"}
           </Button>
+          {placement.attempt.reference && (
+            <SavedCheckoutSummary
+              key={placement.attempt.reference}
+              reference={placement.attempt.reference}
+              headingLevel={3}
+            />
+          )}
         </section>
       ) : !source ? (
         <p role="alert">
@@ -87,6 +115,40 @@ function CheckoutContent({
       ) : (
         !placement.storageBlocked && (
           <>
+            <section
+              className="bg-card space-y-3 rounded-xl border p-4 sm:p-6"
+              aria-labelledby="payment-method-heading"
+            >
+              <h2 id="payment-method-heading" className="text-xl">
+                Payment method
+              </h2>
+              <RadioGroup
+                aria-labelledby="payment-method-heading"
+                value={paymentMethod}
+                onValueChange={(value) => {
+                  if (value === "cod" || value === "stripe") {
+                    setPaymentMethod(value);
+                    placement.reviewed();
+                  }
+                }}
+                disabled={placement.busy}
+              >
+                <label className="flex min-h-11 items-center gap-3">
+                  <RadioGroupItem value="cod" />
+                  Cash on Delivery
+                </label>
+                <label className="flex min-h-11 items-center gap-3">
+                  <RadioGroupItem value="stripe" />
+                  Card (Stripe test)
+                </label>
+              </RadioGroup>
+              {paymentMethod === "stripe" && (
+                <p className="text-muted-foreground text-sm">
+                  Demo payment only. Your combined order will be charged in USD
+                  using a Stripe test card.
+                </p>
+              )}
+            </section>
             {review.error && (
               <div role="alert" className="space-y-3">
                 <p>{review.error}</p>
@@ -100,6 +162,7 @@ function CheckoutContent({
             )}
             {review.data && (
               <CheckoutReview
+                paymentMethod={paymentMethod}
                 preview={review.data.preview}
                 savedRecipients={review.data.recipients}
                 placement={placement}
@@ -115,6 +178,7 @@ function CheckoutContent({
   );
 }
 function CheckoutReview({
+  paymentMethod,
   preview,
   savedRecipients,
   recipientId,
@@ -122,11 +186,12 @@ function CheckoutReview({
   placement,
   refresh,
 }: {
+  paymentMethod: PaymentMethod;
   preview: Preview;
   savedRecipients: Recipient[];
   recipientId: number | undefined;
   onSelectRecipient: (id: number) => void;
-  placement: ReturnType<typeof useCODPlacement>;
+  placement: ReturnType<typeof useCheckoutPlacement>;
   refresh: () => void;
 }) {
   const [recipients, setRecipients] = useState(savedRecipients);
@@ -162,7 +227,7 @@ function CheckoutReview({
     void placement.submit({
       preview_token: preview.preview_token,
       recipient_id: selected.id,
-      payment_method: "cod",
+      payment_method: paymentMethod,
     });
   };
   return (
@@ -196,9 +261,15 @@ function CheckoutReview({
         <h2 id="payment-heading" className="text-xl">
           Payment
         </h2>
-        <p className="font-medium">Cash on Delivery (COD)</p>
+        <p className="font-medium">
+          {paymentMethod === "cod"
+            ? "Cash on Delivery (COD)"
+            : "Card (Stripe test)"}
+        </p>
         <p className="text-muted-foreground text-sm">
-          Pay when your order arrives. Online payment is not available yet.
+          {paymentMethod === "cod"
+            ? "Pay when your order arrives."
+            : "One USD test payment covers all stores. No real money moves."}
         </p>
         <div className="flex flex-wrap items-baseline justify-between gap-3 border-t pt-4">
           <span>Total payment</span>
@@ -227,7 +298,13 @@ function CheckoutReview({
             disabled={!ready || placement.busy}
             onClick={place}
           >
-            {placement.busy ? "Placing order…" : "Place Order"}
+            {placement.busy
+              ? paymentMethod === "stripe"
+                ? "Redirecting to payment…"
+                : "Preparing checkout…"
+              : paymentMethod === "cod"
+                ? "Place Order"
+                : "Continue to payment"}
           </Button>
           {(expired || placement.needsReview) && (
             <Button
