@@ -137,6 +137,12 @@ export const Header = ({ searchQuery, onSearch }: HeaderProps) => {
                   aria-label="Account"
                 >
                   <DropdownMenuItem
+                    render={<Link to="/orders" />}
+                    className="mb-2 min-h-11 justify-center font-medium"
+                  >
+                    Orders
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
                     onClick={handleLogout}
                     disabled={isLoggingOut}
                     closeOnClick={false}
