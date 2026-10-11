@@ -58,3 +58,39 @@ Contact Seller is deferred and omitted. Delivered orders have a disabled
 seven-day automatic completion, delivery workflow, returns and wallet features
 are deferred. The existing internal ledger is used only to reverse a confirmed
 Stripe receipt; customer wallets are not created or credited.
+
+## Order history
+
+Each card has **View order history**, opening a scrollable dialog with the complete
+recorded timeline, oldest first. Entries show a milestone, full date/time with the
+browser's local timezone, and Customer, Seller, System or Actor not recorded.
+The dialog loads only when opened and fetches fresh history on reopening. Loading,
+retryable errors and an empty history are handled independently of the order list.
+Escape and Close return focus to the history button.
+
+`GET /api/shop/orders/{id}/history/` is owner-only and read-only. It returns
+`order_id`, `current_status`, `is_partial`, and `events` containing `id`,
+`event_type`, `label`, `occurred_at`, `actor_role`, and `is_backfilled`. Actor
+identities, provider references and internal retry errors are not exposed.
+
+Placement, fulfillment changes, payment confirmation, cancellation, refund requests
+and verified refund-state changes are permanently recorded by the backend. Status
+changes and their events commit together; retries do not repeat the same milestone.
+Seller fulfillment APIs and automatic seven-day completion remain deferred. The
+logging mechanism supports their future status writes without inventing those
+workflows or showing unperformed milestones.
+
+Apply `ecommerce.0003_orderevent` and `ecommerce.0004_backfill_order_events`.
+The backfill uses only saved creation/payment/conclusion/refund timestamps. Older
+orders show an explicit partial-history notice, with unknown actors labelled as
+such. A historical Completed order does not gain an invented delivery date.
+
+History verification: nine Orders-page integration tests passed, along with frontend
+lint, TypeScript/production build and formatting. The backend suite passed 296 tests
+with two existing skips on isolated PostgreSQL; OpenAPI validation and migration
+drift/plan checks passed. Fifty Chromium checks covered populated, partial, empty,
+error and loading history at 330, 375, 768, 1024 and 1440px in both themes, including
+375×400. Dialog bounds, internal scrolling, retry, Escape and focus restoration
+were checked; no horizontal overflow or page errors occurred. Browser APIs were
+mocked. Development migrations were not applied because database authentication
+failed; the build retains its existing large-chunk warning.

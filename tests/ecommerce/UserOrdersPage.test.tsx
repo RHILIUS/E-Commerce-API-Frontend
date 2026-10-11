@@ -213,3 +213,156 @@ test("account dropdown exposes Orders above Log out without a wallet option", as
   const items = await screen.findAllByRole("menuitem");
   expect(items.map((i) => i.textContent)).toEqual(["Orders", "Log out"]);
 });
+
+test("history loads only when opened and shows recorded milestones and actor roles", async () => {
+  let historyReads = 0;
+  server.use(
+    http.get("http://localhost/api/shop/orders/:id/history/", ({ params }) => {
+      historyReads++;
+      return HttpResponse.json({
+        order_id: Number(params.id),
+        current_status: "completed",
+        is_partial: false,
+        events: [
+          {
+            id: 1,
+            event_type: "placed",
+            label: "Order placed",
+            occurred_at: "2026-10-01T10:00:00Z",
+            actor_role: "customer",
+            is_backfilled: false,
+          },
+          {
+            id: 2,
+            event_type: "accepted",
+            label: "Accepted by seller",
+            occurred_at: "2026-10-01T11:00:00Z",
+            actor_role: "seller",
+            is_backfilled: false,
+          },
+          {
+            id: 3,
+            event_type: "delivered",
+            label: "Order delivered",
+            occurred_at: "2026-10-02T10:00:00Z",
+            actor_role: "seller",
+            is_backfilled: false,
+          },
+          {
+            id: 4,
+            event_type: "completed",
+            label: "Order completed",
+            occurred_at: "2026-10-09T10:00:00Z",
+            actor_role: "system",
+            is_backfilled: false,
+          },
+        ],
+      });
+    }),
+  );
+  const user = userEvent.setup();
+  show();
+  const trigger = (
+    await screen.findAllByRole("button", { name: "View order history" })
+  )[0];
+  expect(historyReads).toBe(0);
+  await user.click(trigger);
+  const dialog = await screen.findByRole("dialog", { name: "Order history" });
+  const items = await within(dialog).findAllByRole("listitem");
+  expect(items).toHaveLength(4);
+  expect(items.map((item) => item.querySelector("p")?.textContent)).toEqual([
+    "Order placed",
+    "Accepted by seller",
+    "Order delivered",
+    "Order completed",
+  ]);
+  expect(within(items[0]).getByText("Customer")).toBeInTheDocument();
+  expect(within(items[3]).getByText("System")).toBeInTheDocument();
+  expect(items[2].querySelector("time")).toHaveAttribute(
+    "dateTime",
+    "2026-10-02T10:00:00Z",
+  );
+  await user.keyboard("{Escape}");
+  await waitFor(() =>
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+  );
+  expect(trigger).toHaveFocus();
+  await user.click(trigger);
+  await within(await screen.findByRole("dialog")).findAllByRole("listitem");
+  expect(historyReads).toBe(2);
+});
+
+test("historical gaps are explicit and failures have an independent retry", async () => {
+  let tries = 0;
+  server.use(
+    http.get("http://localhost/api/shop/orders/:id/history/", () => {
+      if (++tries === 1) return new HttpResponse(null, { status: 500 });
+      return HttpResponse.json({
+        order_id: 1,
+        current_status: "delivered",
+        is_partial: true,
+        events: [
+          {
+            id: 1,
+            event_type: "placed",
+            label: "Order placed",
+            occurred_at: "2026-10-01T10:00:00Z",
+            actor_role: "unknown",
+            is_backfilled: true,
+          },
+        ],
+      });
+    }),
+  );
+  const user = userEvent.setup();
+  show();
+  await user.click(
+    (await screen.findAllByRole("button", { name: "View order history" }))[0],
+  );
+  await user.click(
+    await screen.findByRole("button", { name: "Retry history" }),
+  );
+  expect(
+    await screen.findByText(
+      "Earlier activity may be missing. Only recorded dates are shown.",
+    ),
+  ).toBeInTheDocument();
+  expect(
+    screen.getByText("Actor not recorded · From existing records"),
+  ).toBeInTheDocument();
+  expect(
+    within(screen.getByRole("dialog")).queryByText("Order delivered"),
+  ).not.toBeInTheDocument();
+});
+
+test("history for different cards stays separate and empty history is clear", async () => {
+  server.use(
+    http.get("http://localhost/api/shop/orders/:id/history/", ({ params }) =>
+      HttpResponse.json({
+        order_id: Number(params.id),
+        current_status: "pending",
+        is_partial: false,
+        events: [],
+      }),
+    ),
+  );
+  const user = userEvent.setup();
+  show();
+  const buttons = await screen.findAllByRole("button", {
+    name: "View order history",
+  });
+  await user.click(buttons[1]);
+  expect(
+    await screen.findByText("No order history has been recorded yet."),
+  ).toBeInTheDocument();
+  expect(
+    within(screen.getByRole("dialog")).getByText(/Order #2 · Camera Store/),
+  ).toBeInTheDocument();
+  await user.click(
+    within(screen.getByRole("dialog")).getByRole("button", { name: "Close" }),
+  );
+  await user.click(buttons[0]);
+  expect(
+    await screen.findByText(/Order #1 · Camera Store/),
+  ).toBeInTheDocument();
+});

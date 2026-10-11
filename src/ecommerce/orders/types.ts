@@ -48,3 +48,18 @@ export type OrderPage = {
   previous: string | null;
   results: UserOrder[];
 };
+
+export type OrderHistoryEvent = {
+  id: number;
+  event_type: string;
+  label: string;
+  occurred_at: string;
+  actor_role: "customer" | "seller" | "system" | "unknown";
+  is_backfilled: boolean;
+};
+export type OrderHistory = {
+  order_id: number;
+  current_status: OrderStatus;
+  is_partial: boolean;
+  events: OrderHistoryEvent[];
+};

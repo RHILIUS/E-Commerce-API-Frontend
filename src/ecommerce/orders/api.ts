@@ -1,6 +1,6 @@
 import api from "@/app/api/axios";
 
-import type { OrderPage, OrderTab, UserOrder } from "./types";
+import type { OrderHistory, OrderPage, OrderTab, UserOrder } from "./types";
 
 /** Read one owned page; filtering and creation-time sorting happen before pagination. */
 export async function fetchOrders(
@@ -21,5 +21,12 @@ export async function cancelOrder(id: number) {
     await api.post<UserOrder>(`/api/shop/orders/${id}/cancel/`, undefined, {
       timeout: 30000,
     })
+  ).data;
+}
+
+/** Read the full recorded timeline for an owned order without reconciling payments. */
+export async function fetchOrderHistory(id: number, signal: AbortSignal) {
+  return (
+    await api.get<OrderHistory>(`/api/shop/orders/${id}/history/`, { signal })
   ).data;
 }

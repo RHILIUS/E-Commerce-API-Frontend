@@ -4,6 +4,7 @@ import { Button } from "@/app/components/ui/button";
 import { CheckoutImage } from "@/checkout/components/CheckoutImage";
 import { formatMoney } from "@/ecommerce/cart/utils";
 
+import { OrderHistoryDialog } from "./OrderHistoryDialog";
 import { statusLabels, type UserOrder } from "./types";
 
 /** One purchase from one store, preserving historical names, quantities and totals. */
@@ -110,6 +111,7 @@ export function OrderRecordCard({
           </div>
         )}
         <div className="flex flex-wrap justify-end gap-2">
+          <OrderHistoryDialog orderId={order.id} storeName={order.store.name} />
           {order.payment_pending && (
             <Button
               variant="outline"
