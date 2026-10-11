@@ -129,3 +129,12 @@ The [Active mobile scrolling viewport](https://www.figma.com/design/8F5dYlZFxUEN
 | Product description           | [5657:219](https://www.figma.com/design/8F5dYlZFxUEN6HKHWMOAwe/-MIgration--E-Commerce-Wireframe?node-id=5657-219&m=dev)   |
 | Store card                    | [5657:222](https://www.figma.com/design/8F5dYlZFxUEN6HKHWMOAwe/-MIgration--E-Commerce-Wireframe?node-id=5657-222&m=dev)   |
 | Compact header                | [5662:287](https://www.figma.com/design/8F5dYlZFxUEN6HKHWMOAwe/-MIgration--E-Commerce-Wireframe?node-id=5662-287&m=dev)   |
+
+## Customer orders — pending Figma mapping
+
+`/orders` (`src/ecommerce/pages/UserOrdersPage.tsx`) follows the inspected
+[original Orders guide](https://www.figma.com/design/dC74hwxyZCht0LnEn7JIuI/E-Commerce-Wireframe?node-id=337-748&m=dev),
+file `dC74hwxyZCht0LnEn7JIuI`, node `337:748`. Its migration-file mapping is
+**pending**. No canvas changes were made. The implemented six tabs, cancellation
+confirmation and card refund states supersede the original five-tab guide.
+See [customer orders](ecommerce/user-orders.md) for scope and API dependencies.
