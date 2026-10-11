@@ -3,6 +3,7 @@ import { createBrowserRouter } from "react-router-dom";
 import RootLayout from "@/app/layout/RootLayout";
 import HomePage from "@/app/pages/HomePage";
 import { authenticationRoutes } from "@/authentication/routes";
+import { checkoutProtectedRoutes } from "@/checkout/routes";
 import {
   ecommerceProtectedRoutes,
   ecommercePublicRoutes,
@@ -25,6 +26,7 @@ export const router = createBrowserRouter([
         element: <ProtectedRoute />,
         children: [
           ...ecommerceProtectedRoutes,
+          ...checkoutProtectedRoutes,
           { path: "/home-test", element: <HomePage /> },
         ],
       },

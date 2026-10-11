@@ -36,30 +36,8 @@ same unavailable screen. Other request failures offer a retry.
   Guests are sent to sign in with the product URL as their return destination.
   Successful additions show a dismissible toast popup with a View cart action; stock conflicts
   and request failures show an error. See [Shopping cart](cart.md).
-- Checkout still displays an availability message. It does not create an order.
+- Checkout carries the product ID and selected quantity to the protected [COD checkout flow](../checkout/README.md), preserving the selection through sign-in.
 
 Layouts stack below the desktop breakpoint and share semantic theme tokens for
 light and dark modes. The existing Header retains its guest/member behavior.
 There are no sample products or Figma asset URLs in the production page.
-
-## Verification
-
-`tests/ecommerce/ProductPage.test.tsx` exercises the real routing and HTTP client
-with mocked API responses: navigation, gallery selection, quantity boundaries,
-availability states, missing/failed media, errors, obsolete requests, and draft
-visibility after logout. Backend tests validate the contract separately.
-
-The frontend build (including TypeScript), ESLint, formatting, and all 51 tests
-passed. Chromium checks with contract-shaped API fixtures covered 330, 375, 768,
-1024, 1440, and 1920px in both themes, including a 375 × 568 viewport. Gallery
-selection, the upper stock limit, and unavailable purchase controls passed;
-no horizontal overflow or browser runtime errors were found. Desktop/mobile
-screenshots were visually compared with Figma. These checks used mocked HTTP
-responses, not a live backend/database session.
-
-The image-viewer update passed the production build (including TypeScript),
-ESLint, formatting, and all 53 tests. Chromium fixture checks covered wide,
-tall, and square images at 330, 375, 768, 1024, and 1440px in both themes,
-including 375 × 568. Checks verified viewport fitting without dialog overflow,
-keyboard focus containment and restoration, dismissal, and archived/missing
-media. Mobile light and desktop dark viewer screenshots were visually reviewed.

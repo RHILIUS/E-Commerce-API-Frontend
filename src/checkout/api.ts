@@ -1,0 +1,104 @@
+import api from "@/app/api/axios";
+
+import type {
+  CheckoutSource,
+  Confirmation,
+  PaymentMethod,
+  PlacementRequest,
+  Preview,
+  Recipient,
+  StripePayment,
+} from "./types";
+
+/** Request authoritative prices and availability for only the chosen items. */
+export async function fetchPreview(
+  source: CheckoutSource,
+  signal?: AbortSignal,
+  paymentMethod: PaymentMethod = "cod",
+) {
+  return (
+    await api.post<Preview>(
+      "/api/shop/checkout/preview/",
+      { ...source, payment_method: paymentMethod },
+      { signal },
+    )
+  ).data;
+}
+/** Saved recipients are scoped to the authenticated account. */
+export async function fetchRecipients(signal?: AbortSignal) {
+  return (
+    await api.get<{ recipients: Recipient[] }>("/api/account/recipients/", {
+      signal,
+    })
+  ).data.recipients;
+}
+/** Persist a recipient before selecting it for checkout. */
+export async function createRecipient(recipient: Omit<Recipient, "id">) {
+  return (await api.post<Recipient>("/api/account/recipients/", recipient))
+    .data;
+}
+/** Retry this exact body when the outcome of an earlier request is unknown. */
+export async function placeCOD(request: PlacementRequest) {
+  return (
+    await api.post<Confirmation>("/api/shop/checkouts/", request, {
+      timeout: 30000,
+    })
+  ).data;
+}
+/** Read persisted purchase snapshots; this never creates another order. */
+export async function fetchConfirmation(
+  reference: string,
+  signal?: AbortSignal,
+) {
+  return (
+    await api.get<Confirmation>(
+      `/api/shop/checkouts/${encodeURIComponent(reference)}/`,
+      { signal },
+    )
+  ).data;
+}
+
+/** Update an owned saved recipient without changing its identity. */
+export async function updateRecipient(
+  id: number,
+  recipient: Omit<Recipient, "id">,
+) {
+  return (
+    await api.patch<Recipient>(`/api/account/recipients/${id}/`, recipient)
+  ).data;
+}
+
+/** Create or recover the same Stripe test purchase; no card details enter this app. */
+export async function placeStripe(request: PlacementRequest) {
+  return (
+    await api.post<StripePayment>("/api/shop/checkouts/stripe/", request, {
+      timeout: 30000,
+    })
+  ).data;
+}
+/** Read persisted payment state without creating a session or calling Stripe. */
+export async function fetchStripePayment(
+  reference: string,
+  signal?: AbortSignal,
+) {
+  return (
+    await api.get<StripePayment>(
+      `/api/shop/checkouts/${encodeURIComponent(reference)}/payment/`,
+      { signal },
+    )
+  ).data;
+}
+/** Reconcile the provider state or request cancellation; both operations are safe to retry. */
+export async function reconcileStripePayment(
+  reference: string,
+  cancel = false,
+  signal?: AbortSignal,
+) {
+  return (
+    await api.post<StripePayment>(
+      `/api/shop/checkouts/${encodeURIComponent(reference)}/payment/${cancel ? "cancel/" : ""}`,
+      undefined,
+      { timeout: 30000, signal },
+    )
+  ).data;
+}

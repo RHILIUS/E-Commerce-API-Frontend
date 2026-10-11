@@ -9,7 +9,7 @@ import { Input } from "@/app/components/ui/input";
 import { useAuth } from "../contexts/Auth/useAuth";
 
 type LoginLocationState = {
-  from?: { pathname?: string };
+  from?: { pathname?: string; search?: string };
   email?: string;
   registrationSucceeded?: boolean;
 };
@@ -19,7 +19,12 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const locationState = location.state as LoginLocationState | null;
 
-  const from = locationState?.from?.pathname || "/";
+  const destination = locationState?.from;
+  const pathname = destination?.pathname || "/";
+  const from =
+    pathname.startsWith("/") && !pathname.startsWith("//")
+      ? `${pathname}${destination?.search || ""}`
+      : "/";
   const [formData, setFormData] = useState({
     email: locationState?.email ?? "",
     password: "",

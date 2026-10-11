@@ -14,6 +14,7 @@ import { Button } from "@/app/components/ui/button";
 import { Checkbox } from "@/app/components/ui/checkbox";
 import { Skeleton } from "@/app/components/ui/skeleton";
 import { useAuth } from "@/authentication/contexts/Auth/useAuth";
+import { checkoutPath } from "@/checkout/utils/source";
 import { CartStoreCard } from "@/ecommerce/cart/CartStoreCard";
 import { useCart } from "@/ecommerce/cart/useCart";
 import { formatMoney, selectedTotals } from "@/ecommerce/cart/utils";
@@ -48,6 +49,21 @@ function CartContent() {
       });
       return next;
     });
+  const checkout = async () => {
+    const overstock = selectedItems.filter(
+      (item) => item.product.stock > 0 && item.quantity > item.product.stock,
+    );
+    if (overstock.length) {
+      for (const item of overstock) {
+        if (!(await cart.updateQuantity(item.id, 1))) return;
+      }
+      setNotice(
+        "Some quantities exceeded available stock and were reset to 1. Review your selection before checkout.",
+      );
+      return;
+    }
+    navigate(checkoutPath({ source: "cart", item_ids: [...selected] }));
+  };
   const confirmRemove = async () => {
     if (await cart.removeItems(removing)) {
       toggle(removing, false);
@@ -204,8 +220,9 @@ function CartContent() {
               </Button>
               <Button
                 className="h-11 flex-1 sm:flex-none"
-                disabled
+                disabled={!selected.size || selected.size > 500 || cart.pending}
                 aria-describedby="checkout-note"
+                onClick={() => void checkout()}
               >
                 Checkout
               </Button>
@@ -216,15 +233,15 @@ function CartContent() {
                 role="status"
                 className="text-destructive w-full text-sm"
               >
-                Select up to 500 products to remove at a time.
+                Select up to 500 products at a time.
               </p>
             )}
             <p
               id="checkout-note"
               className="text-muted-foreground w-full text-xs"
             >
-              Checkout is coming soon. Selected totals include products marked
-              unavailable; remove them or adjust quantities before checkout.
+              Only selected items will proceed to checkout. Final prices and
+              stock are checked before placing your order.
             </p>
           </div>
         </section>

@@ -40,25 +40,44 @@ const CountryFlag = ({ country }: CountryFlagProps) => {
 };
 
 const PhoneNumberField = ({
+  defaultValue,
   serverError,
   onValueChange,
 }: {
+  defaultValue?: string;
   serverError?: string;
   onValueChange?: () => void;
 }) => {
   const inputId = useId();
   const errorId = `${inputId}-error`;
-  const [country, setCountry] = useState(DEFAULT_PHONE_COUNTRY);
-  const [nationalNumber, setNationalNumber] = useState("");
+  const initialPhone = defaultValue
+    ? parsePhoneNumberFromString(defaultValue)
+    : undefined;
+  // Non-geographic E.164 numbers have no country selector entry; edit the full number.
+  const internationalOnly = Boolean(initialPhone && !initialPhone.country);
+  const [country, setCountry] = useState(() =>
+    initialPhone?.country
+      ? (findCountry(initialPhone.country) ?? DEFAULT_PHONE_COUNTRY)
+      : DEFAULT_PHONE_COUNTRY,
+  );
+  const [nationalNumber, setNationalNumber] = useState(
+    internationalOnly
+      ? (initialPhone?.number ?? "")
+      : (initialPhone?.nationalNumber ?? ""),
+  );
   const [hasBlurred, setHasBlurred] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const formattedNationalNumber = useMemo(
-    () => new AsYouType(country.code).input(nationalNumber),
-    [country.code, nationalNumber],
+    () =>
+      internationalOnly
+        ? nationalNumber
+        : new AsYouType(country.code).input(nationalNumber),
+    [country.code, internationalOnly, nationalNumber],
   );
 
   const internationalNumber = useMemo(() => {
+    if (internationalOnly) return nationalNumber.trim();
     if (!nationalNumber) {
       return "";
     }
@@ -67,21 +86,29 @@ const PhoneNumberField = ({
       parsePhoneNumberFromString(nationalNumber, country.code)?.number ??
       `+${country.callingCode}${nationalNumber}`
     );
-  }, [country, nationalNumber]);
+  }, [country, internationalOnly, nationalNumber]);
 
   const hasInvalidNumber =
     nationalNumber.length > 0 &&
-    !isValidPhoneNumber(nationalNumber, country.code);
+    !isValidPhoneNumber(
+      nationalNumber,
+      internationalOnly ? undefined : country.code,
+    );
+  const invalidMessage = internationalOnly
+    ? "Enter a valid international phone number."
+    : `Enter a valid phone number for ${country.name}.`;
   const isInvalid = Boolean(serverError) || (hasBlurred && hasInvalidNumber);
 
   useEffect(() => {
-    inputRef.current?.setCustomValidity(
-      hasInvalidNumber ? `Enter a valid phone number for ${country.name}.` : "",
-    );
-  }, [country.name, hasInvalidNumber]);
+    inputRef.current?.setCustomValidity(hasInvalidNumber ? invalidMessage : "");
+  }, [hasInvalidNumber, invalidMessage]);
 
   const handleNumberChange = (value: string) => {
     onValueChange?.();
+    if (internationalOnly) {
+      setNationalNumber(value);
+      return;
+    }
     if (value.trimStart().startsWith("+")) {
       const parsedNumber = parsePhoneNumberFromString(value);
       const parsedCountry = parsedNumber?.country
@@ -129,8 +156,8 @@ const PhoneNumberField = ({
             id={inputId}
             type="tel"
             inputMode="tel"
-            autoComplete="tel-national"
-            placeholder="912 345 6789"
+            autoComplete={internationalOnly ? "tel" : "tel-national"}
+            placeholder={internationalOnly ? "+800 12345678" : "912 345 6789"}
             value={formattedNationalNumber}
             onChange={(event) => handleNumberChange(event.currentTarget.value)}
             onBlur={() => setHasBlurred(true)}
@@ -141,18 +168,20 @@ const PhoneNumberField = ({
             required
           />
 
-          <InputGroupAddon
-            align="inline-start"
-            className="border-input text-foreground h-full border-r p-0 has-[>button]:m-0"
-          >
-            <ComboboxTrigger
-              aria-label={`Phone country: ${country.name}, +${country.callingCode}`}
-              className="hover:bg-muted/50 focus-visible:bg-muted/50 data-popup-open:bg-muted/50 flex h-full w-26 items-center gap-1.5 px-2.5 text-sm outline-none"
+          {!internationalOnly && (
+            <InputGroupAddon
+              align="inline-start"
+              className="border-input text-foreground h-full border-r p-0 has-[>button]:m-0"
             >
-              <CountryFlag country={country} />
-              <span>+{country.callingCode}</span>
-            </ComboboxTrigger>
-          </InputGroupAddon>
+              <ComboboxTrigger
+                aria-label={`Phone country: ${country.name}, +${country.callingCode}`}
+                className="hover:bg-muted/50 focus-visible:bg-muted/50 data-popup-open:bg-muted/50 flex h-full w-26 items-center gap-1.5 px-2.5 text-sm outline-none"
+              >
+                <CountryFlag country={country} />
+                <span>+{country.callingCode}</span>
+              </ComboboxTrigger>
+            </InputGroupAddon>
+          )}
         </InputGroup>
 
         <ComboboxContent className="w-[min(22rem,calc(100vw-2rem))] min-w-0">
@@ -190,7 +219,7 @@ const PhoneNumberField = ({
           className="text-destructive text-xs wrap-break-word"
           role="alert"
         >
-          {serverError || `Enter a valid phone number for ${country.name}.`}
+          {serverError || invalidMessage}
         </p>
       )}
     </div>
