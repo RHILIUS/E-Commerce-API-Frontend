@@ -52,6 +52,11 @@ export const ProductCard = ({
           <p className="text-muted-foreground min-h-8 flex-1 text-xs leading-4 wrap-anywhere">
             {product.description}
           </p>
+          {product.isOutOfStock && (
+            <p className="text-muted-foreground text-xs font-medium">
+              Out of stock
+            </p>
+          )}
           <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
             <p className="text-lg leading-7 font-semibold wrap-anywhere tabular-nums">
               {new Intl.NumberFormat("en-PH", {

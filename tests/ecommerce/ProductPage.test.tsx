@@ -222,6 +222,13 @@ describe("Product Page", () => {
     await screen.findByRole("heading", { name: product.name, level: 1 });
     expect(screen.getByText("$1,428.39")).toBeVisible();
     expect(screen.getByText("Store created")).toBeVisible();
+    expect(screen.getByRole("link", { name: "Visit store" })).toHaveAttribute(
+      "href",
+      "/stores/1",
+    );
+    expect(
+      screen.getByRole("link", { name: "Northline Tech" }),
+    ).toHaveAttribute("href", "/stores/1");
     expect(screen.getByText("Product image · 2 of 2")).toBeVisible();
     await user.click(screen.getByRole("button", { name: "View image 1" }));
     expect(screen.getByText("Product image · 1 of 2")).toBeVisible();

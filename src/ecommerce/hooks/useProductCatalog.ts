@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 
 import { useAuth } from "@/authentication/contexts/Auth/useAuth";
 import { productCatalogApi } from "@/ecommerce/api";
-import type { Product, ProductCatalogResponse } from "@/ecommerce/types";
+import type { ProductCatalogResponse } from "@/ecommerce/types";
+import { catalogProduct } from "@/ecommerce/utils/catalogProduct";
 
 export const CATALOG_PAGE_SIZE = 8;
 
@@ -46,16 +47,7 @@ export const useProductCatalog = (page: number, query: string) => {
   }, [page, query, accessToken, authLoading, key]);
 
   const current = !authLoading && result?.key === key ? result : null;
-  const products: Product[] = (current?.data?.results ?? []).map((product) => ({
-    id: String(product.id),
-    name: product.name,
-    description: product.short_description,
-    price: Number(product.display_price.amount),
-    currency: product.display_price.currency,
-    soldCount: product.sold_count,
-    imageUrl: product.default_image?.image ?? null,
-    imageAlt: product.default_image?.alt_text || product.name,
-  }));
+  const products = (current?.data?.results ?? []).map(catalogProduct);
   return {
     products,
     count: current?.data?.count ?? 0,

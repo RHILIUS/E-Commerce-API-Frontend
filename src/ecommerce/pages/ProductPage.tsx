@@ -38,7 +38,12 @@ const StoreCard = ({ store }: { store: ProductDetail["store"] }) => {
         <div className="min-w-0 space-y-1">
           <p className="text-muted-foreground text-xs">SOLD BY</p>
           <h2 className="text-base leading-6 font-semibold tracking-normal wrap-anywhere">
-            {store.name}
+            <Link
+              to={`/stores/${store.id}`}
+              className="hover:text-primary focus-visible:ring-ring/50 rounded-sm underline-offset-4 outline-none hover:underline focus-visible:ring-3"
+            >
+              {store.name}
+            </Link>
           </h2>
         </div>
       </div>
@@ -62,6 +67,15 @@ const StoreCard = ({ store }: { store: ProductDetail["store"] }) => {
           </dd>
         </div>
       </dl>
+      <Button
+        render={<Link to={`/stores/${store.id}`} />}
+        nativeButton={false}
+        role="link"
+        variant="outline"
+        className="min-h-11"
+      >
+        Visit store
+      </Button>
     </Card>
   );
 };
