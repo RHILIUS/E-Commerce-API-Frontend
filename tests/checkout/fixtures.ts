@@ -1,4 +1,5 @@
-import type { Confirmation, Preview, Recipient } from "@/checkout/types";
+import type { Recipient } from "@/account/types";
+import type { Confirmation, Preview } from "@/checkout/types";
 
 export const member = {
   id: 1,

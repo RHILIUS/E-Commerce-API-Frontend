@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 
-import { fetchPreview, fetchRecipients } from "../api";
-import type { PaymentMethod, Preview, Recipient } from "../types";
+import { fetchRecipients } from "@/account/api";
+import type { Recipient } from "@/account/types";
+
+import { fetchPreview } from "../api";
+import type { PaymentMethod, Preview } from "../types";
 import { checkoutError } from "../utils/errors";
 import { parseSource } from "../utils/source";
 

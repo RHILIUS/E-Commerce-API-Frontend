@@ -1,5 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 
+import { accountProtectedRoutes } from "@/account/routes";
 import RootLayout from "@/app/layout/RootLayout";
 import HomePage from "@/app/pages/HomePage";
 import { authenticationRoutes } from "@/authentication/routes";
@@ -25,6 +26,7 @@ export const router = createBrowserRouter([
       {
         element: <ProtectedRoute />,
         children: [
+          ...accountProtectedRoutes,
           ...ecommerceProtectedRoutes,
           ...checkoutProtectedRoutes,
           { path: "/home-test", element: <HomePage /> },

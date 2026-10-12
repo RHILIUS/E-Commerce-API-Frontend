@@ -745,3 +745,89 @@ test("editing preserves API-supported non-geographic international phone numbers
   await screen.findByRole("heading", { name: "Choose recipient" });
   expect(submitted).toMatchObject({ phone_number: saved.phone_number });
 });
+
+test("deleting the selected default requires a new explicit checkout selection", async () => {
+  const user = userEvent.setup();
+  const other = { ...recipient, id: 8, name: "Joan", is_default: false };
+  server.use(
+    http.get(recipientsUrl, () =>
+      HttpResponse.json({ recipients: [recipient, other] }),
+    ),
+    http.delete(`${recipientsUrl}7/`, () =>
+      HttpResponse.json({ recipients: [{ ...other, is_default: true }] }),
+    ),
+  );
+  renderCheckout();
+  await user.click(await screen.findByRole("button", { name: "Change" }));
+  await user.click(
+    screen.getByRole("button", { name: `Delete ${recipient.name}` }),
+  );
+  await user.click(
+    within(screen.getByRole("alertdialog")).getByRole("radio", {
+      name: /Joan/,
+    }),
+  );
+  await user.click(screen.getByRole("button", { name: "Delete recipient" }));
+  await waitFor(() =>
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument(),
+  );
+  expect(screen.getByRole("radio", { name: /Joan/ })).not.toBeChecked();
+  expect(screen.getByRole("button", { name: "Done" })).toBeDisabled();
+  await user.keyboard("{Escape}");
+  expect(screen.getByRole("button", { name: "Place Order" })).toBeDisabled();
+  await user.click(screen.getByRole("button", { name: "Select recipient" }));
+  await user.click(screen.getByRole("radio", { name: /Joan/ }));
+  await user.click(screen.getByRole("button", { name: "Done" }));
+  expect(screen.getByRole("button", { name: "Place Order" })).toBeEnabled();
+});
+
+test("deleting an unselected recipient preserves checkout selection", async () => {
+  const user = userEvent.setup();
+  server.use(
+    http.get(recipientsUrl, () =>
+      HttpResponse.json({
+        recipients: [
+          recipient,
+          { ...recipient, id: 8, name: "Joan", is_default: false },
+        ],
+      }),
+    ),
+    http.delete(`${recipientsUrl}8/`, () =>
+      HttpResponse.json({ recipients: [recipient] }),
+    ),
+  );
+  renderCheckout();
+  await user.click(await screen.findByRole("button", { name: "Change" }));
+  await user.click(screen.getByRole("button", { name: "Delete Joan" }));
+  await user.click(screen.getByRole("button", { name: "Delete recipient" }));
+  await waitFor(() =>
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument(),
+  );
+  expect(
+    screen.getByRole("radio", { name: new RegExp(recipient.name) }),
+  ).toBeChecked();
+  await user.click(screen.getByRole("button", { name: "Done" }));
+  expect(screen.getByRole("button", { name: "Place Order" })).toBeEnabled();
+});
+
+test("deleting the last checkout recipient leaves an actionable empty state", async () => {
+  const user = userEvent.setup();
+  server.use(
+    http.delete(`${recipientsUrl}7/`, () =>
+      HttpResponse.json({ recipients: [] }),
+    ),
+  );
+  renderCheckout();
+  await user.click(await screen.findByRole("button", { name: "Change" }));
+  await user.click(
+    screen.getByRole("button", { name: `Delete ${recipient.name}` }),
+  );
+  await user.click(screen.getByRole("button", { name: "Delete recipient" }));
+  await waitFor(() =>
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument(),
+  );
+  expect(screen.getByText("You have no saved recipients yet.")).toBeVisible();
+  expect(screen.getByRole("button", { name: "Add recipient" })).toBeEnabled();
+  await user.keyboard("{Escape}");
+  expect(screen.getByRole("button", { name: "Place Order" })).toBeDisabled();
+});

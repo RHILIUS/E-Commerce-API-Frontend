@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
+import { RecipientAddress } from "@/account/components/RecipientAddress";
 import { Button } from "@/app/components/ui/button";
 import { useAuth } from "@/authentication/contexts/Auth/useAuth";
 import { fetchConfirmation } from "@/checkout/api";
 import { CheckoutImage } from "@/checkout/components/CheckoutImage";
 import { CheckoutLayout } from "@/checkout/components/CheckoutLayout";
-import { RecipientAddress } from "@/checkout/components/RecipientSection";
 import type { Confirmation } from "@/checkout/types";
 import { checkoutError } from "@/checkout/utils/errors";
 import { clearConfirmedAttempt } from "@/checkout/utils/recovery";

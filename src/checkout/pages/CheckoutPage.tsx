@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
+import type { Recipient } from "@/account/types";
 import { Button } from "@/app/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/app/components/ui/radio-group";
 import { useAuth } from "@/authentication/contexts/Auth/useAuth";
@@ -11,7 +12,7 @@ import { RecipientSection } from "@/checkout/components/RecipientSection";
 import { SavedCheckoutSummary } from "@/checkout/components/SavedCheckoutSummary";
 import { useCheckoutPlacement } from "@/checkout/hooks/useCheckoutPlacement";
 import { useCheckoutReview } from "@/checkout/hooks/useCheckoutReview";
-import type { PaymentMethod, Preview, Recipient } from "@/checkout/types";
+import type { PaymentMethod, Preview } from "@/checkout/types";
 import { parseSource } from "@/checkout/utils/source";
 import { formatMoney } from "@/ecommerce/cart/utils";
 
@@ -36,7 +37,8 @@ function CheckoutContent({
   const source = parseSource(search);
   const placement = useCheckoutPlacement(userId, source);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cod");
-  const [recipientId, setRecipientId] = useState<number | undefined>();
+  // Undefined allows initial default selection; null requires a new choice after removal.
+  const [recipientId, setRecipientId] = useState<number | null | undefined>();
   const review = useCheckoutReview(
     search,
     Boolean(placement.attempt) || placement.storageBlocked,
@@ -189,8 +191,8 @@ function CheckoutReview({
   paymentMethod: PaymentMethod;
   preview: Preview;
   savedRecipients: Recipient[];
-  recipientId: number | undefined;
-  onSelectRecipient: (id: number) => void;
+  recipientId: number | null | undefined;
+  onSelectRecipient: (id: number | null) => void;
   placement: ReturnType<typeof useCheckoutPlacement>;
   refresh: () => void;
 }) {

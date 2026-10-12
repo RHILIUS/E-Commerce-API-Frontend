@@ -6,7 +6,6 @@ import type {
   PaymentMethod,
   PlacementRequest,
   Preview,
-  Recipient,
   StripePayment,
 } from "./types";
 
@@ -23,19 +22,6 @@ export async function fetchPreview(
       { signal },
     )
   ).data;
-}
-/** Saved recipients are scoped to the authenticated account. */
-export async function fetchRecipients(signal?: AbortSignal) {
-  return (
-    await api.get<{ recipients: Recipient[] }>("/api/account/recipients/", {
-      signal,
-    })
-  ).data.recipients;
-}
-/** Persist a recipient before selecting it for checkout. */
-export async function createRecipient(recipient: Omit<Recipient, "id">) {
-  return (await api.post<Recipient>("/api/account/recipients/", recipient))
-    .data;
 }
 /** Retry this exact body when the outcome of an earlier request is unknown. */
 export async function placeCOD(request: PlacementRequest) {
@@ -55,16 +41,6 @@ export async function fetchConfirmation(
       `/api/shop/checkouts/${encodeURIComponent(reference)}/`,
       { signal },
     )
-  ).data;
-}
-
-/** Update an owned saved recipient without changing its identity. */
-export async function updateRecipient(
-  id: number,
-  recipient: Omit<Recipient, "id">,
-) {
-  return (
-    await api.patch<Recipient>(`/api/account/recipients/${id}/`, recipient)
   ).data;
 }
 
