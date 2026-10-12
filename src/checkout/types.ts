@@ -1,19 +1,9 @@
+import type { RecipientDetails } from "@/account/types";
 import type { Money } from "@/ecommerce/cart/types";
 
 export type CheckoutSource =
   | { source: "product"; product_id: number; quantity: number }
   | { source: "cart"; item_ids: number[] };
-export type RecipientDetails = {
-  name: string;
-  phone_number: string;
-  country_code: string;
-  address_line1: string;
-  address_line2: string;
-  city: string;
-  region: string;
-  postal_code: string;
-};
-export type Recipient = RecipientDetails & { id: number; is_default: boolean };
 export type Preview = {
   source: "product" | "cart";
   currency: string;

@@ -137,6 +137,12 @@ export const Header = ({ searchQuery, onSearch }: HeaderProps) => {
                   aria-label="Account"
                 >
                   <DropdownMenuItem
+                    render={<Link to="/account" />}
+                    className="mb-2 min-h-11 justify-center font-medium"
+                  >
+                    Account
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
                     render={<Link to="/orders" />}
                     className="mb-2 min-h-11 justify-center font-medium"
                   >

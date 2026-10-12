@@ -72,7 +72,7 @@ describe("Logout navigation", () => {
     account.focus();
     await userEvent.keyboard("{ArrowDown}");
     expect(
-      await screen.findByRole("menuitem", { name: "Orders" }),
+      await screen.findByRole("menuitem", { name: "Account" }),
     ).toHaveFocus();
     await userEvent.keyboard("{Escape}");
     expect(screen.queryByRole("menuitem")).not.toBeInTheDocument();
@@ -104,7 +104,7 @@ describe("Logout navigation", () => {
         await userEvent.click(
           await screen.findByRole("button", { name: "Account" }),
         );
-        expect(await screen.findAllByRole("menuitem")).toHaveLength(2);
+        expect(await screen.findAllByRole("menuitem")).toHaveLength(3);
         await userEvent.click(
           screen.getByRole("menuitem", { name: "Log out" }),
         );

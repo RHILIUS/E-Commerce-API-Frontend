@@ -87,10 +87,15 @@ export function RecipientForm({
           </p>
         )}
         <div className="flex flex-wrap gap-3">
-          <Button type="submit">
+          <Button type="submit" className="min-h-11">
             {busy ? "Saving…" : recipient ? "Save changes" : "Save recipient"}
           </Button>
-          <Button type="button" variant="outline" onClick={onCancel}>
+          <Button
+            type="button"
+            className="min-h-11"
+            variant="outline"
+            onClick={onCancel}
+          >
             Cancel
           </Button>
         </div>

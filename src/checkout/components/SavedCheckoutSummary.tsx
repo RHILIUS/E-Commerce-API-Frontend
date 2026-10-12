@@ -1,5 +1,6 @@
 import { useEffect, useId, useState } from "react";
 
+import { RecipientAddress } from "@/account/components/RecipientAddress";
 import { Button } from "@/app/components/ui/button";
 import { formatMoney } from "@/ecommerce/cart/utils";
 
@@ -7,7 +8,6 @@ import { fetchConfirmation } from "../api";
 import type { Confirmation } from "../types";
 import { checkoutError } from "../utils/errors";
 import { CheckoutImage } from "./CheckoutImage";
-import { RecipientAddress } from "./RecipientSection";
 
 /** Identify a saved purchase using owner-only snapshots without clearing payment recovery. */
 export function SavedCheckoutSummary({

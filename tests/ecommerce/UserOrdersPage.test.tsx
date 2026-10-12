@@ -211,7 +211,11 @@ test("account dropdown exposes Orders above Log out without a wallet option", as
   show();
   await user.click(await screen.findByRole("button", { name: "Account" }));
   const items = await screen.findAllByRole("menuitem");
-  expect(items.map((i) => i.textContent)).toEqual(["Orders", "Log out"]);
+  expect(items.map((i) => i.textContent)).toEqual([
+    "Account",
+    "Orders",
+    "Log out",
+  ]);
 });
 
 test("history loads only when opened and shows recorded milestones and actor roles", async () => {

@@ -22,7 +22,7 @@ The [shared COD business flow](../../../docs/diagrams/specific-business-processe
 The page loads the server preview and saved recipients. A saved default is selected initially; customers can choose exactly one recipient, create a new one, or edit a saved recipient. New recipients use the existing international phone and address-country controls. Choosing a recipient does not change the saved default. Required fields and server field errors remain visible in the recipient form.
 
 Each saved recipient has an Edit action that opens the shared, prefilled form in
-the same dialog. Saving updates the existing recipient and returns to the list;
+a nested editor dialog. Saving updates the existing recipient and returns to the list;
 cancel discards the draft. Editing preserves the checkout selection, including
 when another recipient becomes default. The current default cannot be unchecked;
 choose another recipient as default to replace it. Phone country is derived from
@@ -62,7 +62,6 @@ Chromium checks cover checkout, recipient list, edit form, and saved state at 33
 375, 768, 1024, and 1440px in both themes, with a 375×400 short viewport, keyboard
 focus restoration, Escape dismissal, and no horizontal overflow. A further 330×400
 check verifies saving a non-geographic number. Browser APIs are mocked.
-
 
 ## Stripe test payments
 
@@ -128,6 +127,7 @@ TypeScript/production build and changed-file formatting checks. Chromium passed
 both themes, including a 375×400 viewport and keyboard payment selection. No
 horizontal overflow or browser page errors were found. Browser APIs were mocked;
 a hosted Stripe test-account payment still requires the backend setup above.
+
 ## Confirmed Stripe session-creation rejection
 
 The backend returns a definitive `400` after closing a verified unsupported-parameter
@@ -179,3 +179,11 @@ TypeScript/production build and changed-source formatting passed. Twenty Chromiu
 layout checks covered both pages at 330, 375, 768, 1024 and 1440px in both themes,
 including a short viewport and long names. No horizontal overflow or page errors
 occurred. Browser payment and order APIs were mocked.
+
+## Shared recipient management
+
+Checkout and `/account` share the components, hooks, API and types in `src/account/`
+for listing, creation, editing, default switching and confirmed deletion. See [recipient configuration](../account/recipients.md).
+Deleting a selected recipient clears the checkout selection; it does not silently
+select the replacement account default. The customer must select/add a recipient
+before placing a new order. Existing snapshots and payment recovery are preserved.
