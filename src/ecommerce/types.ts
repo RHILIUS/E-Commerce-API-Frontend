@@ -8,6 +8,7 @@ export type Product = {
   soldCount: number;
   imageUrl: string | null;
   imageAlt: string;
+  isOutOfStock?: boolean;
 };
 
 /** Product Page response; monetary amounts remain decimal strings. */

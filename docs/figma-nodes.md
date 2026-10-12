@@ -138,3 +138,12 @@ file `dC74hwxyZCht0LnEn7JIuI`, node `337:748`. Its migration-file mapping is
 **pending**. No canvas changes were made. The implemented six tabs, cancellation
 confirmation and card refund states supersede the original five-tab guide.
 See [customer orders](ecommerce/user-orders.md) for scope and API dependencies.
+
+## Store Customer View Page — pending migration mapping
+
+`/stores/:storeId` follows the inspected
+[original Store Page reference](https://www.figma.com/design/dC74hwxyZCht0LnEn7JIuI/E-Commerce-Wireframe?node-id=181-2&m=dev),
+file `dC74hwxyZCht0LnEn7JIuI`, node `181:2`. Migration-file mapping is **pending**;
+no canvas changes were made. Accepted implementation refinements and API behavior
+are documented in [Store Page](ecommerce/store-page.md): Home previews, All Products,
+taxonomy categories, About/public contacts, store search, and mobile adaptation.

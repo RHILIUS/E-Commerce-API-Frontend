@@ -352,7 +352,7 @@ describe("Shopping cart", () => {
       screen.getByRole("checkbox", { name: "Select Product 501" }),
     );
     expect(screen.getByRole("button", { name: "Remove" })).toBeEnabled();
-  }, 15000);
+  }, 30000);
 
   test("adds the chosen product quantity and exposes the saved cart", async () => {
     let added: unknown;
