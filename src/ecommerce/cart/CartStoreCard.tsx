@@ -70,20 +70,26 @@ export function CartStoreCard({
             onCheckedChange={(checked) => toggle(ids, checked)}
           />
         </label>
-        <div className="bg-muted flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full border">
-          <CartImage
-            key={cart.store.profile_image}
-            src={cart.store.profile_image}
-            alt={`${cart.store.name} logo`}
-            store
-          />
-        </div>
-        <h2
-          id={`store-${cart.id}`}
-          className="min-w-0 text-base font-semibold tracking-normal wrap-anywhere"
+        <Link
+          to={`/stores/${cart.store.id}`}
+          aria-labelledby={`store-${cart.id}`}
+          className="focus-visible:outline-ring flex min-w-0 items-center gap-3 rounded-sm hover:underline focus-visible:outline-2 focus-visible:outline-offset-2"
         >
-          {cart.store.name}
-        </h2>
+          <div className="bg-muted flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full border">
+            <CartImage
+              key={cart.store.profile_image}
+              src={cart.store.profile_image}
+              alt={`${cart.store.name} logo`}
+              store
+            />
+          </div>
+          <h2
+            id={`store-${cart.id}`}
+            className="min-w-0 text-base font-semibold tracking-normal wrap-anywhere"
+          >
+            {cart.store.name}
+          </h2>
+        </Link>
       </div>
       <ul className="divide-y">
         {cart.items.map((item) => {
