@@ -1,4 +1,10 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { delay, http, HttpResponse } from "msw";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
@@ -85,6 +91,75 @@ beforeEach(() => {
 });
 
 describe("Store Page", () => {
+  test("opens the full banner and logo, then restores focus when closed", async () => {
+    const banner = "https://example.com/store-banner.jpg";
+    const logo = "https://example.com/store-logo.jpg";
+    server.use(
+      http.get(endpoint, () =>
+        HttpResponse.json({
+          ...store,
+          banner_image: banner,
+          profile_image: logo,
+        }),
+      ),
+    );
+    renderStore();
+    const bannerTrigger = await screen.findByRole("button", {
+      name: "View full store banner",
+    });
+    const logoTrigger = screen.getByRole("button", {
+      name: "View full store logo",
+    });
+    const user = userEvent.setup();
+    await user.click(bannerTrigger);
+    const bannerViewer = await screen.findByRole("dialog", {
+      name: "Example Store cover — full image",
+    });
+    expect(
+      within(bannerViewer).getByRole("img", { name: "Example Store cover" }),
+    ).toHaveAttribute("src", banner);
+    await user.keyboard("{Escape}");
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
+    expect(bannerTrigger).toHaveFocus();
+    await user.click(logoTrigger);
+    const logoViewer = await screen.findByRole("dialog", {
+      name: "Example Store logo — full image",
+    });
+    expect(
+      within(logoViewer).getByRole("img", { name: "Example Store logo" }),
+    ).toHaveAttribute("src", logo);
+    await user.click(within(logoViewer).getByRole("button", { name: "Close" }));
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
+    expect(logoTrigger).toHaveFocus();
+  });
+
+  test("missing and failed store images keep their placeholders", async () => {
+    const banner = "https://example.com/broken-banner.jpg";
+    server.use(
+      http.get(endpoint, () =>
+        HttpResponse.json({ ...store, banner_image: banner }),
+      ),
+    );
+    renderStore();
+    const bannerTrigger = await screen.findByRole("button", {
+      name: "View full store banner",
+    });
+    expect(
+      screen.queryByRole("button", { name: "View full store logo" }),
+    ).not.toBeInTheDocument();
+    fireEvent.error(
+      within(bannerTrigger).getByRole("img", { name: "Example Store cover" }),
+    );
+    expect(
+      screen.queryByRole("button", { name: "View full store banner" }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByLabelText("No store cover provided")).toBeVisible();
+    expect(screen.getByLabelText("Store logo placeholder")).toBeVisible();
+  });
   test("loads public profile and bounded home sections with empty rankings and stock labels", async () => {
     renderStore();
     expect(screen.getByRole("status", { name: "Loading store" })).toBeVisible();

@@ -1,5 +1,12 @@
-import { MapPin, Store as StoreIcon } from "lucide-react";
-import { useState } from "react";
+import { Expand, MapPin, Store as StoreIcon } from "lucide-react";
+import { type ReactNode, useState } from "react";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "@/app/components/ui/dialog";
 
 import type { PublicStore } from "./types";
 
@@ -20,53 +27,99 @@ const storeAddress = (address: PublicStore["address"]) =>
         .join(", ")
     : "Not provided";
 
+/** Open one available store image in the same fit-to-screen viewer as ProductPage. */
+const StoreImageViewer = ({
+  src,
+  alt,
+  label,
+  fallback,
+  showExpandIcon = true,
+}: {
+  src: string | null;
+  alt: string;
+  label: string;
+  fallback: ReactNode;
+  showExpandIcon?: boolean;
+}) => {
+  const [failed, setFailed] = useState(false);
+  if (!src || failed) return fallback;
+  return (
+    <Dialog>
+      <DialogTrigger
+        aria-label={`View full ${label}`}
+        className="focus-visible:ring-ring relative block size-full cursor-zoom-in outline-none focus-visible:ring-3 focus-visible:ring-inset"
+      >
+        <img
+          src={src}
+          alt={alt}
+          className="size-full object-cover"
+          onError={() => setFailed(true)}
+        />
+        {showExpandIcon && (
+          <span className="bg-background/90 text-foreground absolute right-3 bottom-3 rounded-md border p-2">
+            <Expand className="size-5" aria-hidden="true" />
+          </span>
+        )}
+      </DialogTrigger>
+      <DialogContent className="inset-0 h-dvh w-full max-w-none translate-x-0 translate-y-0 grid-rows-[minmax(0,1fr)] rounded-none border-0 px-4 pt-16 pb-4 sm:px-8 sm:pb-8">
+        <DialogTitle className="sr-only">{alt} — full image</DialogTitle>
+        <div className="min-h-0 min-w-0">
+          <img
+            src={src}
+            alt={alt}
+            className="size-full object-contain"
+            onError={() => setFailed(true)}
+          />
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 /** Render store branding with placeholders for absent or failed image loads. */
 export const StoreProfile = ({ store }: { store: PublicStore }) => {
-  const [bannerFailed, setBannerFailed] = useState(false);
-  const [logoFailed, setLogoFailed] = useState(false);
   return (
     <section
       aria-label="Store details"
       className="bg-card overflow-hidden rounded-xl border"
     >
       <div className="bg-muted flex h-32 items-center justify-center sm:h-48 lg:h-60">
-        {store.banner_image && !bannerFailed ? (
-          <img
-            src={store.banner_image}
-            alt={`${store.name} cover`}
-            className="h-full w-full object-cover"
-            onError={() => setBannerFailed(true)}
-          />
-        ) : (
-          <StoreIcon
-            className="text-muted-foreground size-12"
-            aria-label="No store cover provided"
-          />
-        )}
+        <StoreImageViewer
+          key={store.banner_image}
+          src={store.banner_image}
+          alt={`${store.name} cover`}
+          label="store banner"
+          fallback={
+            <StoreIcon
+              className="text-muted-foreground size-12"
+              aria-label="No store cover provided"
+            />
+          }
+        />
       </div>
       <div className="flex min-w-0 flex-col gap-5 p-4 sm:flex-row sm:items-start sm:p-6 lg:p-8">
         <div className="bg-muted flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border sm:size-28">
-          {store.profile_image && !logoFailed ? (
-            <img
-              src={store.profile_image}
-              alt={`${store.name} logo`}
-              className="size-full object-cover"
-              onError={() => setLogoFailed(true)}
-            />
-          ) : (
-            <span
-              className="text-muted-foreground text-2xl font-semibold"
-              aria-label="Store logo placeholder"
-            >
-              {store.name
-                .split(/\s+/)
-                .filter(Boolean)
-                .slice(0, 2)
-                .map((word) => word[0])
-                .join("")
-                .toUpperCase() || "—"}
-            </span>
-          )}
+          <StoreImageViewer
+            key={store.profile_image}
+            src={store.profile_image}
+            alt={`${store.name} logo`}
+            label="store logo"
+            showExpandIcon={false}
+            fallback={
+              <span
+                className="text-muted-foreground text-2xl font-semibold"
+                aria-label="Store logo placeholder"
+              >
+                {store.name
+                  .split(/\s+/)
+                  .filter(Boolean)
+                  .slice(0, 2)
+                  .map((word) => word[0])
+                  .join("")
+                  .toUpperCase() || "—"}
+              </span>
+            }
+          />
         </div>
         <div className="min-w-0 flex-1 space-y-4">
           <h1 className="text-2xl font-semibold tracking-tight wrap-anywhere sm:text-3xl">

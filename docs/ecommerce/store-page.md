@@ -9,7 +9,7 @@ shared Header, product cards, and responsive conventions govern the implementati
 
 `/stores/:storeId` is public, including for guests. ProductPage links the store
 name and Visit store action to this route. The page shows the banner/logo (with
-missing/failed-image placeholders), active listing count, qualifying lifetime units
+missing/failed-image placeholders), click-to-open full banner and logo images, active listing count, qualifying lifetime units
 sold, store creation date, and public business address. About shows the description,
 public email, public phone, and address; missing optional text is `Not provided`.
 Store member identities and account contact details are never returned.
