@@ -29,7 +29,11 @@ export function OrderRecordCard({
       className="bg-card text-card-foreground overflow-hidden rounded-xl border p-4 sm:p-6"
     >
       <header className="flex flex-wrap items-center justify-between gap-3 border-b pb-4">
-        <div className="flex min-w-0 flex-1 items-center gap-3">
+        <Link
+          to={`/stores/${order.store.id}`}
+          aria-label={order.store.name}
+          className="focus-visible:outline-ring flex min-w-0 flex-1 items-center gap-3 rounded-sm hover:underline focus-visible:outline-2 focus-visible:outline-offset-2"
+        >
           <CheckoutImage src={order.store.profile_image} alt="" store />
           <div className="min-w-0">
             <h2 className="text-base font-semibold wrap-anywhere sm:text-lg">
@@ -37,31 +41,51 @@ export function OrderRecordCard({
             </h2>
             <p className="text-muted-foreground text-xs">Order #{order.id}</p>
           </div>
-        </div>
+        </Link>
         <span className="bg-secondary text-secondary-foreground rounded-md px-3 py-1.5 text-sm font-medium">
           {statusLabels[order.status]}
         </span>
       </header>
       <ul className="divide-y">
-        {order.items.map((item) => (
-          <li key={item.id} className="flex min-w-0 gap-3 py-4 sm:gap-4">
-            <CheckoutImage
-              src={item.image?.image}
-              alt={item.image?.alt_text || item.name}
-            />
-            <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:justify-between sm:gap-4">
+        {order.items.map((item) => {
+          const product = (
+            <>
+              <CheckoutImage
+                src={item.image?.image}
+                alt={item.image?.alt_text || item.name}
+              />
               <div className="min-w-0">
                 <p className="font-medium wrap-anywhere">{item.name}</p>
                 <p className="text-muted-foreground mt-1 text-sm">
                   Quantity: {item.quantity}
                 </p>
               </div>
-              <p className="shrink-0 font-semibold wrap-anywhere sm:max-w-1/2">
+            </>
+          );
+          return (
+            <li
+              key={item.id}
+              className="flex min-w-0 flex-col gap-2 py-4 sm:flex-row sm:justify-between sm:gap-4"
+            >
+              {item.product_id !== null ? (
+                <Link
+                  to={`/products/${item.product_id}`}
+                  aria-label={item.name}
+                  className="focus-visible:outline-ring flex min-w-0 flex-1 items-start gap-3 rounded-sm hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 sm:gap-4"
+                >
+                  {product}
+                </Link>
+              ) : (
+                <div className="flex min-w-0 flex-1 items-start gap-3 sm:gap-4">
+                  {product}
+                </div>
+              )}
+              <p className="shrink-0 pl-19 font-semibold wrap-anywhere sm:max-w-1/2 sm:pl-0">
                 {formatMoney(item.subtotal)}
               </p>
-            </div>
-          </li>
-        ))}
+            </li>
+          );
+        })}
       </ul>
       <footer className="space-y-4 border-t pt-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
