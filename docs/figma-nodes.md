@@ -4,6 +4,25 @@ This registry maps stable frontend screens and reusable components to their Figm
 
 Read the [Figma agent workflow and design architecture](figma-agent-guide.md) before generating or modifying UI. The [Product Page brief](ecommerce/product-page-design-brief.md) records the accepted design and open implementation decisions separately.
 
+## Account profile — pending Figma mapping
+
+Documentation-only inventory recorded on **2026-10-13**. The Figma canvas was
+not inspected or changed; no Profile node mapping has been verified.
+
+- **Implemented:** [UserAccountPage](../src/account/pages/UserAccountPage.tsx)
+  provides Profile and Recipients tabs. [ProfilePanel](../src/account/components/ProfilePanel.tsx)
+  displays identity and edits personal details and address.
+- **Implemented:** [ProfilePhotoManager](../src/account/components/ProfilePhotoManager.tsx)
+  supports photo upload, replacement, confirmed removal, and re-cropping; square
+  drag/keyboard/zoom crop with circular preview, no rotation; independent photo
+  saves preserving form drafts; static JPEG/PNG/WebP uploads up to 5 MB.
+  The backend retains an optimized source up to 2048px and generates a 512px WebP
+  avatar. Map editor/loading/error/saving states and reuse Dialog and Slider in a
+  future authorized canvas update.
+- **Handoff:** [Profile documentation](account/profile.md). Retain original images
+  for re-cropping. Record verified node links only after a future authorized Figma
+  inspection; this entry does not imply canvas synchronization.
+
 ## E-Commerce Wireframe
 
 - **File:** [E-Commerce Wireframe](https://www.figma.com/design/8F5dYlZFxUEN6HKHWMOAwe/-MIgration--E-Commerce-Wireframe)

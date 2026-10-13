@@ -21,7 +21,7 @@ export default function CheckoutPage() {
   const { search } = useLocation();
   return user ? (
     <CheckoutContent
-      key={`${user.id}:${user.country_code}:${search}`}
+      key={`${user.id}:${user.address_country_code}:${search}`}
       userId={user.id}
       search={search}
     />

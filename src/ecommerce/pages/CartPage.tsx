@@ -23,7 +23,7 @@ import { Header } from "@/ecommerce/components/Header";
 /** Keep account-specific cart and selection state isolated across account changes. */
 const CartPage = () => {
   const { user } = useAuth();
-  return <CartContent key={`${user?.id}:${user?.country_code}`} />;
+  return <CartContent key={`${user?.id}:${user?.address_country_code}`} />;
 };
 
 function CartContent() {

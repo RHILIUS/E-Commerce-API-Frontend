@@ -13,7 +13,7 @@ const user = {
   id: 1,
   fullName: "Test User",
   email: "test@example.com",
-  country_code: "PH",
+  address_country_code: "PH",
 };
 const catalogHeaders: (string | null)[] = [];
 

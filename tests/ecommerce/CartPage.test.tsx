@@ -28,7 +28,7 @@ const member = {
   id: 1,
   fullName: "Buyer",
   email: "buyer@example.com",
-  country_code: "PH",
+  address_country_code: "PH",
 };
 let data: CartResponse;
 let rejectUpdate = false;

@@ -10,7 +10,12 @@ type StoreResult<T> = { key: string; data?: T; status?: number };
 export const useStoreResource = <T>(path: string) => {
   const { accessToken, user, isLoading: authLoading } = useAuth();
   const [attempt, setAttempt] = useState(0);
-  const key = JSON.stringify([path, accessToken, user?.country_code, attempt]);
+  const key = JSON.stringify([
+    path,
+    accessToken,
+    user?.address_country_code,
+    attempt,
+  ]);
   const [result, setResult] = useState<StoreResult<T> | null>(null);
   useEffect(() => {
     if (authLoading) return;
