@@ -33,3 +33,11 @@ export type Profile = Omit<ProfileInput, "address"> & {
   profile_image: string | null;
   profile_image_crop: Record<string, unknown>;
 };
+
+export type PhotoCrop = { x: number; y: number; width: number; height: number };
+export type ProfilePhoto = {
+  profile_image: string | null;
+  original_image: string | null;
+  source_id: string;
+  crop: PhotoCrop | null;
+};

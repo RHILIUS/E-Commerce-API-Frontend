@@ -40,6 +40,14 @@ function renderAccount() {
 beforeEach(() => {
   saved = [recipient, second];
   server.use(
+    http.get("http://localhost/api/account/profile/photo/", () =>
+      HttpResponse.json({
+        profile_image: null,
+        original_image: null,
+        source_id: "",
+        crop: null,
+      }),
+    ),
     http.post("http://localhost/api/auth/refresh/", () =>
       HttpResponse.json({ access: "token", user: member }),
     ),

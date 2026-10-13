@@ -1,5 +1,4 @@
-import { UserRound } from "lucide-react";
-import { type SyntheticEvent, useId, useState } from "react";
+import { type SyntheticEvent, useId } from "react";
 
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
@@ -9,6 +8,7 @@ import PhoneNumberField from "@/authentication/components/PhoneNumberField";
 
 import { useProfile } from "../hooks/useProfile";
 import type { Profile, ProfileInput } from "../types";
+import { ProfilePhotoManager } from "./ProfilePhotoManager";
 
 /** Compose the editable personal profile, leaving delivery recipients independent. */
 export function ProfilePanel() {
@@ -26,6 +26,7 @@ export function ProfilePanel() {
           Manage your personal details and address.
         </p>
       </div>
+      <ProfilePhotoManager />
       {state.loadError ? (
         <div role="alert" className="space-y-3">
           <p className="text-destructive">{state.loadError}</p>
@@ -78,7 +79,6 @@ function ProfileForm({
   onCancel: () => void;
 }) {
   const id = useId();
-  const [imageFailed, setImageFailed] = useState(false);
   const submit = (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -128,21 +128,6 @@ function ProfileForm({
   return (
     <form onSubmit={submit} className="space-y-6">
       <div className="flex min-w-0 items-center gap-4">
-        <div className="bg-muted flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-full">
-          {profile.profile_image && !imageFailed ? (
-            <img
-              src={profile.profile_image}
-              alt="Your profile"
-              className="size-full object-cover"
-              onError={() => setImageFailed(true)}
-            />
-          ) : (
-            <UserRound
-              className="text-muted-foreground size-9"
-              aria-hidden="true"
-            />
-          )}
-        </div>
         <dl className="min-w-0 space-y-2 text-sm">
           <div>
             <dt className="text-muted-foreground">Username</dt>

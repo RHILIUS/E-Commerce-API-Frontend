@@ -1,17 +1,40 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { delay, http, HttpResponse } from "msw";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
-import { beforeEach, expect, test } from "vitest";
+import { afterEach, beforeEach, expect, test, vi } from "vitest";
 
 import { accountProtectedRoutes } from "@/account/routes";
 import type { Profile, ProfileInput } from "@/account/types";
+import api from "@/app/api/axios";
 import ProtectedRoute from "@/app/routes/ProtectedRoute";
 import { AuthProvider } from "@/authentication/contexts/Auth/AuthProvider";
 import { useAuth } from "@/authentication/contexts/Auth/useAuth";
 
 import { member, recipient } from "../checkout/fixtures";
 import { server } from "../server";
+
+vi.mock("react-easy-crop", () => ({
+  default: ({
+    onCropComplete,
+  }: {
+    onCropComplete: (area: {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    }) => void;
+  }) => (
+    <button
+      type="button"
+      onClick={() => onCropComplete({ x: 25, y: 0, width: 50, height: 100 })}
+    >
+      Position photo
+    </button>
+  ),
+}));
+
+afterEach(() => vi.restoreAllMocks());
 
 const url = "http://localhost/api/account/profile/";
 let profile: Profile;
@@ -55,6 +78,14 @@ beforeEach(() => {
     profile_image_crop: {},
   };
   server.use(
+    http.get("http://localhost/api/account/profile/photo/", () =>
+      HttpResponse.json({
+        profile_image: null,
+        original_image: null,
+        source_id: "",
+        crop: null,
+      }),
+    ),
     http.post("http://localhost/api/auth/refresh/", () =>
       HttpResponse.json({ access: "token", user: member }),
     ),
@@ -169,4 +200,169 @@ test("retries loading and reconciles an uncertain save", async () => {
       "Saved on server",
     ),
   );
+});
+
+test("re-crops and removes photos without discarding personal-detail drafts", async () => {
+  const photoUrl = "http://localhost/api/account/profile/photo/";
+  const photo = {
+    profile_image: "https://example.com/avatar.webp",
+    original_image: "https://example.com/source.webp",
+    source_id: "users/profile/originals/source.webp",
+    crop: { x: 0.25, y: 0, width: 0.5, height: 1 },
+  };
+  let body: unknown;
+  let detailSaves = 0;
+  server.use(
+    http.get(photoUrl, () => HttpResponse.json(photo)),
+    http.put(photoUrl, async ({ request }) => {
+      body = await request.json();
+      return HttpResponse.json({
+        ...photo,
+        profile_image: "https://example.com/recropped.webp",
+      });
+    }),
+    http.delete(photoUrl, () =>
+      HttpResponse.json({
+        profile_image: null,
+        original_image: null,
+        source_id: "",
+        crop: null,
+      }),
+    ),
+    http.put(url, () => {
+      detailSaves++;
+      return HttpResponse.json(profile);
+    }),
+  );
+  const user = userEvent.setup();
+  open();
+  const name = await screen.findByLabelText("Full name");
+  await user.clear(name);
+  await user.type(name, "Unfinished details");
+  await user.click(await screen.findByRole("button", { name: "Adjust crop" }));
+  const dialog = screen.getByRole("dialog");
+  await user.click(
+    within(dialog).getByRole("button", { name: "Position photo" }),
+  );
+  await user.click(within(dialog).getByRole("button", { name: "Save photo" }));
+  await screen.findByText("Photo saved.");
+  expect(body).toEqual({ source_id: photo.source_id, crop: photo.crop });
+  expect(name).toHaveValue("Unfinished details");
+  expect(detailSaves).toBe(0);
+  await user.click(screen.getByRole("button", { name: "Remove photo" }));
+  await user.click(
+    within(screen.getByRole("dialog")).getByRole("button", { name: "Cancel" }),
+  );
+  expect(screen.getByRole("button", { name: "Adjust crop" })).toBeVisible();
+  await user.click(screen.getByRole("button", { name: "Remove photo" }));
+  await user.click(
+    within(screen.getByRole("dialog")).getByRole("button", {
+      name: "Remove photo",
+    }),
+  );
+  await screen.findByText("Photo removed.");
+  expect(screen.getByRole("button", { name: "Upload photo" })).toBeVisible();
+  expect(name).toHaveValue("Unfinished details");
+  expect(detailSaves).toBe(0);
+});
+
+test("uploads an image and normalized crop as multipart and releases the preview URL", async () => {
+  const create = vi.fn(() => "blob:photo-preview");
+  const revoke = vi.fn();
+  Object.defineProperty(URL, "createObjectURL", {
+    configurable: true,
+    value: create,
+  });
+  Object.defineProperty(URL, "revokeObjectURL", {
+    configurable: true,
+    value: revoke,
+  });
+  // Assert the multipart contract at the Axios boundary; the real browser check
+  // covers transport because jsdom file serialization stalls in this environment.
+  const put = vi.spyOn(api, "put").mockResolvedValue({
+    data: {
+      profile_image: "https://example.com/avatar.webp",
+      original_image: "https://example.com/source.webp",
+      source_id: "new.webp",
+      crop: { x: 0.25, y: 0, width: 0.5, height: 1 },
+    },
+  });
+  const user = userEvent.setup();
+  open();
+  await screen.findByRole("button", { name: "Upload photo" });
+  await user.upload(
+    screen.getByLabelText("Choose profile photo"),
+    new File(["image"], "photo.jpg", { type: "image/jpeg" }),
+  );
+  const dialog = screen.getByRole("dialog");
+  await user.click(
+    within(dialog).getByRole("button", { name: "Position photo" }),
+  );
+  await user.click(within(dialog).getByRole("button", { name: "Save photo" }));
+  await screen.findByText("Photo saved.");
+  expect(put.mock.calls[0][0]).toBe("/api/account/profile/photo/");
+  const body = put.mock.calls[0][1] as FormData;
+  expect(body.get("image")).toHaveProperty("name", "photo.jpg");
+  expect(JSON.parse(String(body.get("crop")))).toEqual({
+    x: 0.25,
+    y: 0,
+    width: 0.5,
+    height: 1,
+  });
+  await waitFor(() =>
+    expect(revoke).toHaveBeenCalledWith("blob:photo-preview"),
+  );
+});
+
+test("rejects oversized uploads before opening the crop editor", async () => {
+  const user = userEvent.setup();
+  open();
+  await screen.findByRole("button", { name: "Upload photo" });
+  await user.upload(
+    screen.getByLabelText("Choose profile photo"),
+    new File([new Uint8Array(5 * 1024 * 1024 + 1)], "large.png", {
+      type: "image/png",
+    }),
+  );
+  expect(
+    await screen.findByText("Choose an image no larger than 5 MB."),
+  ).toBeVisible();
+  expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+});
+
+test("reloads an uncertain photo change before allowing another edit", async () => {
+  const photoUrl = "http://localhost/api/account/profile/photo/";
+  let loads = 0;
+  let saves = 0;
+  server.use(
+    http.get(photoUrl, () => {
+      loads++;
+      return HttpResponse.json({
+        profile_image: `https://example.com/avatar-${loads}.webp`,
+        original_image: `https://example.com/source-${loads}.webp`,
+        source_id: `source-${loads}.webp`,
+        crop: { x: 0.25, y: 0, width: 0.5, height: 1 },
+      });
+    }),
+    http.put(photoUrl, () => {
+      saves++;
+      return new HttpResponse(null, { status: 503 });
+    }),
+  );
+  const user = userEvent.setup();
+  open();
+  const name = await screen.findByLabelText("Full name");
+  await user.clear(name);
+  await user.type(name, "Keep my draft");
+  await user.click(await screen.findByRole("button", { name: "Adjust crop" }));
+  await user.click(screen.getByRole("button", { name: "Position photo" }));
+  await user.click(screen.getByRole("button", { name: "Save photo" }));
+  await screen.findByText(/Your current photo has been reloaded/);
+  expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  expect(screen.getByAltText("Your profile")).toHaveAttribute(
+    "src",
+    "https://example.com/avatar-2.webp",
+  );
+  expect(name).toHaveValue("Keep my draft");
+  expect(saves).toBe(1);
 });
