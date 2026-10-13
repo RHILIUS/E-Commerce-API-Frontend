@@ -17,6 +17,7 @@ export type AuthContextType = {
   isLoading: boolean;
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
   logout: () => Promise<void>;
+  endSession: () => void;
   login: (email: string, password: string) => Promise<void>;
 };
 

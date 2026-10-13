@@ -73,7 +73,7 @@ test("account menu exposes the guarded page and recipient tab", async () => {
   await screen.findByText(recipient.name);
   expect(screen.getByRole("heading", { name: "Recipients" })).toBeVisible();
   expect(screen.queryByRole("radio")).not.toBeInTheDocument();
-  expect(screen.queryByText("Change Password")).not.toBeInTheDocument();
+  expect(screen.getByRole("tab", { name: "Change Password" })).toBeVisible();
   await user.click(screen.getByRole("button", { name: "Account" }));
   await user.click(await screen.findByRole("menuitem", { name: "Account" }));
   expect(router.state.location.pathname).toBe("/account");

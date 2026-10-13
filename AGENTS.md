@@ -55,6 +55,23 @@ Validate all Mermaid fences with a recorded Mermaid version and inspect rendered
 
 When implementation is complete, reconcile the process document with the actual code and API contract, updating its status and any affected flow. Include the diagram changes and validation results in the feature handoff.
 
+## Required ERD Documentation
+
+Whenever creating or updating a Markdown ERD document in the **sibling documentation repository** at `../docs/diagrams/erd/`, include explanations alongside the diagram. This is distinct from the frontend's local `docs/` folder. Use lowercase kebab-case filenames and update an existing document when it already covers the model. Use [Password-change model](../docs/diagrams/erd/password-change.md) as a structural example, not as a source of requirements for unrelated entities.
+
+Before writing, review the central diagramming specification, diagram index, relevant backend models and migrations, and the services and documented contracts that govern the fields. Verify current behavior against implementation; report inconsistencies rather than inventing semantics.
+
+Each ERD Markdown document must:
+
+1. State its scope and implementation status, clearly distinguishing implemented models from proposed designs. Identify omitted entities or fields when the diagram represents only a subset.
+2. Include a fenced Mermaid `erDiagram` showing the relevant entities, fields, keys, and relationship cardinalities.
+3. Explain each entity's purpose, ownership, and role in the feature, with its actual model name when implemented. Explain relationships, optionality, foreign-key ownership, and deletion behavior.
+4. Provide a field table for every entity with columns **Field / column**, **Meaning**, and **Constraints and behavior**. Cover every field shown in the diagram. Explain its business purpose and relevant type, primary/foreign/unique keys, nullability, defaults, validation, and lifecycle behavior. Distinguish model field names from database column names when they differ. Do not merely repeat the field name as its explanation.
+5. Add persistence and lifecycle notes where relevant, covering creation, updates, expiry, resets, counters, sensitive-data handling, transaction boundaries, concurrency, and failure or recovery behavior. Document only verified behavior, and identify unresolved decisions for proposed models.
+6. Include implementation references and links to related business-process documents. Add or update the diagram index entry and ensure relative links resolve.
+
+Keep the diagram, field tables, and lifecycle notes synchronized when the schema or behavior changes. Check that every diagram entity and field has an explanation. For new or changed Mermaid fences, record the Mermaid version used, validate parsing, and inspect the rendered diagram for readable labels and relationships. Check the intended Markdown host when available; report any parsing, rendering, or host-verification limitations without claiming checks that were not performed. Include documentation changes and actual validation results in the handoff.
+
 ## Implementation Simplicity and Modularization
 
 Prefer the smallest clear implementation that satisfies the verified current requirement and contract.
@@ -70,6 +87,12 @@ Prefer the smallest clear implementation that satisfies the verified current req
 - Add concise purpose comments above helpers so reviewers can understand why they exist without tracing the implementation. Use JSDoc for exported helpers and short comments for local helpers. Explain relevant input/output behavior, assumptions, or non-obvious decisions; avoid narrating each line or merely repeating the function name. Update comments when behavior changes.
 - Move substantial API error parsing and response-to-field mapping into a focused helper in the feature's utils directory when it makes the page easier to read. Let the page handle the resulting UI state. Prefer straightforward control flow and meaningful names; keep trivial logic inline and support only verified response contracts.
 - Any added complexity should correspond to a concrete case that can be explained and, where practical, tested. Simplicity must not weaken accessibility, security, data integrity, error handling, or required responsive behavior.
+
+## Module Organization
+
+When a feature has multiple files for one responsibility, group them in a clearly named directory such as `components/`, `hooks/`, `utils/`, or `tests/`, following the project's existing discovery conventions. Keep a single cohesive module colocated until splitting is useful; do not create speculative directories or empty abstractions. When adding a second related module, group the existing and new modules within that scoped change rather than reorganizing unrelated features.
+
+Apply the same convention when working in the backend: multiple test, serializer, view, or service modules belong in `tests/`, `serializers/`, `views/`, or `services/` Python packages, respectively. Follow the backend's `AGENTS.md` for framework-specific requirements. Update affected imports, test patch targets, routing, and documentation references, and verify discovery and behavior after moving files. Keep package initializers or barrel exports small and avoid circular dependencies.
 
 ## UI Component Selection and shadcn/ui Usage
 
