@@ -28,7 +28,7 @@ function renderAccount() {
       { path: "/login", element: <LoginPage /> },
       { element: <ProtectedRoute />, children: accountProtectedRoutes },
     ],
-    { initialEntries: ["/account"] },
+    { initialEntries: ["/account?tab=recipients"] },
   );
   render(
     <AuthProvider>
@@ -43,11 +43,23 @@ beforeEach(() => {
     http.post("http://localhost/api/auth/refresh/", () =>
       HttpResponse.json({ access: "token", user: member }),
     ),
+    http.get("http://localhost/api/account/profile/", () =>
+      HttpResponse.json({
+        id: member.id,
+        username: "buyer",
+        email: member.email,
+        full_name: member.fullName,
+        phone_number: recipient.phone_number,
+        address: null,
+        profile_image: null,
+        profile_image_crop: {},
+      }),
+    ),
     http.get(url, () => HttpResponse.json({ recipients: saved })),
   );
 });
 
-test("account menu exposes the guarded page with only recipients implemented", async () => {
+test("account menu exposes the guarded page and recipient tab", async () => {
   const user = userEvent.setup();
   const router = renderAccount();
   await screen.findByText(recipient.name);

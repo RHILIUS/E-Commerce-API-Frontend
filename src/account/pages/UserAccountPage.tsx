@@ -1,17 +1,26 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { Button } from "@/app/components/ui/button";
 import { Skeleton } from "@/app/components/ui/skeleton";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/app/components/ui/tabs";
 import { useAuth } from "@/authentication/contexts/Auth/useAuth";
 import { Header } from "@/ecommerce/components/Header";
 
+import { ProfilePanel } from "../components/ProfilePanel";
 import { RecipientManager } from "../components/RecipientManager";
 import { useRecipients } from "../hooks/useRecipients";
 
-/** Account entry point; recipient management is the first available account section. */
+/** Account entry point for personal profile and delivery-recipient management. */
 export default function UserAccountPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [params, setParams] = useSearchParams();
+  const tab = params.get("tab") === "recipients" ? "recipients" : "profile";
   return (
     <div className="bg-background text-foreground flex min-w-0 flex-col">
       <Header
@@ -24,10 +33,28 @@ export default function UserAccountPage() {
         <div className="space-y-2">
           <h1 className="text-2xl sm:text-3xl">My account</h1>
           <p className="text-muted-foreground text-sm">
-            Manage the people and places you deliver to.
+            Manage your profile and the people you deliver to.
           </p>
         </div>
-        {user && <AccountRecipients key={user.id} />}
+        {user && (
+          <Tabs
+            key={user.id}
+            value={tab}
+            onValueChange={(value) => setParams({ tab: String(value) })}
+            className="gap-5"
+          >
+            <TabsList className="h-12 w-full" aria-label="Account sections">
+              <TabsTrigger value="profile">Profile</TabsTrigger>
+              <TabsTrigger value="recipients">Recipients</TabsTrigger>
+            </TabsList>
+            <TabsContent value="profile">
+              <ProfilePanel />
+            </TabsContent>
+            <TabsContent value="recipients">
+              <AccountRecipients />
+            </TabsContent>
+          </Tabs>
+        )}
       </main>
     </div>
   );

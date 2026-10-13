@@ -1,6 +1,6 @@
 import api from "@/app/api/axios";
 
-import type { Recipient, RecipientInput } from "./types";
+import type { Profile, ProfileInput, Recipient, RecipientInput } from "./types";
 
 /** Load only the authenticated customer's active saved recipients. */
 export async function fetchRecipients(signal?: AbortSignal) {
@@ -40,4 +40,13 @@ export async function deleteRecipient(
       },
     )
   ).data.recipients;
+}
+
+/** Read the signed-in account's personal details and address. */
+export async function fetchProfile(signal?: AbortSignal) {
+  return (await api.get<Profile>("/api/account/profile/", { signal })).data;
+}
+/** Save a complete personal profile; recipients remain independent. */
+export async function saveProfile(input: ProfileInput) {
+  return (await api.put<Profile>("/api/account/profile/", input)).data;
 }

@@ -1,8 +1,8 @@
 # Recipient configuration
 
 Authenticated customers open **Header → Account → Account** to reach `/account`
-(`UserAccountPage`). This release implements Recipients only; Profile and Change
-Password are deferred and do not appear as inactive tabs.
+(`UserAccountPage`). Profile is the default tab; Recipients is also directly
+accessible at `/account?tab=recipients`. Change Password remains deferred.
 
 ## Design and reuse
 
@@ -51,4 +51,5 @@ The personal address and delivery recipients are independently editable records.
 User no longer stores country_code. Authentication responses expose nullable
 `address_country_code`, derived from the personal address, for country-dependent
 price refreshes. Recipient countries and the registration address request remain
-unchanged. Profile editing and photo cropping remain deferred.
+unchanged. The [Profile tab](profile.md) reads and updates personal details and
+address; photo upload and cropping remain deferred.
