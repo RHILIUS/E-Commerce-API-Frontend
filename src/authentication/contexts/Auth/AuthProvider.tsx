@@ -14,26 +14,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [didLogOut, setDidLogOut] = useState(false);
   const initialized = useRef(false);
   const isAuthenticated = accessToken !== null;
-  const refreshAccessToken = useAxiosInterceptor({
+  const { refreshAccessToken, clearSession } = useAxiosInterceptor({
     accessToken,
     setAccessToken,
     setUser,
   });
 
+  const endSession = () => {
+    setDidLogOut(true);
+    clearSession();
+  };
+
   const logout = async () => {
     // Tell the route guard to discard the return destination for intentional logout.
-    setDidLogOut(true);
+    endSession();
     try {
       await logoutApi();
     } catch {
       // Backend logout failure doesn't prevent local logout.
-    } finally {
-      setAccessToken(null);
-      setUser(null);
     }
   };
 
   const login = async (email: string, password: string) => {
+    clearSession();
     const response = await loginApi(email, password);
 
     setAccessToken(response.access);
@@ -69,6 +72,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser,
         setAccessToken,
         logout,
+        endSession,
         isLoading,
         setIsLoading,
         login,

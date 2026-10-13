@@ -12,6 +12,7 @@ type LoginLocationState = {
   from?: { pathname?: string; search?: string };
   email?: string;
   registrationSucceeded?: boolean;
+  passwordChange?: "success" | "uncertain";
 };
 
 const LoginPage = () => {
@@ -88,6 +89,14 @@ const LoginPage = () => {
             <p className="text-muted-foreground mt-6 text-sm" role="status">
               Your account was created, but we couldn&apos;t log you in
               automatically. Please log in.
+            </p>
+          )}
+
+          {locationState?.passwordChange && (
+            <p className="text-muted-foreground mt-6 text-sm" role="status">
+              {locationState.passwordChange === "success"
+                ? "Password changed successfully. Sign in with your new password."
+                : "The password change may have completed, but we couldn't confirm the response. Please sign in."}
             </p>
           )}
 

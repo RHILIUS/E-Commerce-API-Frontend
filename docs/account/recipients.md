@@ -1,8 +1,8 @@
 # Recipient configuration
 
 Authenticated customers open **Header → Account → Account** to reach `/account`
-(`UserAccountPage`). Profile is the default tab; Recipients is also directly
-accessible at `/account?tab=recipients`. Change Password remains deferred.
+(`UserAccountPage`). Recipients is directly
+accessible at `/account?tab=recipients`.
 
 ## Design and reuse
 

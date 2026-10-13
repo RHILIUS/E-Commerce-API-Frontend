@@ -39,6 +39,9 @@ const AuthProbe = ({ request }: AuthProbeProps) => {
             ? `authenticated:${auth.accessToken}`
             : "anonymous"}
       </output>
+      <button type="button" onClick={auth.endSession}>
+        End session
+      </button>
       <output aria-label="Request state">{requestState}</output>
       <button type="button" onClick={() => void sendRequest()}>
         Send request
@@ -266,4 +269,40 @@ describe("JWT interceptor", () => {
     expect(await screen.findByText("authenticated:access-token")).toBeVisible();
     await waitFor(() => expect(refreshCount).toBe(1));
   });
+});
+
+test("a late refresh cannot restore authentication after ending the session", async () => {
+  const interaction = userEvent.setup();
+  let refreshes = 0;
+  let release: () => void = () => {};
+  const pending = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  server.use(
+    http.post(`${apiUrl}/api/auth/refresh/`, async () => {
+      refreshes++;
+      if (refreshes > 1) await pending;
+      return HttpResponse.json({
+        access: refreshes > 1 ? "late-token" : "initial-token",
+        user,
+      });
+    }),
+    http.get(`${apiUrl}/api/products/`, () =>
+      HttpResponse.json({}, { status: 401 }),
+    ),
+  );
+  render(
+    <AuthProvider>
+      <AuthProbe request={() => api.get("/api/products/")} />
+    </AuthProvider>,
+  );
+  await screen.findByText("authenticated:initial-token");
+  await interaction.click(screen.getByRole("button", { name: "Send request" }));
+  await waitFor(() => expect(refreshes).toBe(2));
+  await interaction.click(screen.getByRole("button", { name: "End session" }));
+  release();
+  await screen.findByText("failed");
+  expect(screen.getByLabelText("Authentication state")).toHaveTextContent(
+    "anonymous",
+  );
 });

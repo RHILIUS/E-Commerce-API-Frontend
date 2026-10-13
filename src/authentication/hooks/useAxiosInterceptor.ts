@@ -27,28 +27,46 @@ export const useAxiosInterceptor = ({
   setUser,
 }: UseAxiosInterceptorProps) => {
   const accessTokenRef = useRef(accessToken);
+  const sessionGeneration = useRef(0);
   const refreshRequestRef = useRef<Promise<AuthResponse> | null>(null);
 
   useEffect(() => {
     accessTokenRef.current = accessToken;
   }, [accessToken]);
 
+  const clearSession = useCallback(() => {
+    sessionGeneration.current += 1;
+    accessTokenRef.current = null;
+    refreshRequestRef.current = null;
+    setAccessToken(null);
+    setUser(null);
+  }, [setAccessToken, setUser]);
+
   const refreshAccessToken = useCallback(async () => {
+    const generation = sessionGeneration.current;
     // Makes sure that simultaneous refresh requests reference one single promise
     if (!refreshRequestRef.current) {
-      refreshRequestRef.current = refreshTokenApi().finally(() => {
-        refreshRequestRef.current = null;
+      const pending = refreshTokenApi().finally(() => {
+        if (refreshRequestRef.current === pending)
+          refreshRequestRef.current = null;
       });
+      refreshRequestRef.current = pending;
     }
 
     try {
       const response = await refreshRequestRef.current;
+      if (generation !== sessionGeneration.current)
+        throw new Error("Session changed.");
       accessTokenRef.current = response.access;
       setAccessToken(response.access);
       setUser(response.user);
       return response.access;
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
+      if (
+        generation === sessionGeneration.current &&
+        axios.isAxiosError(error) &&
+        error.response?.status === 401
+      ) {
         accessTokenRef.current = null;
         setAccessToken(null);
         setUser(null);
@@ -94,5 +112,5 @@ export const useAxiosInterceptor = ({
     };
   }, [refreshAccessToken]);
 
-  return refreshAccessToken;
+  return { refreshAccessToken, clearSession };
 };

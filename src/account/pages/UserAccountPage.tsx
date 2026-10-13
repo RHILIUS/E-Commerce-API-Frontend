@@ -11,16 +11,21 @@ import {
 import { useAuth } from "@/authentication/contexts/Auth/useAuth";
 import { Header } from "@/ecommerce/components/Header";
 
+import { ChangePasswordPanel } from "../components/ChangePasswordPanel";
 import { ProfilePanel } from "../components/ProfilePanel";
 import { RecipientManager } from "../components/RecipientManager";
 import { useRecipients } from "../hooks/useRecipients";
 
-/** Account entry point for personal profile and delivery-recipient management. */
+/** Account entry point for profile, recipients and verified password changes. */
 export default function UserAccountPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [params, setParams] = useSearchParams();
-  const tab = params.get("tab") === "recipients" ? "recipients" : "profile";
+  const requestedTab = params.get("tab");
+  const tab =
+    requestedTab === "recipients" || requestedTab === "change-password"
+      ? requestedTab
+      : "profile";
   return (
     <div className="bg-background text-foreground flex min-w-0 flex-col">
       <Header
@@ -33,7 +38,7 @@ export default function UserAccountPage() {
         <div className="space-y-2">
           <h1 className="text-2xl sm:text-3xl">My account</h1>
           <p className="text-muted-foreground text-sm">
-            Manage your profile and the people you deliver to.
+            Manage your profile, delivery recipients and password.
           </p>
         </div>
         {user && (
@@ -43,10 +48,22 @@ export default function UserAccountPage() {
             onValueChange={(value) => setParams({ tab: String(value) })}
             className="gap-5"
           >
-            <TabsList className="h-12 w-full" aria-label="Account sections">
+            <TabsList
+              className="h-12 w-full group-data-horizontal/tabs:h-12"
+              aria-label="Account sections"
+            >
               <TabsTrigger value="profile">Profile</TabsTrigger>
               <TabsTrigger value="recipients">Recipients</TabsTrigger>
+              <TabsTrigger
+                value="change-password"
+                className="min-w-0 text-center leading-4 whitespace-normal"
+              >
+                Change Password
+              </TabsTrigger>
             </TabsList>
+            <TabsContent value="change-password" keepMounted>
+              <ChangePasswordPanel />
+            </TabsContent>
             <TabsContent value="profile">
               <ProfilePanel />
             </TabsContent>
