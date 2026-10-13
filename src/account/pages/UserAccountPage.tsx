@@ -61,8 +61,8 @@ export default function UserAccountPage() {
                 Change Password
               </TabsTrigger>
             </TabsList>
-            <TabsContent value="change-password">
-              {tab === "change-password" && <ChangePasswordPanel />}
+            <TabsContent value="change-password" keepMounted>
+              <ChangePasswordPanel />
             </TabsContent>
             <TabsContent value="profile">
               <ProfilePanel />

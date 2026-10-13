@@ -16,8 +16,11 @@ validates current/new passwords before sending a code. The second step displays
 a masked email address, six-digit OTP input, expiry and resend countdowns, Back,
 and Verify and change password. All devices are signed out after success.
 
-Password and OTP values remain in component memory. Leaving the tab or reloading
-clears the form. Back returns to the password details; another request creates a
+Password and OTP values remain in component memory. Switching account tabs hides
+the mounted form and preserves the current step, entered values, and original
+expiry and cooldown deadlines. Returning does not request another code. Leaving
+the account page, reloading, signing out, or changing accounts clears the form.
+Back returns to the password details; another request creates a
 new challenge, subject to the server cooldown and durable account limits.
 
 `ChangePasswordPanel` composes the interface. `useChangePassword` owns challenge

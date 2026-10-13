@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
@@ -20,7 +20,10 @@ const challenge = () => ({
   retry_after: 60,
 });
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+});
 
 beforeEach(() => {
   Object.defineProperty(document, "elementFromPoint", {
@@ -229,16 +232,100 @@ test("unknown confirmation outcome directs to sign-in without automatic replay",
   expect(confirms).toBe(1);
 });
 
-test("leaving the tab discards sensitive form values", async () => {
+test("switching account tabs preserves password details while hiding the form", async () => {
   const interaction = userEvent.setup();
   open();
   await fill(interaction);
   await interaction.click(screen.getByRole("tab", { name: "Recipients" }));
   await screen.findByText(recipient.name);
+  expect(screen.getByLabelText("Current password")).not.toBeVisible();
   await interaction.click(screen.getByRole("tab", { name: "Change Password" }));
-  await waitFor(() =>
-    expect(screen.getByLabelText("Current password")).toHaveValue(""),
+  expect(screen.getByLabelText("Current password")).toHaveValue(
+    "OriginalPassword1",
   );
+  expect(screen.getByLabelText("New password")).toHaveValue("UpdatedPassword2");
+});
+
+test("returning to verification preserves the code and credentials without requesting again", async () => {
+  let sent = 0;
+  let confirmed: unknown;
+  server.use(
+    http.post(`${root}request/`, () => {
+      sent++;
+      return HttpResponse.json(challenge());
+    }),
+    http.post(`${root}confirm/`, async ({ request }) => {
+      confirmed = await request.json();
+      return HttpResponse.json({ message: "Changed" });
+    }),
+  );
+  const interaction = userEvent.setup();
+  open();
+  await fill(interaction);
+  await interaction.click(
+    screen.getByRole("button", { name: "Send verification code" }),
+  );
+  const code = await screen.findByRole("textbox", {
+    name: "Six-digit verification code",
+  });
+  await interaction.type(code, "123456");
+  await interaction.click(screen.getByRole("tab", { name: "Recipients" }));
+  await screen.findByText(recipient.name);
+  expect(code).not.toBeVisible();
+  expect(
+    screen.queryByRole("textbox", { name: "Six-digit verification code" }),
+  ).not.toBeInTheDocument();
+  await interaction.click(screen.getByRole("tab", { name: "Change Password" }));
+  expect(code).toBeVisible();
+  expect(code).toHaveValue("123456");
+  expect(screen.getByRole("button", { name: /Resend code in/ })).toBeDisabled();
+  expect(sent).toBe(1);
+  await interaction.click(
+    screen.getByRole("button", { name: "Verify and change password" }),
+  );
+  await screen.findByText(
+    "Password changed successfully. Sign in with your new password.",
+  );
+  expect(confirmed).toEqual({
+    current_password: "OriginalPassword1",
+    new_password: "UpdatedPassword2",
+    challenge_id: challenge().challenge_id,
+    otp: "123456",
+  });
+});
+
+test("original deadlines expire while verification is hidden", async () => {
+  const interaction = userEvent.setup();
+  open();
+  await fill(interaction);
+  await interaction.click(
+    screen.getByRole("button", { name: "Send verification code" }),
+  );
+  await screen.findByRole("textbox", { name: "Six-digit verification code" });
+  await interaction.click(screen.getByRole("tab", { name: "Recipients" }));
+  await screen.findByText(recipient.name);
+  const afterExpiry = Date.now() + 301_000;
+  vi.spyOn(Date, "now").mockReturnValue(afterExpiry);
+  await waitFor(() => expect(screen.getByText("Resend code")).toBeEnabled(), {
+    timeout: 2000,
+  });
+  await interaction.click(screen.getByRole("tab", { name: "Change Password" }));
+  expect(screen.getByRole("button", { name: "Resend code" })).toBeEnabled();
+  expect(
+    screen.getByRole("button", { name: "Verify and change password" }),
+  ).toBeDisabled();
+  expect(
+    screen.getByText("This code has expired. Request a new code."),
+  ).toBeVisible();
+});
+
+test("leaving the account page clears sensitive form values", async () => {
+  const interaction = userEvent.setup();
+  const router = open();
+  await fill(interaction);
+  await act(() => router.navigate("/login"));
+  await act(() => router.navigate("/account?tab=change-password"));
+  expect(await screen.findByLabelText("Current password")).toHaveValue("");
   expect(screen.getByLabelText("New password")).toHaveValue("");
 });
 
