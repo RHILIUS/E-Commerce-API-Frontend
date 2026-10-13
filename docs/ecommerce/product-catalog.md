@@ -24,9 +24,9 @@ Cards display the backend's `display_price.amount` and `display_price.currency`,
 formatted with `Intl.NumberFormat`. The original `price` belongs to the store's
 `currency`; it is not necessarily USD. The frontend does not compute exchange rates.
 
-Guests receive prices converted to USD; signed-in users receive their account
-country's currency. Same-currency products retain their original amount. If the
+Guests receive prices converted to USD; signed-in users receive their personal-address
+country's currency (USD when no address exists). Same-currency products retain their original amount. If the
 backend cannot convert a price, it returns the original store amount and currency,
 which the card displays without relabeling it. A page may then show multiple
-currencies. Logging out reloads guest prices; account country changes trigger a
+currencies. Logging out reloads guest prices; personal-address country changes trigger a
 new request. Conversion is a display estimate, not a checkout currency guarantee.

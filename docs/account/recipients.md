@@ -43,3 +43,12 @@ Integrates with [backend recipient API](../../../backend/docs/checkout/recipient
 - Unknown mutation outcomes reload the list. If that reload fails, further address
   mutations are disabled until a successful explicit reload. No create is blindly retried.
 - Form validation keeps the draft; loading errors expose retry; empty lists expose Add.
+
+## Personal address ownership
+
+Registration creates User, UserAddress and the initial default recipient atomically.
+The personal address and delivery recipients are independently editable records.
+User no longer stores country_code. Authentication responses expose nullable
+`address_country_code`, derived from the personal address, for country-dependent
+price refreshes. Recipient countries and the registration address request remain
+unchanged. Profile editing and photo cropping remain deferred.

@@ -16,7 +16,7 @@ const user = {
   id: 1,
   fullName: "Test User",
   email: "user@example.com",
-  country_code: "PH",
+  address_country_code: "PH",
 };
 
 // Exercise the data router used by the application, including guard redirects.

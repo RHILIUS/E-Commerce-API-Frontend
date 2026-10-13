@@ -148,7 +148,7 @@ describe("LandingPage API integration", () => {
             id: 1,
             fullName: "Test",
             email: "test@example.com",
-            country_code: "PH",
+            address_country_code: "PH",
           },
         });
       }),

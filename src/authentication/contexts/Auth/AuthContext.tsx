@@ -4,7 +4,7 @@ export type User = {
   id: number;
   fullName: string;
   email: string;
-  country_code: string;
+  address_country_code: string | null;
 };
 
 export type AuthContextType = {

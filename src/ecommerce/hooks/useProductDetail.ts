@@ -15,7 +15,12 @@ type DetailResult = {
 export const useProductDetail = (id: string) => {
   const { accessToken, user, isLoading: authLoading } = useAuth();
   const [attempt, setAttempt] = useState(0);
-  const key = JSON.stringify([id, accessToken, user?.country_code, attempt]);
+  const key = JSON.stringify([
+    id,
+    accessToken,
+    user?.address_country_code,
+    attempt,
+  ]);
   const [result, setResult] = useState<DetailResult | null>(null);
 
   useEffect(() => {

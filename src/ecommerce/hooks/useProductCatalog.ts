@@ -16,7 +16,7 @@ export const useProductCatalog = (page: number, query: string) => {
     page,
     query,
     accessToken,
-    user?.country_code,
+    user?.address_country_code,
     attempt,
   ]);
   const [result, setResult] = useState<{
