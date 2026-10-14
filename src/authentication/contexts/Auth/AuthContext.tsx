@@ -5,6 +5,7 @@ export type User = {
   fullName: string;
   email: string;
   address_country_code: string | null;
+  profile_image: string | null;
 };
 
 export type AuthContextType = {

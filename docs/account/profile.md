@@ -54,3 +54,13 @@ Implemented on 2026-10-13. Photo actions use the separate
 Dialog and new shadcn Slider supply themed controls. Dialogs scroll within short
 viewports. The Figma node registry records this implementation without a canvas
 change or verified mapping.
+
+## Account menu avatar
+
+The shared header uses `AuthContext.user.profile_image`, provided by login and
+session refresh. It displays the existing bundled `avatarImage` when no photo
+exists or when the image fails to load. Confirmed photo loads, saves, removals and
+recovery reloads synchronize that shared URL for the same user, preserving the
+personal-details draft. Failed recovery reads retain the last confirmed shared
+URL. No separate photo fetch is added to the header. See the maintained
+[account-menu process](../../../docs/diagrams/specific-business-processes/account/account-menu-profile-photo.md).

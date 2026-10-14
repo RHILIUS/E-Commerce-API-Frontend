@@ -6,6 +6,7 @@ export const member = {
   fullName: "Buyer",
   email: "buyer@example.com",
   address_country_code: "PH",
+  profile_image: null,
 };
 export const recipient: Recipient = {
   id: 7,
