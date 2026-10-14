@@ -1,5 +1,7 @@
 import axios from "axios";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+import { useAuth } from "@/authentication/contexts/Auth/useAuth";
 
 import {
   fetchProfilePhoto,
@@ -10,6 +12,8 @@ import type { PhotoCrop, ProfilePhoto } from "../types";
 
 /** Own independent photo requests, preserving the personal-details form's draft. */
 export function useProfilePhoto() {
+  const { user, setUser } = useAuth();
+  const userId = user?.id;
   const [photo, setPhoto] = useState<ProfilePhoto | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -18,12 +22,25 @@ export function useProfilePhoto() {
   const inFlight = useRef(false);
   const mounted = useRef(false);
 
+  // Accept confirmed server photo data without changing another account's session.
+  const accept = useCallback(
+    (value: ProfilePhoto) => {
+      setPhoto(value);
+      setUser((current) =>
+        current && current.id === userId
+          ? { ...current, profile_image: value.profile_image }
+          : current,
+      );
+    },
+    [setUser, userId],
+  );
+
   useEffect(() => {
     mounted.current = true;
     const controller = new AbortController();
     fetchProfilePhoto(controller.signal)
       .then((value) => {
-        if (!controller.signal.aborted) setPhoto(value);
+        if (!controller.signal.aborted) accept(value);
       })
       .catch(() => {
         if (!controller.signal.aborted)
@@ -33,7 +50,7 @@ export function useProfilePhoto() {
       mounted.current = false;
       controller.abort();
     };
-  }, [attempt]);
+  }, [attempt, accept]);
 
   const update = async (
     operation: () => Promise<ProfilePhoto>,
@@ -47,7 +64,7 @@ export function useProfilePhoto() {
     try {
       const value = await operation();
       if (mounted.current) {
-        setPhoto(value);
+        accept(value);
         setNotice(message);
       }
       return "saved";
@@ -58,7 +75,7 @@ export function useProfilePhoto() {
         try {
           const value = await fetchProfilePhoto();
           if (mounted.current) {
-            setPhoto(value);
+            accept(value);
             setError(
               "We couldn't confirm the change. Your current photo has been reloaded; review it before trying again.",
             );
@@ -96,7 +113,7 @@ export function useProfilePhoto() {
         ) {
           try {
             const value = await fetchProfilePhoto();
-            if (mounted.current) setPhoto(value);
+            if (mounted.current) accept(value);
           } catch {
             if (mounted.current) setPhoto(null);
           }

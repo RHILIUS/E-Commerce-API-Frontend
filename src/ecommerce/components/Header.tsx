@@ -27,6 +27,12 @@ type HeaderProps = {
 /** Shared catalog header with search and account actions. */
 export const Header = ({ searchQuery, onSearch }: HeaderProps) => {
   const auth = useAuth();
+  const [failedImage, setFailedImage] = useState<string | null>(null);
+  const imageKey = `${auth.user?.id}:${auth.user?.profile_image}`;
+  const accountImage =
+    auth.user?.profile_image && failedImage !== imageKey
+      ? auth.user.profile_image
+      : avatarImage;
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
@@ -121,7 +127,9 @@ export const Header = ({ searchQuery, onSearch }: HeaderProps) => {
                       className="size-11 overflow-hidden rounded-lg p-0"
                     >
                       <img
-                        src={avatarImage}
+                        key={imageKey}
+                        src={accountImage}
+                        onError={() => setFailedImage(imageKey)}
                         alt=""
                         width={44}
                         height={44}

@@ -43,6 +43,7 @@ function Session() {
   return (
     <output aria-label="Session">
       {user?.fullName}:{user?.address_country_code}
+      <span aria-label="Session photo">{user?.profile_image ?? "none"}</span>
     </output>
   );
 }
@@ -247,6 +248,9 @@ test("re-crops and removes photos without discarding personal-detail drafts", as
   await user.click(within(dialog).getByRole("button", { name: "Save photo" }));
   await screen.findByText("Photo saved.");
   expect(body).toEqual({ source_id: photo.source_id, crop: photo.crop });
+  expect(screen.getByLabelText("Session photo")).toHaveTextContent(
+    "https://example.com/recropped.webp",
+  );
   expect(name).toHaveValue("Unfinished details");
   expect(detailSaves).toBe(0);
   await user.click(screen.getByRole("button", { name: "Remove photo" }));
@@ -261,6 +265,7 @@ test("re-crops and removes photos without discarding personal-detail drafts", as
     }),
   );
   await screen.findByText("Photo removed.");
+  expect(screen.getByLabelText("Session photo")).toHaveTextContent("none");
   expect(screen.getByRole("button", { name: "Upload photo" })).toBeVisible();
   expect(name).toHaveValue("Unfinished details");
   expect(detailSaves).toBe(0);
@@ -361,6 +366,9 @@ test("reloads an uncertain photo change before allowing another edit", async () 
   expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   expect(screen.getByAltText("Your profile")).toHaveAttribute(
     "src",
+    "https://example.com/avatar-2.webp",
+  );
+  expect(screen.getByLabelText("Session photo")).toHaveTextContent(
     "https://example.com/avatar-2.webp",
   );
   expect(name).toHaveValue("Keep my draft");
