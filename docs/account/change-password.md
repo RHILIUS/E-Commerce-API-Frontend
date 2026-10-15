@@ -41,3 +41,12 @@ response or server error directs the user to sign in with an outcome-uncertain
 message. A successful response commits the login route before clearing local
 authentication, preserving the success message through the protected-route guard.
 Session-generation checks discard refresh responses that finish after sign-out.
+
+## Background email delivery
+
+Request and resend success confirm broker acceptance of the verification email.
+The OTP step tells customers the email is queued. A Celery worker checks current
+challenge ownership, email and credential binding, consumption and expiry before
+each delivery attempt. Temporary transport failures have bounded retries. Later
+delivery failures do not produce a new API response; controlled resend remains
+available after cooldown. There is no completion email after a password change.

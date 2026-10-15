@@ -69,7 +69,9 @@ export function ChangePasswordPanel() {
         {flow.challenge ? (
           <div className="min-w-0 space-y-4">
             <p className="text-sm wrap-break-word">
-              Enter the six-digit code sent to {flow.challenge.masked_email}.
+              Your verification email is queued for{" "}
+              {flow.challenge.masked_email}. Enter the six-digit code when it
+              arrives.
             </p>
             <InputOTP
               maxLength={6}
@@ -86,7 +88,7 @@ export function ChangePasswordPanel() {
                   ? "password-code-help password-code-error"
                   : "password-code-help"
               }
-              containerClassName="justify-center"
+              containerClassName="mx-auto w-fit max-w-full"
             >
               <InputOTPGroup>
                 {Array.from({ length: 6 }, (_, index) => (
