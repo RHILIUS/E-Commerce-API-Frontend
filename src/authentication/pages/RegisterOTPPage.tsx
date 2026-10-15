@@ -80,7 +80,9 @@ const RegisterOTPPage = () => {
 
       startOtpCooldown(response.retry_after);
       setOtp("");
-      setResendMessage("A new verification code was sent.");
+      setResendMessage(
+        "A new verification email is queued. Please check your inbox.",
+      );
     } catch (error) {
       setResendError(getSendOTPErrorMessage(error));
       const retryAfter = getRetryAfterSeconds(error);
@@ -110,7 +112,8 @@ const RegisterOTPPage = () => {
             Register
           </CardTitle>
           <CardDescription className="min-w-0 text-xs leading-4 font-medium wrap-break-word">
-            Enter the six-digit verification code sent to {email}.
+            Your verification email is queued for {email}. Enter the six-digit
+            code when it arrives.
           </CardDescription>
         </CardHeader>
 

@@ -25,7 +25,7 @@ test("normalizes the email and continues to OTP verification", async () => {
       requestedEmail = await request.json();
       return HttpResponse.json({
         email: "user@example.com",
-        message: "Verification code sent.",
+        message: "Verification email queued.",
         retry_after: 60,
       });
     }),
