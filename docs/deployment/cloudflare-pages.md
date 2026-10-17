@@ -1,15 +1,5 @@
 # Cloudflare Pages deployment
 
-## Scope and status
-
-Implemented in source, not yet deployed or browser-verified: a Pages Function
-forwards `/api/*` to the configured HTTPS backend. React remains a CSR SPA.
-The owner verified certificate renewal and an HTTP 200 response from the EC2
-backend's API docs. Actual hostnames belong in deployment configuration.
-
-The planned Pages project is `e-commerce-api-frontend`, with `prep/prod` as its
-production branch. Use its assigned hostname in deployment configuration.
-
 ## Cloudflare setup
 
 | Setting                       | Value                               |
@@ -99,7 +89,7 @@ browser; IP-based throttling may group visitors. Do not blindly increase trusted
 proxy count or trust client-supplied forwarded headers. Real-client-IP propagation
 requires a separately verified trust boundary; account-level budgets still apply.
 
-Only `/api/*` is proxied. Open Django admin and Swagger directly on the DuckDNS
+Only `/api/*` is proxied. Open Django admin and Swagger directly on the proxy
 backend hostname. `/static/*` and `/media/*` are not Pages proxy routes. Existing
 media URLs continue to use the backend's HTTPS origin (or Azure when enabled).
 Stripe webhooks go directly to the backend's signed webhook endpoint.
