@@ -33,7 +33,11 @@ When implementing changes that depend on another part of the system, inspect the
 
 ## Required Feature Business-Process Diagrams
 
-For every new feature, create or update its specific business-process diagram as part of the work. For changes to an existing feature, update the diagram whenever behavior, decisions, API handoffs, ownership, persistence or recovery changes. Purely visual or internal refactoring changes do not require a new diagram when the documented workflow remains accurate.
+For every new feature that introduces or changes a business workflow, create or update its specific business-process diagram as part of the work. Update the diagram whenever behavior, decisions, API handoffs, ownership, persistence or recovery changes.
+
+Simple frontend changes limited to presentation or straightforward client-side navigation, such as a branded 404 page, do not require feature documentation or diagram index updates unless explicitly requested. This exemption applies only when the change introduces no business rules, API contract changes, authorization changes, persistence or cross-application workflows.
+
+Purely visual or internal refactoring changes do not require a diagram update when the documented workflow remains accurate.
 
 Maintain these documents in the **sibling documentation repository** at `../docs/diagrams/specific-business-processes/<feature-area>/<process-name>.md`, using lowercase kebab-case paths. This is distinct from the frontend's local `docs/` folder. Update an existing process document when appropriate rather than creating duplicate descriptions of the same workflow.
 

@@ -3,6 +3,7 @@ import { createBrowserRouter } from "react-router-dom";
 import { accountProtectedRoutes } from "@/account/routes";
 import RootLayout from "@/app/layout/RootLayout";
 import HomePage from "@/app/pages/HomePage";
+import NotFoundPage from "@/app/pages/NotFoundPage";
 import { authenticationRoutes } from "@/authentication/routes";
 import { checkoutProtectedRoutes } from "@/checkout/routes";
 import {
@@ -21,6 +22,9 @@ export const router = createBrowserRouter([
 
       // Public Ecommerce Routes
       ...ecommercePublicRoutes,
+
+      // Unsupported URLs are public, including nested paths.
+      { path: "*", element: <NotFoundPage /> },
 
       // Protected
       {
