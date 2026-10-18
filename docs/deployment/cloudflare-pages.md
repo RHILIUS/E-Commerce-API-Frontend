@@ -4,7 +4,7 @@
 
 | Setting                       | Value                               |
 | ----------------------------- | ----------------------------------- |
-| Production branch             | `prep/prod`                         |
+| Production branch             | `main`                              |
 | Build command                 | `npm run build`                     |
 | Output directory              | `dist`                              |
 | Root directory                | Repository root                     |
