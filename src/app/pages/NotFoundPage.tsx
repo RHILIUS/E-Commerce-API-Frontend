@@ -1,4 +1,4 @@
-import { ArrowRight, ShoppingBag } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import { buttonVariants } from "@/app/components/ui/button";
@@ -22,7 +22,7 @@ const NotFoundPage = () => {
             aria-hidden="true"
             className="bg-primary/10 text-primary mb-6 flex size-16 items-center justify-center rounded-2xl"
           >
-            <ShoppingBag className="size-8" />
+            <img src="/favicon.svg" alt="" className="size-8" />
           </div>
           <p className="text-primary text-7xl leading-none font-bold tracking-tight sm:text-8xl">
             404
