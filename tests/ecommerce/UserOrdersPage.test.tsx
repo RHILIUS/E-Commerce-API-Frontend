@@ -211,10 +211,11 @@ test("account dropdown exposes Orders above Log out without a wallet option", as
   show();
   await user.click(await screen.findByRole("button", { name: "Account" }));
   const items = await screen.findAllByRole("menuitem");
-  expect(items.map((i) => i.textContent)).toEqual([
-    "Account",
-    "Orders",
-    "Log out",
+  expect(items).toEqual([
+    screen.getByRole("menuitem", { name: "Account" }),
+    screen.getByRole("menuitem", { name: "Orders" }),
+    screen.getByRole("menuitem", { name: /Notifications/ }),
+    screen.getByRole("menuitem", { name: "Log out" }),
   ]);
 });
 

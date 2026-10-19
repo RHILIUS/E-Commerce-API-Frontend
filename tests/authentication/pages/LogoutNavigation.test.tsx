@@ -104,7 +104,10 @@ describe("Logout navigation", () => {
         await userEvent.click(
           await screen.findByRole("button", { name: "Account" }),
         );
-        expect(await screen.findAllByRole("menuitem")).toHaveLength(3);
+        expect(await screen.findAllByRole("menuitem")).toHaveLength(4);
+        expect(
+          screen.getByRole("menuitem", { name: /Notifications/ }),
+        ).toHaveAttribute("aria-disabled", "true");
         await userEvent.click(
           screen.getByRole("menuitem", { name: "Log out" }),
         );

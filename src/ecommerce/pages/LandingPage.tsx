@@ -34,7 +34,7 @@ const LandingPage = () => {
     <div className="bg-background text-foreground w-full min-w-0">
       <a
         href="#products"
-        className="bg-background text-foreground sr-only z-10 rounded-md p-3 focus:not-sr-only focus:absolute focus:top-2 focus:left-2"
+        className="bg-background text-foreground sr-only z-50 rounded-md p-3 focus:not-sr-only focus:absolute focus:top-2 focus:left-2"
       >
         Skip to products
       </a>
@@ -42,7 +42,7 @@ const LandingPage = () => {
       <main
         id="products"
         tabIndex={-1}
-        className="mx-auto flex w-full max-w-400 flex-col gap-6 px-3 pt-6 pb-8 outline-none sm:px-6 sm:pt-8 sm:pb-10 lg:gap-8 lg:px-12 lg:pt-10 lg:pb-12"
+        className="mx-auto flex w-full max-w-400 scroll-mt-40 flex-col gap-6 px-3 pt-6 pb-8 outline-none sm:px-6 sm:pt-8 sm:pb-10 lg:gap-8 lg:px-12 lg:pt-10 lg:pb-12"
       >
         <div className="space-y-2">
           <h1 className="text-2xl leading-8 font-semibold tracking-[-0.2px]">

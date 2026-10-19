@@ -20,6 +20,16 @@ account controls. Logging out on the landing page keeps its URL and search
 parameters, switches the header to guest controls, and reloads guest products.
 Protected pages such as `/home-test` still redirect guests to login.
 
+The shared shop header remains visible while scrolling. After the original header
+row passes the top of the viewport, it becomes a compact rounded floating bar.
+The same controls stay mounted, preserving search drafts and focus. On screens
+narrower than the desktop layout, a search button opens a full-width search row.
+Opening it focuses the input; the close button or Escape returns focus to the
+search button without discarding the draft. Desktop search stays visible.
+Submitting search keeps the existing catalog query and pagination behavior.
+The account menu includes Account, Orders, Log out, and an unavailable Notifications
+entry marked Coming soon.
+
 Cards display the backend's `display_price.amount` and `display_price.currency`,
 formatted with `Intl.NumberFormat`. The original `price` belongs to the store's
 `currency`; it is not necessarily USD. The frontend does not compute exchange rates.

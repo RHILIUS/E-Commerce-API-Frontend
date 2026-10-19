@@ -1,4 +1,5 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { expect, test, vi } from "vitest";
 
@@ -55,4 +56,106 @@ test("shows the saved avatar, falls back on failure or removal, and accepts a re
     </MemoryRouter>,
   );
   expect(image()).toHaveAttribute("src", avatarImage);
+});
+
+// Supply a guest session without involving token restoration or network requests.
+function guestAuth(): AuthContextType {
+  return {
+    user: null,
+    isAuthenticated: false,
+    isLoading: false,
+    logout: vi.fn(),
+    accessToken: null,
+    didLogOut: false,
+    setUser: vi.fn(),
+    setAccessToken: vi.fn(),
+    setIsLoading: vi.fn(),
+    endSession: vi.fn(),
+    login: vi.fn(),
+  };
+}
+
+test("mobile search focuses on open, retains its draft on close, and submits trimmed text", async () => {
+  vi.mocked(useAuth).mockReturnValue(guestAuth());
+  const onSearch = vi.fn();
+  render(
+    <MemoryRouter>
+      <Header searchQuery="" onSearch={onSearch} />
+    </MemoryRouter>,
+  );
+  const user = userEvent.setup({ delay: null });
+  await user.click(screen.getByRole("button", { name: "Open search" }));
+  const input = screen.getByRole("searchbox", { name: "Search products" });
+  expect(input).toHaveFocus();
+  await user.type(input, "  headphones  ");
+  await user.keyboard("{Escape}");
+  expect(screen.getByRole("button", { name: "Open search" })).toHaveFocus();
+  expect(onSearch).not.toHaveBeenCalled();
+  await user.click(screen.getByRole("button", { name: "Open search" }));
+  expect(input).toHaveValue("  headphones  ");
+  await user.click(screen.getByRole("button", { name: /^Search$/ }));
+  expect(onSearch).toHaveBeenCalledWith("headphones");
+});
+
+test("floating mode preserves the same focused search input and disconnects its observer", async () => {
+  let notify: IntersectionObserverCallback;
+  const disconnect = vi.fn();
+  vi.stubGlobal(
+    "IntersectionObserver",
+    class {
+      constructor(callback: IntersectionObserverCallback) {
+        notify = callback;
+      }
+      observe() {}
+      disconnect = disconnect;
+    },
+  );
+  try {
+    vi.mocked(useAuth).mockReturnValue(guestAuth());
+    const view = render(
+      <MemoryRouter>
+        <Header searchQuery="" onSearch={vi.fn()} />
+      </MemoryRouter>,
+    );
+    const user = userEvent.setup({ delay: null });
+    await user.click(screen.getByRole("button", { name: "Open search" }));
+    const input = screen.getByRole("searchbox", { name: "Search products" });
+    await user.type(input, "draft");
+    act(() =>
+      notify(
+        [
+          {
+            isIntersecting: false,
+            boundingClientRect: { top: -1 },
+          } as IntersectionObserverEntry,
+        ],
+        {} as IntersectionObserver,
+      ),
+    );
+    expect(screen.getByRole("banner")).toHaveAttribute("data-floating", "true");
+    expect(screen.getByRole("searchbox", { name: "Search products" })).toBe(
+      input,
+    );
+    expect(input).toHaveFocus();
+    expect(input).toHaveValue("draft");
+    act(() =>
+      notify(
+        [
+          {
+            isIntersecting: true,
+            boundingClientRect: { top: 72 },
+          } as IntersectionObserverEntry,
+        ],
+        {} as IntersectionObserver,
+      ),
+    );
+    expect(screen.getByRole("banner")).toHaveAttribute(
+      "data-floating",
+      "false",
+    );
+    view.unmount();
+    expect(disconnect).toHaveBeenCalledOnce();
+  } finally {
+    vi.unstubAllGlobals();
+  }
 });
