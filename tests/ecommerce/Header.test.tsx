@@ -10,7 +10,7 @@ import { Header } from "@/ecommerce/components/Header";
 
 vi.mock("@/authentication/contexts/Auth/useAuth");
 
-test("shows the saved avatar, falls back on failure or removal, and accepts a replacement", () => {
+test("shows the saved avatar, falls back on failure or removal, and accepts a replacement", async () => {
   const auth: AuthContextType = {
     user: {
       id: 1,
@@ -40,8 +40,17 @@ test("shows the saved avatar, falls back on failure or removal, and accepts a re
   const image = () =>
     screen.getByRole("button", { name: "Account" }).querySelector("img")!;
   expect(image()).toHaveAttribute("src", auth.user!.profile_image);
-  fireEvent.error(image());
+  await userEvent.click(screen.getByRole("button", { name: "Account" }));
+  const menu = await screen.findByRole("menu");
+  const menuImage = () => menu.querySelector("img")!;
+  expect(menu).toHaveTextContent("Buyer");
+  expect(
+    screen.queryByRole("menuitem", { name: "Buyer" }),
+  ).not.toBeInTheDocument();
+  expect(menuImage()).toHaveAttribute("src", auth.user!.profile_image);
+  fireEvent.error(menuImage());
   expect(image()).toHaveAttribute("src", avatarImage);
+  expect(menuImage()).toHaveAttribute("src", avatarImage);
   auth.user!.profile_image = "https://example.com/replacement.webp";
   view.rerender(
     <MemoryRouter>
@@ -49,6 +58,7 @@ test("shows the saved avatar, falls back on failure or removal, and accepts a re
     </MemoryRouter>,
   );
   expect(image()).toHaveAttribute("src", auth.user!.profile_image);
+  expect(menuImage()).toHaveAttribute("src", auth.user!.profile_image);
   auth.user!.profile_image = null;
   view.rerender(
     <MemoryRouter>

@@ -27,7 +27,9 @@ narrower than the desktop layout, a search button opens a full-width search row.
 Opening it focuses the input; the close button or Escape returns focus to the
 search button without discarding the draft. Desktop search stays visible.
 Submitting search keeps the existing catalog query and pagination behavior.
-The account menu includes Account, Orders, Log out, and an unavailable Notifications
+The account menu shows the signed-in user’s name and avatar from the existing
+authentication context above its actions. A failed or missing photo uses the same
+fallback as the header button. It includes Account, Orders, Log out, and an unavailable Notifications
 entry marked Coming soon.
 
 Cards display the backend's `display_price.amount` and `display_price.currency`,

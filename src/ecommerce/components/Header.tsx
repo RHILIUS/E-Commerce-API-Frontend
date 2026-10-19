@@ -14,7 +14,10 @@ import { Button } from "@/app/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/app/components/ui/dropdown-menu";
 import {
@@ -213,43 +216,61 @@ export const Header = ({ searchQuery, onSearch }: HeaderProps) => {
                     <DropdownMenuContent
                       align="end"
                       sideOffset={8}
-                      className="w-48 p-2"
+                      className="w-64 max-w-[calc(100vw-2rem)] p-2"
                       aria-label="Account"
                     >
-                      <DropdownMenuItem
-                        render={<Link to="/account" />}
-                        className="min-h-11 gap-3 px-3 font-medium"
-                      >
-                        <UserRound className="size-4" aria-hidden="true" />{" "}
-                        Account
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        render={<Link to="/orders" />}
-                        className="min-h-11 gap-3 px-3 font-medium"
-                      >
-                        <Package className="size-4" aria-hidden="true" /> Orders
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        disabled
-                        className="min-h-11 gap-3 px-3"
-                      >
-                        <Bell className="size-4" aria-hidden="true" />
-                        <span>
-                          Notifications
-                          <span className="block text-xs">Coming soon</span>
-                        </span>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={handleLogout}
-                        disabled={isLoggingOut}
-                        closeOnClick={false}
-                        className="mt-1 min-h-11 gap-3 border-t px-3 font-medium"
-                      >
-                        <LogOut className="size-4" aria-hidden="true" />
-                        <span aria-live="polite">
-                          {isLoggingOut ? "Logging out…" : "Log out"}
-                        </span>
-                      </DropdownMenuItem>
+                      <DropdownMenuGroup>
+                        <DropdownMenuLabel className="flex min-w-0 items-center gap-3 px-3 py-3">
+                          <img
+                            key={imageKey}
+                            src={accountImage}
+                            onError={() => setFailedImage(imageKey)}
+                            alt=""
+                            width={40}
+                            height={40}
+                            className="size-10 shrink-0 rounded-lg object-cover"
+                          />
+                          <span className="text-foreground min-w-0 text-sm leading-5 font-medium wrap-anywhere">
+                            {auth.user?.fullName}
+                          </span>
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          render={<Link to="/account" />}
+                          className="min-h-11 gap-3 px-3 font-medium"
+                        >
+                          <UserRound className="size-4" aria-hidden="true" />{" "}
+                          Account
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          render={<Link to="/orders" />}
+                          className="min-h-11 gap-3 px-3 font-medium"
+                        >
+                          <Package className="size-4" aria-hidden="true" />{" "}
+                          Orders
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          disabled
+                          className="min-h-11 gap-3 px-3"
+                        >
+                          <Bell className="size-4" aria-hidden="true" />
+                          <span>
+                            Notifications
+                            <span className="block text-xs">Coming soon</span>
+                          </span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={handleLogout}
+                          disabled={isLoggingOut}
+                          closeOnClick={false}
+                          className="mt-1 min-h-11 gap-3 border-t px-3 font-medium"
+                        >
+                          <LogOut className="size-4" aria-hidden="true" />
+                          <span aria-live="polite">
+                            {isLoggingOut ? "Logging out…" : "Log out"}
+                          </span>
+                        </DropdownMenuItem>
+                      </DropdownMenuGroup>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </>
