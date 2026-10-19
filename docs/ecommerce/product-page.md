@@ -7,7 +7,7 @@ the breadcrumb returns to all products.
 
 The page requests `GET /api/shop/products/<id>/` through the shared API client
 after authentication restoration. See the
-[backend contract](../../../backend/docs/ecommerce/product-detail.md).
+[backend contract](../../../backend/docs/api/ecommerce/product-detail.md).
 Changes to the product ID, access token, or viewer country discard old results
 and reload the product. This also hides a previously visible draft on logout.
 The backend enforces draft access; missing and inaccessible products share the

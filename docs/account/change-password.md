@@ -6,7 +6,7 @@ an email OTP before committing a new password.
 
 The maintained [business-process diagrams](../../../docs/diagrams/specific-business-processes/account/change-password.md)
 live in the central documentation repository. See the
-[backend API contract](../../../backend/docs/account/change-password-api.md).
+[backend API contract](../../../backend/docs/api/account/change-password.md).
 
 ## Interface and lifecycle
 

@@ -43,7 +43,7 @@ navigation, and discard stale responses.
 
 ## API and sales contract
 
-See [backend contract](../../../backend/docs/ecommerce/store-page.md).
+See [backend contract](../../../backend/docs/api/ecommerce/store-page.md).
 
 - `GET /api/shop/stores/:id/`: profile, public contact details, counts and categories.
 - `GET /api/shop/stores/:id/home/`: three bounded product sections.

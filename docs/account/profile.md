@@ -160,7 +160,7 @@ its coordinates.
 | [Account types](../../src/account/types.ts)                                 | Describe the expected profile, address, and photo data                                |
 | [Profile error helper](../../src/account/utils/profileError.ts)             | Translate save errors into field messages and identify uncertain outcomes             |
 
-See the backend contracts for [personal details](../../../backend/docs/account/profile-api.md)
-and [photos](../../../backend/docs/account/profile-photo-api.md) for exact request
+See the backend contracts for [personal details](../../../backend/docs/api/account/profile.md)
+and [photos](../../../backend/docs/api/account/profile-photo.md) for exact request
 and response definitions. The central [diagram index](../../../docs/diagrams/README.md)
 is the starting point for shared business-process documentation.

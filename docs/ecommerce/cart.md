@@ -2,7 +2,7 @@
 
 `/cart` is an authenticated route linked from the shared header. Guests return
 to their requested page after signing in. The implementation consumes the
-[backend store-cart contract](../../../backend/docs/ecommerce/carts.md), which
+[backend store-cart contract](../../../backend/docs/api/ecommerce/carts.md), which
 matches the store-linked cart in the shared project ERD.
 
 ## Behavior

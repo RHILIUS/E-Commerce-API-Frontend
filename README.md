@@ -64,7 +64,7 @@ used with the committed `package-lock.json` to install matching dependencies.
    `localhost` for both rather than mixing it with `127.0.0.1`.
 
 4. Start the backend using its
-   [development Docker guide](../backend/docs/docker-development.md). Configure
+   [development Docker guide](../backend/docs/development/docker.md). Configure
    its allowed frontend origin to match the address used by your browser. Sign-in
    uses cookies, so the backend must allow credentialed requests from that origin.
 5. Start the frontend:
