@@ -4,11 +4,11 @@
 
 This frontend belongs to the E-Commerce project. Three separate Git repositories share a parent directory:
 
-| Repository                                                          | Checkout        | Responsibility                                               |
-| ------------------------------------------------------------------- | --------------- | ------------------------------------------------------------ |
-| [Frontend](https://github.com/RHILIUS/E-Commerce-API-Frontend)      | This repository | Customer website and browser behavior                        |
-| [Backend](https://github.com/RHILIUS/E-Commerce-API)                | `../backend`    | API contracts, authorization, business rules, and saved data |
-| [Project documentation](https://github.com/RHILIUS/E-Commerce-Docs) | `../docs`       | Shared architecture, ERDs, and business-process diagrams     |
+| Repository                                                          | Checkout        | Responsibility                                                     |
+| ------------------------------------------------------------------- | --------------- | ------------------------------------------------------------------ |
+| [Frontend](https://github.com/RHILIUS/E-Commerce-API-Frontend)      | This repository | Customer website and browser behavior                              |
+| [Backend](https://github.com/RHILIUS/E-Commerce-API)                | `../backend`    | API contracts, authorization, business rules, saved data, and ERDs |
+| [Project documentation](https://github.com/RHILIUS/E-Commerce-Docs) | `../docs`       | Shared architecture and business-process diagrams                  |
 
 The local `docs/` folder explains the frontend; the sibling `../docs/` repository explains the complete system. They are different locations. Before changes affecting architecture, database design, API contracts, shared models, or cross-application workflows, review the relevant local and shared documentation. Inspect the relevant sibling implementation and current frontend consumers; report inconsistencies rather than assuming documentation and code agree.
 
@@ -16,17 +16,17 @@ The local `docs/` folder explains the frontend; the sibling `../docs/` repositor
 
 Read and apply the linked skills when their task conditions match. Combine them when a task spans responsibilities; a diagram's required format and evidence still apply when documentation is part of a feature. Skills provide workflows, not permission to expand the task.
 
-| Task                                                                   | Required skill                                                                                             |
-| ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| Implement or change a page, control, reusable UI, or styling           | [frontend-ui](.agents/skills/frontend-ui/SKILL.md)                                                         |
-| Write or revise maintained documentation, including alongside code     | [documentation-writing](.agents/skills/documentation-writing/SKILL.md)                                     |
-| Introduce/change a business workflow                                   | [system-diagrams](.agents/skills/system-diagrams/SKILL.md)                                                 |
-| Create/update shared ERD documentation or document changed data models | [erd-documentation](.agents/skills/erd-documentation/SKILL.md); also documentation-writing                 |
-| Create/update an editable Draw.io ERD illustration                     | [drawio-erd](.agents/skills/drawio-erd/SKILL.md)                                                           |
-| Write a PR description or PR documentation                             | [pull-request-writing](.agents/skills/pull-request-writing/SKILL.md)                                       |
-| Inspect, create, modify, synchronize, or implement Figma designs       | [figma-workflow](.agents/skills/figma-workflow/SKILL.md); also frontend-ui when implementing frontend code |
+| Task                                                                    | Required skill                                                                                             |
+| ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Implement or change a page, control, reusable UI, or styling            | [frontend-ui](.agents/skills/frontend-ui/SKILL.md)                                                         |
+| Write or revise maintained documentation, including alongside code      | [documentation-writing](.agents/skills/documentation-writing/SKILL.md)                                     |
+| Introduce/change a business workflow                                    | [system-diagrams](.agents/skills/system-diagrams/SKILL.md)                                                 |
+| Create/update backend ERD documentation or document changed data models | [erd-documentation](../backend/.agents/skills/erd-documentation/SKILL.md); also documentation-writing      |
+| Create/update an editable Draw.io ERD illustration                      | [drawio-erd](../backend/.agents/skills/drawio-erd/SKILL.md)                                                |
+| Write a PR description or PR documentation                              | [pull-request-writing](.agents/skills/pull-request-writing/SKILL.md)                                       |
+| Inspect, create, modify, synchronize, or implement Figma designs        | [figma-workflow](.agents/skills/figma-workflow/SKILL.md); also frontend-ui when implementing frontend code |
 
-Load only the diagram skills and references relevant to the task. A simple presentation or straightforward navigation change without business rules, API/authorization changes, persistence, or cross-application behavior does not require feature documentation or diagram-index updates unless requested. Purely visual/internal refactoring does not require a process-diagram update when its workflow stays accurate. New or changed business workflows require their specific process document. ERDs use editable Draw.io SVGs in `../docs/diagrams/erd/diagrams/` and per-app Markdown explanations in `../docs/diagrams/erd/guides/`, following erd-documentation and drawio-erd. Do not create or maintain Mermaid ERDs; Mermaid remains the business-process format. Updating these instructions does not itself authorize generating or migrating ERD artifacts.
+Load only the diagram skills and references relevant to the task. A simple presentation or straightforward navigation change without business rules, API/authorization changes, persistence, or cross-application behavior does not require feature documentation or diagram-index updates unless requested. Purely visual/internal refactoring does not require a process-diagram update when its workflow stays accurate. New or changed business workflows require their specific process document. ERDs use editable Draw.io SVGs in `../backend/docs/erd/diagrams/` and per-app Markdown explanations in `../backend/docs/erd/guides/`, following erd-documentation and drawio-erd. Do not create or maintain Mermaid ERDs; Mermaid remains the business-process format. Updating these instructions does not itself authorize generating or migrating ERD artifacts.
 
 ## Essential requirements
 

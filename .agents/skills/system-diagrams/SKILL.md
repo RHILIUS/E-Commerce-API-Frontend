@@ -12,7 +12,7 @@ Repository paths in backticks are relative to the frontend root. Shared diagrams
 ## Choose the applicable reference
 
 - For a new or changed business workflow, read [business-process requirements](references/business-processes.md). They define triggers, presentation/refactoring exemptions, Mermaid swimlane notation, actual ownership, recovery, and handoff requirements.
-- For data-model documentation, use [erd-documentation](../erd-documentation/SKILL.md), which coordinates per-app guides and editable Draw.io SVGs through [drawio-erd](../drawio-erd/SKILL.md). Do not use Mermaid ERDs.
+- For data-model documentation, use [erd-documentation](../../../../backend/.agents/skills/erd-documentation/SKILL.md), which coordinates backend-owned per-app guides and editable Draw.io SVGs through [drawio-erd](../../../../backend/.agents/skills/drawio-erd/SKILL.md). Do not use Mermaid ERDs.
 - Apply both workflows when a task changes business behavior and its data model. Do not load business-process references for a standalone ERD task.
 
 Read the central diagramming specification, diagram index, and relevant frontend/backend code and contracts as required by the selected reference. Keep proposed and implemented behavior distinct, reconcile documentation after implementation, and update the central index when required.
