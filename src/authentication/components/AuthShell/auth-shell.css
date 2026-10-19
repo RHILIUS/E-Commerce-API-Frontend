@@ -1,0 +1,24 @@
+@keyframes auth-brand-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(10px) rotate(-8deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .auth-brand-mark {
+    animation: auth-brand-arrive 800ms ease-out both;
+    transition:
+      rotate 250ms ease,
+      scale 250ms ease;
+  }
+
+  .auth-brand-mark:hover {
+    rotate: -6deg;
+    scale: 1.05;
+  }
+}

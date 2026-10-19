@@ -95,7 +95,16 @@ old session.
 
 Registration has three screens: enter an email, verify the emailed one-time code
 (OTP), and enter account details. `RegistrationProvider` holds the email and resend
-countdown in memory. After code verification, the backend uses a separate HttpOnly
+countdown in memory. The account-details screen presents personal details, address,
+and account security as three local steps in the same form. Back and Continue
+preserve entered values while the page stays mounted. Continue validates the
+current step; Create account validates all steps and sends one complete request.
+Server field errors return the customer to the earliest affected details step.
+The progress indicator covers all five steps, including email and verification.
+Refreshing the page discards the draft; personal details and passwords are not
+saved to browser storage.
+
+After code verification, the backend uses a separate HttpOnly
 registration cookie to authorize account creation. The backend creates the
 account, personal address, and first default delivery recipient together.
 

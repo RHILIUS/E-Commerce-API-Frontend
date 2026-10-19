@@ -28,7 +28,7 @@ const UsernameField = ({
         name="username"
         type="text"
         autoComplete="username"
-        placeholder="Choose a username"
+        placeholder="e.g. alex_santos"
         className="h-10"
         value={username}
         onChange={(event) => {

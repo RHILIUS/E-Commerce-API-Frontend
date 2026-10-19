@@ -18,6 +18,7 @@ import {
 } from "@/app/components/ui/input-otp";
 
 import { sendOTPApi, verifyOTPApi } from "../api";
+import AuthShell from "../components/AuthShell/AuthShell";
 import { INPUT_OTP_COUNT } from "../constants";
 import { useRegistration } from "../contexts/Registration/useRegistration";
 import { useCountdown } from "../hooks/useCountdown";
@@ -96,28 +97,34 @@ const RegisterOTPPage = () => {
   };
 
   return (
-    <main className="flex items-center justify-center px-4 py-12 sm:px-6">
+    <AuthShell step={2}>
       <Card
         role="region"
         aria-labelledby="register-otp-title"
-        className="w-full max-w-145 gap-6 rounded-lg border py-6 shadow-sm ring-0 [--card-spacing:--spacing(6)]"
+        className="w-full min-w-0 gap-6 rounded-2xl border py-6 shadow-sm ring-0 [--card-spacing:--spacing(5)] sm:py-8 sm:[--card-spacing:--spacing(8)]"
       >
         <CardHeader className="min-w-0 gap-1.5">
           <CardTitle
             id="register-otp-title"
             role="heading"
             aria-level={1}
-            className="text-sm font-bold"
+            className="text-2xl font-semibold tracking-tight"
           >
-            Register
+            Check your email
           </CardTitle>
-          <CardDescription className="min-w-0 text-xs leading-4 font-medium wrap-break-word">
+          <CardDescription className="min-w-0 text-sm leading-relaxed wrap-break-word">
             Your verification email is queued for {email}. Enter the six-digit
             code when it arrives.
           </CardDescription>
         </CardHeader>
 
         <CardContent className="min-w-0">
+          <Link
+            to="/register/enter-email"
+            className="text-primary mb-5 inline-flex min-h-11 items-center text-sm underline-offset-4 hover:underline"
+          >
+            Use a different email
+          </Link>
           <form
             className="min-w-0 space-y-6"
             onSubmit={handleSubmit}
@@ -152,9 +159,6 @@ const RegisterOTPPage = () => {
                     ))}
                   </InputOTPGroup>
                 </InputOTP>
-                <p className="text-center text-sm leading-5">
-                  Enter your one-time password.
-                </p>
                 {verificationError && (
                   <p
                     id="otp-error"
@@ -174,7 +178,7 @@ const RegisterOTPPage = () => {
                   type="button"
                   variant="link"
                   size="sm"
-                  className="h-auto p-0 text-xs"
+                  className="min-h-11 px-1 text-xs whitespace-normal"
                   disabled={isCoolingDown || isResending || isVerifying}
                   onClick={handleResend}
                 >
@@ -204,7 +208,7 @@ const RegisterOTPPage = () => {
             <Button
               type="submit"
               size="lg"
-              className="w-full"
+              className="h-11 w-full"
               disabled={isVerifying || otp.length !== INPUT_OTP_COUNT}
             >
               {isVerifying ? "Verifying..." : "Verify Code"}
@@ -221,7 +225,7 @@ const RegisterOTPPage = () => {
           </Link>
         </div>
       </Card>
-    </main>
+    </AuthShell>
   );
 };
 

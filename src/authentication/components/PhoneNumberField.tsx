@@ -1,9 +1,11 @@
 import {
   AsYouType,
+  getExampleNumber,
   isValidPhoneNumber,
   parseDigits,
   parsePhoneNumberFromString,
 } from "libphonenumber-js";
+import phoneExamples from "libphonenumber-js/mobile/examples";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 
 import {
@@ -157,7 +159,14 @@ const PhoneNumberField = ({
             type="tel"
             inputMode="tel"
             autoComplete={internationalOnly ? "tel" : "tel-national"}
-            placeholder={internationalOnly ? "+800 12345678" : "912 345 6789"}
+            placeholder={
+              internationalOnly
+                ? "+800 12345678"
+                : (getExampleNumber(
+                    country.code,
+                    phoneExamples,
+                  )?.formatNational() ?? "National phone number")
+            }
             value={formattedNationalNumber}
             onChange={(event) => handleNumberChange(event.currentTarget.value)}
             onBlur={() => setHasBlurred(true)}

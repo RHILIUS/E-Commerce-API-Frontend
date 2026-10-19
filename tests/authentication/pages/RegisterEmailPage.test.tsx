@@ -47,7 +47,9 @@ test("normalizes the email and continues to OTP verification", async () => {
     screen.getByRole("textbox", { name: "Email" }),
     "USER@EXAMPLE.COM",
   );
-  await interaction.click(screen.getByRole("button", { name: "Send OTP" }));
+  await interaction.click(
+    screen.getByRole("button", { name: "Send verification code" }),
+  );
 
   expect(
     await screen.findByRole("heading", { name: "Verify user@example.com" }),

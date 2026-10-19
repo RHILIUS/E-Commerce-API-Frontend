@@ -7,6 +7,39 @@ description: Implement or revise frontend pages, controls, styling, accessibilit
 
 Apply this workflow when implementing or changing frontend pages, interactive controls, reusable UI, or their styling. Repository paths in backticks are relative to the frontend root. Read the current theme and affected consumers before choosing components or styles.
 
+## Brand and Experience Direction
+
+E-Commerce by RhiLius Apps should feel rounded, welcoming, modern, and easy to use. Keep shopping clear and comfortable. Use familiar shapes, purposeful color, and subtle feedback to add personality without clutter: **calm by default, lively when users interact**.
+
+Apply this direction to new features and to existing interfaces within the requested scope. It does not call for a redesign of unrelated screens.
+
+### Identity, Shape, and Color
+
+- Preserve the current tokens in `src/app/index.css` as the brand foundation: the existing primary red, neutral surfaces, Geist typography, and radius scale. A branding task does not itself require changing these values. Preview palettes and experimental tokens are proposals, not the application standard.
+- Reuse the cart-and-"E" identity in `public/favicon.svg`. Where a brand lockup is appropriate, use “E-Commerce” with the secondary attribution “by RhiLius Apps”; avoid repeating the lockup throughout a screen.
+- Carry the logo's soft, rounded character into controls and containers using the existing semantic radius utilities and component conventions. Keep related controls consistent; use pill shapes selectively for chips and badges rather than rounding every element into a capsule.
+- Use primary red for important actions and selected states, with neutral surfaces providing visual breathing room. Additional colors may distinguish meaningful categories, collections, or statuses, but should use consistent semantic roles and readable light/dark variants. Do not assign arbitrary colors to ordinary tabs or every section.
+- Pair color distinctions with text or another recognizable cue. Keep category accents distinct from success, warning, information, and error meanings; follow the theme-token workflow below when a needed role is missing.
+
+### Calm Composition and Useful Icons
+
+- Give each screen a clear purpose and make its primary action easy to find. Keep secondary actions visually quieter without making essential navigation or recovery hard to discover.
+- Group content with spacing, alignment, and typography before adding cards, borders, panels, badges, or headings. Avoid unnecessary component density and repeated welcome or explanatory copy. A component showcase is not a template for page density.
+- Long forms may use separate cards for distinct information groups, such as personal details, address, and account security. Keep groups within one form when they share a submission action, place the shared action after the groups, and avoid wrapping the cards in another decorative card. Use simpler sections when cards add unnecessary weight.
+- Small icons beside section headings can help users scan a long form. Prefer muted neutral icons when steps, cards, or headings already distinguish the groups. Add color only when it conveys an additional useful distinction; do not add tinted backgrounds just to decorate each step. Keep visible headings and consistent icon sizing; field icons are optional and should improve recognition rather than repeat decoration across every input.
+- Reveal secondary detail when useful, while keeping prices, required fields, validation, and information needed for a decision readily available. Keep narrow layouts focused without removing essential content.
+- Prefer the installed Lucide icons for interface actions. Add an icon when it helps recognition, navigation, or feedback; do not decorate every label, field, button, or paragraph. Keep icon sizes and stroke styles consistent within each context. Preserve recognizable external brand marks where relevant.
+- Label unfamiliar actions with text and give icon-only controls accessible names. Essential actions must work with keyboard and touch, including when hover is unavailable.
+- Keep copy brief, friendly, and specific. Empty states should explain the situation and a useful next action; errors should explain how to recover. Mark unavailable integrations clearly before users try them.
+
+### Purposeful Motion and Feedback
+
+- Use short transitions for hover, press, selection, and opening or closing a surface. Prefer roughly 150–250 ms with smooth easing for routine feedback; keep longer brand entrances occasional and unobtrusive.
+- Use small responses where they explain an action: a gentle product hover, a brief cart badge pop, or a clear favorite toggle. Avoid continuous bouncing, flashing, repeated entrances, and several competing animations.
+- A single gentle shake may reinforce a user-triggered validation error. Always provide a readable error message and accessible field association; preserve focus and entered values. Do not shake on every keystroke or use movement as the only feedback.
+- Show appropriate pressed, selected, loading, disabled, success, and error states for the interactions being built. Keep feedback close to the action and avoid duplicate notices. Never animate a success before the operation is confirmed.
+- Respect `prefers-reduced-motion`: remove nonessential movement while keeping state changes and feedback understandable. Motion must not delay an action or disrupt keyboard focus, reading, or layout stability.
+
 ## UI Component Selection and shadcn/ui Usage
 
 Before creating a new interactive or reusable UI element:
@@ -73,5 +106,7 @@ When implementing or modifying a page:
 Before considering a UI change complete, verify it at representative widths of 330px, 375px, 768px, 1024px, and a wide desktop viewport. Also check at least one short viewport height, light and dark modes when both are supported, and confirm there is no unexpected overflow in either axis. Run the relevant type-check, lint, and production-build commands after implementation.
 
 ## Completion
+
+Review the affected interface against the brand direction: clear purpose and primary action, restrained component and icon use, current theme tokens, consistent rounding, and purposeful feedback. For changed interactions, check keyboard and touch access, focus visibility, relevant loading/error states, and reduced-motion behavior alongside the responsive and theme checks above.
 
 Run the code checks required by the root agent instructions and the viewport/theme checks above. Inspect the changed screen and any affected shared-component consumers. Report which checks actually ran and any material limitations in the handoff; do not record execution reports in maintained feature guides.
