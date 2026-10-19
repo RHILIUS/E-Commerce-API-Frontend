@@ -167,15 +167,6 @@ const RegisterEmailPage = () => {
             </Button>
           </form>
         </CardContent>
-
-        <div className="flex justify-center px-6">
-          <Link
-            to="/terms"
-            className="text-primary hover:text-primary/80 inline-flex h-9 items-center rounded-lg px-4 font-medium transition-colors"
-          >
-            Terms of Service
-          </Link>
-        </div>
       </Card>
     </AuthShell>
   );

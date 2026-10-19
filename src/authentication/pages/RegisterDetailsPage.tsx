@@ -468,15 +468,6 @@ const RegisterDetailsPage = () => {
             </Button>
           </div>
         </form>
-
-        <div className="flex min-w-0 justify-center px-6">
-          <Link
-            to="/terms"
-            className="text-primary hover:text-primary/80 inline-flex h-9 items-center rounded-lg px-4 text-center text-xs font-medium transition-colors"
-          >
-            Terms of Service
-          </Link>
-        </div>
       </div>
 
       <AlertDialog open={isVerificationInvalid}>

@@ -190,13 +190,6 @@ const LoginPage = () => {
             Create an account
           </Link>
         </p>
-
-        <Link
-          to="/terms"
-          className="text-primary hover:text-primary/80 mt-5 block text-center text-sm font-medium transition-colors"
-        >
-          Terms of Service
-        </Link>
       </Card>
     </AuthShell>
   );

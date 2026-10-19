@@ -215,15 +215,6 @@ const RegisterOTPPage = () => {
             </Button>
           </form>
         </CardContent>
-
-        <div className="flex min-w-0 justify-center px-6">
-          <Link
-            to="/terms"
-            className="text-primary hover:text-primary/80 inline-flex h-9 items-center rounded-lg px-4 text-center font-medium transition-colors"
-          >
-            Terms of Service
-          </Link>
-        </div>
       </Card>
     </AuthShell>
   );
