@@ -2,7 +2,7 @@
 
 The landing page requests `GET /api/shop/products/` through the shared API client.
 The backend contract is documented in
-[the backend catalog documentation](../../../backend/docs/ecommerce/product-catalog.md).
+[the backend catalog documentation](../../../backend/docs/api/ecommerce/product-catalog.md).
 
 The frontend displays the API's `results` in their returned order, computes page
 count as `ceil(count / 8)`, sends `q` and `page`, and resets to page 1 when changing

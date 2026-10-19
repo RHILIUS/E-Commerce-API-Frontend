@@ -2,7 +2,7 @@
 
 `/cart` is an authenticated route linked from the shared header. Guests return
 to their requested page after signing in. The implementation consumes the
-[backend store-cart contract](../../../backend/docs/ecommerce/carts.md), which
+[backend store-cart contract](../../../backend/docs/api/ecommerce/carts.md), which
 matches the store-linked cart in the shared project ERD.
 
 ## Behavior
@@ -49,8 +49,8 @@ reduce stock. Shipping and persistent cart-page selection remain outside this fe
 Status: **implemented in frontend; Figma mapping pending**. These notes describe
 current code for a future synchronization task, not a newly approved Figma
 design. No canvas changes or live-node verification were performed for these
-notes. Start with the [pending registry entries](../figma-nodes.md#cart-and-notification-integration--pending-figma-mapping)
-and [Figma agent guide](../figma-agent-guide.md). Re-read source and
+notes. Start with the [pending registry entries](../../design/figma/node-registry.md#cart-and-notification-integration--pending-figma-mapping)
+and [Figma agent guide](../../.agents/skills/figma-workflow/SKILL.md). Re-read source and
 [the current theme](../../src/app/index.css) before integration.
 
 ### Added shared controls

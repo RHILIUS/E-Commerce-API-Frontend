@@ -29,7 +29,7 @@ preserves the checkout selection; a newly created recipient is selected directly
 
 ## Removal and API dependency
 
-Integrates with [backend recipient API](../../../backend/docs/checkout/recipients-api.md)
+Integrates with [backend recipient API](../../../backend/docs/api/checkout/recipients.md)
 
 - Delete opens a confirmation in both Account and Checkout.
 - Deleting the default requires an explicit replacement when others remain.
