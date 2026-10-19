@@ -1,7 +1,7 @@
 # Product Page implementation
 
 The public route `/products/:productId` renders `ProductPage.tsx` from the
-[Figma references](../figma-nodes.md#product-page-designs). Every catalog card
+[Figma references](../../design/figma/node-registry.md#product-page-designs). Every catalog card
 links to its own product ID. Header search returns to the catalog with `q`;
 the breadcrumb returns to all products.
 

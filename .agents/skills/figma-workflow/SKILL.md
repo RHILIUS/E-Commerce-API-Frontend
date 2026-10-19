@@ -1,39 +1,29 @@
-# Figma agent workflow and design architecture
+---
+name: figma-workflow
+description: Inspect, create, update, or synchronize this project's Figma designs and implement supplied Figma references using its design, theme, and handoff conventions. Use for Figma design tasks, not general documentation cleanup.
+---
 
-This is the starting guide for agents creating or updating this project's Figma UI. Read it alongside [AGENTS.md](../AGENTS.md), the [node registry](figma-nodes.md), and the task's feature brief. It documents project conventions and a read-only inspection on **2026-09-22**; recheck live nodes and source files before editing. It is not authorization to start a design task or change unrelated screens.
+# Figma workflow
 
-## Design brief naming and discovery
+Use this skill when creating, updating, inspecting, or synchronizing this project's Figma UI, or implementing a supplied Figma design. Read it alongside [AGENTS.md](../../../AGENTS.md), the [node registry](../../../design/figma/node-registry.md), and the current user request. It documents project conventions and a read-only inspection on **2026-09-22**; recheck live nodes and source files before editing. It is not authorization to start a design task or change unrelated screens.
 
-Store task-specific design instructions at `docs/<feature-area>/<subject>-design-brief.md`. Use lowercase kebab-case for both path segments. The subject may be a screen, reusable component, or multi-screen flow; choose the smallest cohesive scope rather than requiring a separate document for every Figma frame.
+## Task context
 
-For example, `docs/ecommerce/store-profile-design-brief.md` describes a screen, while `docs/authentication/account-recovery-design-brief.md` describes a flow. These are naming examples, not existing files or approved features.
+Use the current user request, supplied Figma references, relevant application documentation, and verified source behavior to establish the task's requirements. Design briefs are not part of the ongoing workflow: do not require, create, or maintain one as a prerequisite or deliverable.
 
-Before a design task, locate relevant briefs with `rg --files docs -g '*-design-brief.md'` and read those matching the requested feature and its dependencies. Briefs should state their scope clearly so unrelated instructions are not applied to another screen. If no matching brief exists, work from the current request and relevant documentation; create a brief when documenting the design is part of the task.
-
-Each brief should include:
-
-- Status: proposed, approved, or superseded, based on actual decisions.
-- Feature intent, requirements, and explicit scope boundaries.
-- Exact Figma source and destination links/IDs, with access or inspection limits identified.
-- Relevant source components, reusable Figma dependencies, and theme considerations.
-- Required content, states, interactions, and responsive adaptations.
-- Accepted decisions, provisional suggestions, and unresolved questions kept distinct.
-- Data/API dependencies and prototype limitations without invented guarantees.
-- Validation expectations and design handoff requirements.
-
-Keep shared architecture and workflow rules in this guide, stable node mappings in the registry, and feature-specific decisions in the brief. Update the existing brief as decisions change instead of creating competing copies. Link a replacement when a brief is superseded. New briefs do not require adding feature-specific references to AGENTS.md.
+Keep stable node mappings in the registry. Record accepted decisions, unresolved questions, prototype limitations, and validation results in the task handoff. Existing design briefs are historical records, not mandatory reading or current requirements; do not apply their proposals without confirming their relevance to the current request and implementation.
 
 ## 1. Sources of truth and scope
 
 | Source                                                                                       | Responsibility                                                           |
 | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
 | Current user instructions                                                                    | Authorized task, target nodes, constraints, and accepted decisions       |
-| [AGENTS.md](../AGENTS.md)                                                                    | Repository workflow and implementation rules                             |
-| [src/app/index.css](../src/app/index.css)                                                    | Current semantic colors, both themes, typography, radii, document sizing |
+| [AGENTS.md](../../../AGENTS.md)                                                                    | Repository workflow and implementation rules                             |
+| [src/app/index.css](../../../src/app/index.css)                                                    | Current semantic colors, both themes, typography, radii, document sizing |
 | Existing frontend components and consumers                                                   | Implemented variants, sizes, interactions, and composition               |
 | Approved Figma design                                                                        | Intended visual layout for initial implementation                        |
 | Frontend code after design approval                                                          | Subsequent synchronization of implemented screens back to Figma          |
-| [Local feature documentation](ecommerce/product-catalog.md) and sibling `../docs` repository | Frontend integration context and project-wide requirements/architecture  |
+| [Local feature documentation](../../../docs/) and sibling `../docs` repository | Frontend integration context and project-wide requirements/architecture  |
 | Sibling `../backend` implementation                                                          | Verified API and permission behavior                                     |
 
 Do not silently resolve a conflict between a business requirement, design, and implementation. Record the discrepancy and distinguish a proposed design from verified behavior. Inspect relevant sibling documentation and implementation before defining shared contracts, permissions, deletion behavior, or order workflows. A Figma prototype cannot establish those guarantees.
@@ -152,7 +142,7 @@ Use the same screen and component structure across themes. Existing theme-specif
 
 ## 5. Components, typography, and effects
 
-Inspect [shared UI components](../src/app/components/ui), [Header](../src/ecommerce/components/Header.tsx), [ProductCard](../src/ecommerce/components/ProductCard.tsx), and [LandingPage](../src/ecommerce/pages/LandingPage.tsx) for current conventions. The project uses shadcn/ui and its installed Button is based on Base UI; do not assume examples for another primitive implementation are interchangeable.
+Inspect [shared UI components](../../../src/app/components/ui), [Header](../../../src/ecommerce/components/Header.tsx), [ProductCard](../../../src/ecommerce/components/ProductCard.tsx), and [LandingPage](../../../src/ecommerce/pages/LandingPage.tsx) for current conventions. The project uses shadcn/ui and its installed Button is based on Base UI; do not assume examples for another primitive implementation are interchangeable.
 
 For common controls, inspect the installed component first. If missing, consult the current official shadcn/ui documentation for suitable composition, variants, and accessibility behavior. During Figma-only work, record the intended implementation mapping instead of installing packages. Do not add unused components.
 
@@ -180,22 +170,22 @@ Append nodes to the appropriate parent before configuring Fill/Hug where the API
 
 Use fluid content width and deliberate maximum widths. Account for padding, borders, gaps, and fixed children together at **330px**, the application's minimum supported width. Let long names, descriptions, prices, notices, and actions wrap. Use a deliberate mobile stack rather than shrinking a desktop layout proportionally.
 
-In code, [RootLayout](../src/app/layout/RootLayout.tsx) owns minimum viewport height and stretches routed pages through a grid. Page roots should not repeat viewport-height or minimum-width constraints. Figma should model a full background and growing page content consistently with that shell.
+In code, [RootLayout](../../../src/app/layout/RootLayout.tsx) owns minimum viewport height and stretches routed pages through a grid. Page roots should not repeat viewport-height or minimum-width constraints. Figma should model a full background and growing page content consistently with that shell.
 
 Validate representative widths **330, 375, 768, 1024, and a recorded wide desktop width**, plus at least one short height. Use test resizes or preview frames as appropriate; every width need not become a permanent component variant. Verify both themes and record what was actually inspected. Figma resizing checks do not prove browser responsiveness, keyboard behavior, or accessibility semantics.
 
 ## 7. Execution workflow for a design agent
 
-1. **Read context:** user request, AGENTS.md, this guide, registry, feature brief, current theme, relevant source components, and any required business/API documentation.
+1. **Read context:** user request, AGENTS.md, this guide, registry, supplied design references, current theme, relevant source components, and any required business/API documentation.
 2. **Declare scope:** target file/page/frame IDs, intended states, reusable dependencies, known decisions, and unresolved behavior. Preserve user authorization; do not reopen already settled decisions.
-3. **Load tool guidance:** use the current `figma-use` skill for programmatic inspection/writes and `figma-generate-design` for composed screens. Load `figma-generate-library` when creating components or variables. Load other mandatory skills only for the operations being performed. Locate skills from the current environment; this guide intentionally does not pin machine-specific installation paths.
+3. **Load tool guidance:** discover the available Figma tools and read the applicable tool skills or API guidance before using them. Use tool-specific skills for inspection, screen generation, or library work when they are available and relevant. Do not assume particular tool skills are installed; report unavailable capabilities that block the task.
 4. **Inspect narrowly:** target metadata and screenshots first, then exact components, bindings, styles, and modes needed. Check IDs in the registry before searching. Expand discovery only when a required dependency cannot be found locally. Skip Code Connect under current project instructions.
 5. **Record baseline:** relevant screenshots, node IDs, variable sources, component properties, existing interactions, and any discrepancies. Report inaccessible links accurately rather than claiming inspection succeeded.
 6. **Compose incrementally:** update existing sections in place when practical. For new screens, create the wrapper first, then build each major section inside it. Batch related reads and small edits; avoid one huge mutation script.
 7. **Verify each section:** screenshot changed sections and the containing screen. Check bindings, actual fonts, crop behavior, content, and component states. Fix locally rather than rebuilding everything.
 8. **Wire required interactions:** preserve existing destinations; document which actions are prototype simulations and which are only visual. Do not modify the landing page solely to add a navigation link if that node is outside the authorized task.
 9. **Validate the full matrix:** states, widths, themes, long content, focus/disabled representations, and scrolling. Check affected existing consumers after shared-component edits.
-10. **Handoff:** update stable node entries in the registry, provide direct links/screenshots, describe changes and prototype coverage, record unresolved decisions and verification limits, and leave frontend integration to its authorized task.
+10. **Handoff:** update registry entries whenever a stable screen or reusable component is created, replaced, or removed; provide direct links/screenshots, describe changes and prototype coverage, record unresolved decisions and verification limits, and leave frontend integration to its authorized task.
 
 ### Tool discipline
 
@@ -205,7 +195,7 @@ Use the existing design directly for updates. Avoid browser-to-Figma capture whe
 
 ## 8. Completion and handoff checklist
 
-- [ ] Required content and states match the brief; assumptions are labeled.
+- [ ] Required content and states match the current request and accepted design; assumptions are labeled.
 - [ ] Existing page organization, instances, and prototype links are preserved.
 - [ ] Repeated elements reuse components; no accidental detached copies or orphaned nodes remain.
 - [ ] Semantic token bindings, alias sources, mode inheritance, fonts, and effects were inspected.
@@ -217,13 +207,13 @@ Use the existing design directly for updates. Avoid browser-to-Figma capture whe
 - [ ] Stable IDs are registered; incomplete work and inaccessible dependencies are disclosed.
 - [ ] Frontend runtime checks are not claimed based on Figma inspection alone.
 
-For a design-only change, browser tests and production builds are not evidence of canvas correctness and need not be run. If frontend code is also changed, follow AGENTS.md: relevant type-check, lint, build, interaction, responsive, and theme checks. Current scripts are in [package.json](../package.json); `npm run build` includes TypeScript compilation. Report only checks actually performed.
+For a design-only change, browser tests and production builds are not evidence of canvas correctness and need not be run. If frontend code is also changed, follow AGENTS.md: relevant type-check, lint, build, interaction, responsive, and theme checks. Current scripts are in [package.json](../../../package.json); `npm run build` includes TypeScript compilation. Report only checks actually performed.
 
 ### Copy-ready instruction for the next agent
 
 ```text
-Read AGENTS.md, docs/figma-agent-guide.md, docs/figma-nodes.md, and the supplied
-feature brief before starting. Re-read src/app/index.css and relevant source
+Read AGENTS.md, .agents/skills/figma-workflow/SKILL.md,
+design/figma/node-registry.md, and the current task instructions before starting. Re-read src/app/index.css and relevant source
 components. Inspect the target Figma nodes and their actual component/token
 dependencies, including local versus remote collections and resolved modes.
 Preserve the existing file organization, use Auto Layout and reusable instances,

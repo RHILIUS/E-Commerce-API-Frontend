@@ -162,41 +162,11 @@ Prefer page-level overrides for one-off design differences. Modify a shared shad
 
 Do not add shadcn/ui components that are unused. Review newly added component files and dependencies before accepting them to ensure they preserve the project's existing conventions, accessibility behavior, and theme integration.
 
-## Required Reading for Figma Tasks
+## Figma Tasks
 
-Whenever a task asks you to create, generate, modify, or synchronize a Figma page, screen, component, wireframe, prototype interaction, variable, or style, read the following before inspecting or changing the Figma canvas:
+For tasks that inspect, create, modify, synchronize, or implement Figma designs, read and apply the project [figma-workflow skill](.agents/skills/figma-workflow/SKILL.md) before using Figma tools. It owns the design workflow, required context, component reuse, theme inheritance, layout, validation, and handoff requirements.
 
-1. [Figma agent workflow and design architecture](docs/figma-agent-guide.md) for the file structure, component reuse, local and remote variables, aliases, theme modes, typography, layout, validation, and handoff requirements.
-2. [Figma node registry](docs/figma-nodes.md) for known file, page, screen, and component IDs before searching Figma.
-3. The relevant feature documentation and design briefs in `docs/`. Design briefs follow `docs/<feature-area>/<subject>-design-brief.md`, using lowercase kebab-case for the feature area and screen, component, or flow name. Locate the briefs related to the requested task, read their requirements and unresolved decisions, and apply them only to their stated scope. If no matching brief exists, use the current user instructions and relevant project documentation; do not invent requirements.
-
-Then inspect the current `src/app/index.css` and relevant source components, and load the applicable Figma skills before using their tools. Treat documented Figma structure as a starting point: verify the target nodes, variable bindings, and mode inheritance in the live file. Do not treat proposals in feature briefs as approved requirements or as authorization to change the canvas. Current user instructions determine the authorized scope.
-
-For Figma themes, create one screen per layout and product state. Bind themed properties to variables and leave theme mode on the screen and its nested instances set to **Auto/inherit**, so changing the parent page or enclosing frame mode updates the same screen. Do not create separate light and dark screen copies or set explicit theme modes on screens to make previews. Follow the mode inspection and temporary preview procedure in the Figma agent guide.
-
-## Figma Wireframe Structure
-
-When creating or modifying Figma wireframes, structure parent containers according to the layout relationships they represent in the application:
-
-1. Use vertical or horizontal Auto Layout for containers whose children form a stack or row comparable to CSS flexbox. Use nested Auto Layout containers when sections require different padding, gaps, alignment, or sizing behavior.
-2. Represent grid-like repeated content with an appropriate grid or wrapping Auto Layout structure rather than manually positioning each item.
-3. Reserve freeform positioning for elements that intentionally overlap or behave like absolute-positioned content, such as decorative layers, badges, map pins, and canvas-style interfaces. Do not use freeform positioning for ordinary page, card, form, navigation, or section flow.
-4. Configure Hug, Fill, and Fixed sizing deliberately so containers respond predictably when text wraps, fields are added, or content changes. Scrollable pages should let their content containers grow while the viewport frame owns clipping and overflow behavior.
-
-## Figma Workflow Efficiency
-
-- Before searching a Figma file, check `docs/figma-nodes.md` for known file and node IDs.
-- Update the registry whenever a stable frontend screen or reusable component is created, replaced, or removed in Figma.
-- Make code the source of truth after a wireframe has been approved.
-- Modify only the Figma node supplied by the user and its directly related components.
-- Reuse existing Figma components, variables, text styles, and effects.
-- Inspect only the target node and the specific reusable components needed.
-- Batch related Figma reads and small mutations into as few calls as practical.
-- Do not search every page or library unless the required component cannot be found locally.
-- Skip Code Connect unless the project later gains access to it.
-- For small UI changes, update the design and prototype interaction directly without rebuilding the entire page.
-- Validate the changed component and its containing screen with screenshots.
-- Avoid browser-to-Figma capture when the existing design can be updated directly.
+Keep stable Figma references in `design/figma/`, using lowercase kebab-case names. Keep application documentation in `docs/`. Design briefs are not required or maintained as part of the ongoing workflow. Use current user instructions, supplied design references, and relevant code and contracts for task context; record decisions and unresolved questions in the handoff. Registry entries and historical design records do not authorize canvas changes.
 
 ## UI Styling and Theme
 

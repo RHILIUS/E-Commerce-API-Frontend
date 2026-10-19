@@ -34,6 +34,15 @@ the frontend uses to talk to the backend.
 Sign-in and registration are introduced in the architecture guide. Their code
 lives in `src/authentication/`.
 
+## Design resources
+
+Application guides explain how the website works. Design resources have a separate
+home: [Figma references](../design/figma/) identify design nodes. Existing
+[design briefs](../design/briefs/) are historical records; new work does not
+require or maintain them.
+Agents performing Figma work follow the project
+[Figma workflow skill](../.agents/skills/figma-workflow/SKILL.md).
+
 ## When you need the rest of the system
 
 Frontend guides explain what the browser displays and how it handles requests.
