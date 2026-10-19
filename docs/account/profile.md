@@ -53,16 +53,18 @@ new checkout reviews. Changing it can cause those views to reload their data.
 Previously saved purchases and delivery recipients keep their existing details.
 A previously issued checkout preview retains its signed values.
 
-**Cancel** restores the last loaded or confirmed saved values. Moving to another
-account tab discards unsaved personal-detail edits; returning loads the profile
-again. Saving a photo does not discard those edits.
+**Discard changes** restores the last loaded or confirmed saved values. Save and
+discard actions are available only when the form differs from the saved values.
+Switching account tabs preserves the draft in memory. Leaving the account page
+or reloading discards it. Saving a photo does not discard personal-detail edits.
 
 ## When loading or saving fails
 
 A failed initial load shows **Try again**. Invalid fields display their errors
-beside the relevant inputs, and the customer's unsaved entries remain available
-for correction. During a save, the personal-details controls are disabled and a
-second save request is blocked.
+beside the relevant inputs, and focus moves to the first invalid field after a
+failed save. The customer's unsaved entries remain available for correction.
+During a save, the personal-details controls are disabled and a second save
+request is blocked.
 
 Sometimes a request reaches the backend but the response is lost. The frontend
 cannot tell from that failure alone whether the save happened. It therefore tries

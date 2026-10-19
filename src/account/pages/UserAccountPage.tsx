@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { Button } from "@/app/components/ui/button";
@@ -26,6 +27,7 @@ export default function UserAccountPage() {
     requestedTab === "recipients" || requestedTab === "change-password"
       ? requestedTab
       : "profile";
+  const [profileVisited, setProfileVisited] = useState(tab === "profile");
   return (
     <div className="bg-background text-foreground flex min-w-0 flex-col">
       <Header
@@ -45,7 +47,11 @@ export default function UserAccountPage() {
           <Tabs
             key={user.id}
             value={tab}
-            onValueChange={(value) => setParams({ tab: String(value) })}
+            onValueChange={(value) => {
+              if (tab === "profile" || value === "profile")
+                setProfileVisited(true);
+              setParams({ tab: String(value) });
+            }}
             className="gap-5"
           >
             <TabsList
@@ -64,8 +70,8 @@ export default function UserAccountPage() {
             <TabsContent value="change-password" keepMounted>
               <ChangePasswordPanel />
             </TabsContent>
-            <TabsContent value="profile">
-              <ProfilePanel />
+            <TabsContent value="profile" keepMounted>
+              {(profileVisited || tab === "profile") && <ProfilePanel />}
             </TabsContent>
             <TabsContent value="recipients">
               <AccountRecipients />
