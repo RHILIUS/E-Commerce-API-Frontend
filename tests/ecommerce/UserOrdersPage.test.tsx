@@ -95,8 +95,8 @@ test("six tabs preserve server statuses, quantities and totals", async () => {
   );
   await user.click(screen.getByRole("tab", { name: "Delivered" }));
   expect(
-    await screen.findByRole("button", { name: "Return — coming soon" }),
-  ).toBeDisabled();
+    await screen.findByText("Product returns are not available in this demo."),
+  ).toBeVisible();
   await user.click(screen.getByRole("tab", { name: "Completed" }));
   await waitFor(() => expect(screen.getAllByRole("article")).toHaveLength(1));
   expect(

@@ -42,8 +42,11 @@ never represented as refunded. Zero-value paid store orders need no refund.
 
 Loading, retryable read errors, empty tabs, action conflicts, pagination and
 missing images have explicit states. Tabs use the shadcn Base UI composition,
-with a three-column mobile arrangement and six columns from `sm`. Theme values
-come from `src/app/index.css`.
+with rounded segmented controls, a three-column mobile arrangement and six
+columns from `sm`. The selected tab uses the primary accent. Order cards pair
+status text with an icon, emphasize totals, and keep history actions quiet.
+Pending payments use a primary **View payment** action. The empty All tab offers
+**Browse products**. Theme values come from `src/app/index.css`.
 
 ## Design and deferred scope
 
@@ -53,8 +56,9 @@ five tabs. The page reuses the application's header, image fallbacks, buttons,
 and confirmation dialog; order search was not part of the agreed scope.
 No Figma canvas changes were made.
 
-Contact Seller is deferred and omitted. Delivered orders have a disabled
-**Return — coming soon** control. Completed is the backend fulfillment status;
+Contact Seller is deferred and omitted. Delivered orders show a note explaining
+that product returns are unavailable in this demo. Completed is the backend
+fulfillment status;
 seven-day automatic completion, delivery workflow, returns and wallet features
 are deferred. The existing internal ledger is used only to reverse a confirmed
 Stripe receipt; customer wallets are not created or credited.
