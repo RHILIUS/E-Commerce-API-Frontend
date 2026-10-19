@@ -16,15 +16,17 @@ The local `docs/` folder explains the frontend; the sibling `../docs/` repositor
 
 Read and apply the linked skills when their task conditions match. Combine them when a task spans responsibilities; a diagram's required format and evidence still apply when documentation is part of a feature. Skills provide workflows, not permission to expand the task.
 
-| Task                                                                        | Required skill                                                                                             |
-| --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| Implement or change a page, control, reusable UI, or styling                | [frontend-ui](.agents/skills/frontend-ui/SKILL.md)                                                         |
-| Write or revise maintained documentation, including alongside code          | [documentation-writing](.agents/skills/documentation-writing/SKILL.md)                                     |
-| Introduce/change a business workflow or create/update a shared Markdown ERD | [system-diagrams](.agents/skills/system-diagrams/SKILL.md)                                                 |
-| Write a PR description or PR documentation                                  | [pull-request-writing](.agents/skills/pull-request-writing/SKILL.md)                                       |
-| Inspect, create, modify, synchronize, or implement Figma designs            | [figma-workflow](.agents/skills/figma-workflow/SKILL.md); also frontend-ui when implementing frontend code |
+| Task                                                                   | Required skill                                                                                             |
+| ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Implement or change a page, control, reusable UI, or styling           | [frontend-ui](.agents/skills/frontend-ui/SKILL.md)                                                         |
+| Write or revise maintained documentation, including alongside code     | [documentation-writing](.agents/skills/documentation-writing/SKILL.md)                                     |
+| Introduce/change a business workflow                                   | [system-diagrams](.agents/skills/system-diagrams/SKILL.md)                                                 |
+| Create/update shared ERD documentation or document changed data models | [erd-documentation](.agents/skills/erd-documentation/SKILL.md); also documentation-writing                 |
+| Create/update an editable Draw.io ERD illustration                     | [drawio-erd](.agents/skills/drawio-erd/SKILL.md)                                                           |
+| Write a PR description or PR documentation                             | [pull-request-writing](.agents/skills/pull-request-writing/SKILL.md)                                       |
+| Inspect, create, modify, synchronize, or implement Figma designs       | [figma-workflow](.agents/skills/figma-workflow/SKILL.md); also frontend-ui when implementing frontend code |
 
-Load only the system-diagrams references relevant to the task. A simple presentation or straightforward navigation change without business rules, API/authorization changes, persistence, or cross-application behavior does not require feature documentation or diagram-index updates unless requested. Purely visual/internal refactoring does not require a process-diagram update when its workflow stays accurate. New or changed business workflows require their specific process document; shared Markdown ERD changes require the entity/field/lifecycle explanations defined by the skill.
+Load only the diagram skills and references relevant to the task. A simple presentation or straightforward navigation change without business rules, API/authorization changes, persistence, or cross-application behavior does not require feature documentation or diagram-index updates unless requested. Purely visual/internal refactoring does not require a process-diagram update when its workflow stays accurate. New or changed business workflows require their specific process document. ERDs use editable Draw.io SVGs in `../docs/diagrams/erd/diagrams/` and per-app Markdown explanations in `../docs/diagrams/erd/guides/`, following erd-documentation and drawio-erd. Do not create or maintain Mermaid ERDs; Mermaid remains the business-process format. Updating these instructions does not itself authorize generating or migrating ERD artifacts.
 
 ## Essential requirements
 

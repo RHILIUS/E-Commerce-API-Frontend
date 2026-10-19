@@ -44,7 +44,7 @@ For setup and deployment guides, first explain what the services do and how they
 - Check the relevant code and contracts before describing behavior. Reconcile stale statements within the authorized scope and report inconsistencies that remain elsewhere. Do not invent missing behavior or link to nonexistent documents.
 - Keep actual limitations visible, including test-only payments, unavailable actions, and deferred integrations. Do not describe a proposal as implemented or label a working feature as deferred. Keep proposed designs clearly separate from current behavior.
 - Do not add **Verification** sections, completed test checklists, browser-check counts, screenshots of validation runs, or historical lint/build results to maintained overview and feature guides. Put execution evidence in the PR description or implementation handoff. Reusable instructions for running tests belong in setup or contributor documentation.
-- Continue performing the checks required by the change. Diagram and ERD authoring requirements still require Mermaid version and validation records; keep that evidence with those specialized documents or their handoff as required. This writing guidance does not remove validation or PR reporting obligations.
+- Continue performing the checks required by the change. Mermaid business-process diagrams require version and validation records through system-diagrams. ERD guides and editable Draw.io SVGs follow [erd-documentation](../erd-documentation/SKILL.md) and [drawio-erd](../drawio-erd/SKILL.md), including their structure, rendering, and host checks. Put execution evidence in the handoff or PR. This writing guidance does not remove validation or PR reporting obligations.
 
 ## Check the result
 
