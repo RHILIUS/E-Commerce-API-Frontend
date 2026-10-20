@@ -4,6 +4,8 @@ import { ArrowLeft, Check } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 
+import { ThemeToggle } from "@/app/components/ThemeToggle";
+
 const registrationSteps = [
   "Email",
   "Verify",
@@ -23,13 +25,16 @@ const AuthShell = ({
   <main className="bg-muted/30 flex items-center px-4 py-6 sm:px-8 sm:py-10 lg:px-12">
     <div className="mx-auto grid w-full max-w-280 min-w-0 items-start gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14">
       <aside className="min-w-0 lg:sticky lg:top-10">
-        <Link
-          to="/"
-          className="text-muted-foreground hover:text-foreground focus-visible:ring-ring mb-6 inline-flex min-h-11 items-center gap-2 rounded-md text-sm outline-none focus-visible:ring-2 lg:mb-10"
-        >
-          <ArrowLeft className="size-4" aria-hidden="true" />
-          Back to shop
-        </Link>
+        <div className="mb-6 flex items-center justify-between gap-4 lg:mb-10">
+          <Link
+            to="/"
+            className="text-muted-foreground hover:text-foreground focus-visible:ring-ring inline-flex min-h-11 items-center gap-2 rounded-md text-sm outline-none focus-visible:ring-2"
+          >
+            <ArrowLeft className="size-4" aria-hidden="true" />
+            Back to shop
+          </Link>
+          <ThemeToggle />
+        </div>
         <div className="relative isolate flex items-center gap-4 lg:block lg:py-10">
           <div
             aria-hidden="true"

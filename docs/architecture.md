@@ -217,10 +217,12 @@ Shared controls live in `src/app/components/ui/`. Check them before building
 another button, input, dialog, or menu. Shop pages and checkout compose the
 shopping header with search, cart, account, and appearance controls.
 Authentication pages use `AuthShell`, with their own logo, Back to shop link,
-and registration progress instead of a header. They inherit the selected theme.
+and registration progress instead of a header. A theme toggle sits on the right
+of the Back to shop row above the branding, sharing the saved appearance and
+circular reveal used elsewhere.
 Terms, not-found, and internal test pages use
 [`SimpleHeader`](../src/app/components/SimpleHeader.tsx). The shopping and simple
-headers share
+headers and authentication pages share
 [`ThemeToggle`](../src/app/components/ThemeToggle.tsx), an accessible one-click button.
 Headers belong to their page layouts; `RootLayout` owns page-height framing and
 the footer. Store-owner management can supply its own header when implemented,
