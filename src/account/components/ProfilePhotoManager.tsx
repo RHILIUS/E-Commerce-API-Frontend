@@ -70,7 +70,8 @@ export function ProfilePhotoManager() {
         <div className="min-w-0 flex-1 space-y-2">
           <h3 className="text-base font-semibold">Profile photo</h3>
           <p className="text-muted-foreground text-sm">
-            JPEG, PNG, or WebP. Maximum 5 MB. Static images only.
+            JPEG, PNG, or WebP. Maximum 5 MB. Static images only. Photo changes
+            save separately from your personal details.
           </p>
           {state.photo && (
             <div className="flex flex-wrap gap-2">

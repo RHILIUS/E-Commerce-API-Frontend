@@ -1,3 +1,5 @@
+import { KeyRound, MapPin, UserRound } from "lucide-react";
+import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { Button } from "@/app/components/ui/button";
@@ -26,6 +28,7 @@ export default function UserAccountPage() {
     requestedTab === "recipients" || requestedTab === "change-password"
       ? requestedTab
       : "profile";
+  const [profileVisited, setProfileVisited] = useState(tab === "profile");
   return (
     <div className="bg-background text-foreground flex min-w-0 flex-col">
       <Header
@@ -45,27 +48,44 @@ export default function UserAccountPage() {
           <Tabs
             key={user.id}
             value={tab}
-            onValueChange={(value) => setParams({ tab: String(value) })}
+            onValueChange={(value) => {
+              if (tab === "profile" || value === "profile")
+                setProfileVisited(true);
+              setParams({ tab: String(value) });
+            }}
             className="gap-5"
           >
             <TabsList
-              className="h-12 w-full group-data-horizontal/tabs:h-12"
+              className="grid w-full grid-cols-3 group-data-horizontal/tabs:h-auto"
               aria-label="Account sections"
             >
-              <TabsTrigger value="profile">Profile</TabsTrigger>
-              <TabsTrigger value="recipients">Recipients</TabsTrigger>
+              <TabsTrigger
+                value="profile"
+                className="min-h-16 min-w-0 flex-col py-2 sm:min-h-11 sm:flex-row"
+              >
+                <UserRound aria-hidden="true" className="size-4" />
+                Profile
+              </TabsTrigger>
+              <TabsTrigger
+                value="recipients"
+                className="min-h-16 min-w-0 flex-col py-2 sm:min-h-11 sm:flex-row"
+              >
+                <MapPin aria-hidden="true" className="size-4" />
+                Recipients
+              </TabsTrigger>
               <TabsTrigger
                 value="change-password"
-                className="min-w-0 text-center leading-4 whitespace-normal"
+                className="min-h-16 min-w-0 flex-col py-2 text-center leading-4 whitespace-normal sm:min-h-11 sm:flex-row"
               >
-                Change Password
+                <KeyRound aria-hidden="true" className="size-4" />
+                <span>Change Password</span>
               </TabsTrigger>
             </TabsList>
             <TabsContent value="change-password" keepMounted>
               <ChangePasswordPanel />
             </TabsContent>
-            <TabsContent value="profile">
-              <ProfilePanel />
+            <TabsContent value="profile" keepMounted>
+              {(profileVisited || tab === "profile") && <ProfilePanel />}
             </TabsContent>
             <TabsContent value="recipients">
               <AccountRecipients />

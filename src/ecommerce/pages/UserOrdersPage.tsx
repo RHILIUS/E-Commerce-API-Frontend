@@ -1,7 +1,14 @@
 import axios from "axios";
-import { PackageOpen } from "lucide-react";
+import {
+  CircleCheck,
+  ClipboardList,
+  PackageCheck,
+  PackageOpen,
+  PackageX,
+  Truck,
+} from "lucide-react";
 import { useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
 import {
   AlertDialog,
@@ -23,8 +30,21 @@ import { formatMoney } from "@/ecommerce/cart/utils";
 import { Header } from "@/ecommerce/components/Header";
 import { cancelOrder } from "@/ecommerce/orders/api";
 import { OrderRecordCard } from "@/ecommerce/orders/OrderRecordCard";
-import { orderTabs, type UserOrder } from "@/ecommerce/orders/types";
+import {
+  type OrderTab,
+  orderTabs,
+  type UserOrder,
+} from "@/ecommerce/orders/types";
 import { useOrders } from "@/ecommerce/orders/useOrders";
+
+const orderTabIcons = {
+  all: ClipboardList,
+  to_ship: PackageOpen,
+  to_receive: Truck,
+  cancelled: PackageX,
+  delivered: PackageCheck,
+  completed: CircleCheck,
+} satisfies Record<OrderTab, typeof ClipboardList>;
 
 /** Customer purchase history, with URL-backed tabs and server-authorized cancellation. */
 export default function UserOrdersPage() {
@@ -81,13 +101,19 @@ export default function UserOrdersPage() {
         onSearch={(q) => navigate(q ? `/?${new URLSearchParams({ q })}` : "/")}
       />
       <main className="mx-auto w-full max-w-4xl flex-1 space-y-6 px-3 py-6 sm:px-6 sm:py-10">
-        <h1
-          ref={heading}
-          tabIndex={-1}
-          className="text-center text-2xl outline-none sm:text-3xl"
-        >
-          Orders
-        </h1>
+        <div className="space-y-2">
+          <h1
+            ref={heading}
+            tabIndex={-1}
+            className="text-2xl outline-none sm:text-3xl"
+          >
+            My orders
+          </h1>
+          <p className="text-muted-foreground text-sm">
+            Review your purchases, check their progress, and manage eligible
+            orders.
+          </p>
+        </div>
         {notice && (
           <p role="status" className="bg-secondary rounded-lg p-3 text-sm">
             {notice}
@@ -109,18 +135,21 @@ export default function UserOrdersPage() {
         >
           <TabsList
             aria-label="Order status"
-            variant="line"
-            className="bg-card grid w-full grid-cols-3 gap-2 rounded-lg border p-2 group-data-horizontal/tabs:h-auto sm:grid-cols-6"
+            className="grid w-full grid-cols-3 gap-1 rounded-xl p-1 group-data-horizontal/tabs:h-auto sm:grid-cols-6"
           >
-            {orderTabs.map((item) => (
-              <TabsTrigger
-                key={item.value}
-                value={item.value}
-                className="min-h-11 px-1 text-sm after:bottom-0"
-              >
-                {item.label}
-              </TabsTrigger>
-            ))}
+            {orderTabs.map((item) => {
+              const Icon = orderTabIcons[item.value];
+              return (
+                <TabsTrigger
+                  key={item.value}
+                  value={item.value}
+                  className="data-active:text-primary dark:data-active:text-primary min-h-16 flex-col rounded-lg px-1 py-2 text-sm lg:min-h-11 lg:flex-row"
+                >
+                  <Icon aria-hidden="true" className="size-4" />
+                  {item.label}
+                </TabsTrigger>
+              );
+            })}
           </TabsList>
           {orderTabs.map((item) => (
             <TabsContent
@@ -166,14 +195,23 @@ export default function UserOrdersPage() {
                       ? "Your orders will appear here after checkout."
                       : `Orders in ${item.label.toLowerCase()} will appear here.`}
                   </p>
-                  {page > 1 && (
+                  {page > 1 ? (
                     <Button
                       variant="outline"
+                      className="min-h-11"
                       onClick={() => setParams({ tab })}
                     >
                       Back to first page
                     </Button>
-                  )}
+                  ) : tab === "all" ? (
+                    <Button
+                      nativeButton={false}
+                      render={<Link to="/" />}
+                      className="mt-2 min-h-11"
+                    >
+                      Browse products
+                    </Button>
+                  ) : null}
                 </div>
               ) : (
                 data?.results.map((order) => (

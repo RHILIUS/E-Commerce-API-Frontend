@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
@@ -10,6 +10,7 @@ import { AuthProvider } from "@/authentication/contexts/Auth/AuthProvider";
 import LoginPage from "@/authentication/pages/LoginPage";
 import { Header } from "@/ecommerce/components/Header";
 
+import { render } from "../../render";
 import { server } from "../../server";
 
 const user = {
@@ -104,7 +105,10 @@ describe("Logout navigation", () => {
         await userEvent.click(
           await screen.findByRole("button", { name: "Account" }),
         );
-        expect(await screen.findAllByRole("menuitem")).toHaveLength(3);
+        expect(await screen.findAllByRole("menuitem")).toHaveLength(4);
+        expect(
+          screen.getByRole("menuitem", { name: /Notifications/ }),
+        ).toHaveAttribute("aria-disabled", "true");
         await userEvent.click(
           screen.getByRole("menuitem", { name: "Log out" }),
         );

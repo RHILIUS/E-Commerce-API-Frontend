@@ -58,7 +58,7 @@ const StorePage = () => {
     <div className="bg-background text-foreground w-full min-w-0">
       <a
         href="#store"
-        className="bg-background sr-only z-10 rounded-md p-3 focus:not-sr-only focus:absolute focus:top-2 focus:left-2"
+        className="bg-background sr-only z-50 rounded-md p-3 focus:not-sr-only focus:absolute focus:top-2 focus:left-2"
       >
         Skip to store
       </a>
@@ -71,7 +71,7 @@ const StorePage = () => {
       <main
         id="store"
         tabIndex={-1}
-        className="mx-auto w-full max-w-360 space-y-6 px-3 pt-5 pb-12 outline-none sm:px-6 lg:space-y-8 lg:px-10"
+        className="mx-auto w-full max-w-360 scroll-mt-40 space-y-6 px-3 pt-5 pb-12 outline-none sm:px-6 lg:space-y-8 lg:px-10"
       >
         <nav
           aria-label="Breadcrumb"

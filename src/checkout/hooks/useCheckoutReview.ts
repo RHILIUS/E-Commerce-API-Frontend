@@ -8,7 +8,7 @@ import type { PaymentMethod, Preview } from "../types";
 import { checkoutError } from "../utils/errors";
 import { parseSource } from "../utils/source";
 
-/** Load a review without polling or silently replacing the prices the customer accepted. */
+/** Retain the last review for display while only the latest requested preview can be submitted. */
 export function useCheckoutReview(
   search: string,
   paused: boolean,
@@ -17,11 +17,19 @@ export function useCheckoutReview(
   const [version, setVersion] = useState(0);
   const [data, setData] = useState<{
     paymentMethod: PaymentMethod;
+    version: number;
     preview: Preview;
     recipients: Recipient[];
   } | null>(null);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [failure, setFailure] = useState<{
+    key: string;
+    message: string;
+  } | null>(null);
+  const key = `${paymentMethod}:${version}`;
+  // The version invalidates even a rapid switch back to the previous payment method.
+  const current =
+    data?.paymentMethod === paymentMethod && data.version === version;
+  const error = failure?.key === key ? failure.message : "";
   useEffect(() => {
     const source = parseSource(search);
     if (!source || paused) return;
@@ -29,31 +37,26 @@ export function useCheckoutReview(
     // Async start also makes strict-mode cleanup cancel before network work begins.
     void Promise.resolve().then(async () => {
       if (controller.signal.aborted) return;
-      setLoading(true);
-      setError("");
-      setData(null);
       try {
         const [preview, recipients] = await Promise.all([
           fetchPreview(source, controller.signal, paymentMethod),
           fetchRecipients(controller.signal),
         ]);
         if (!controller.signal.aborted)
-          setData({ paymentMethod, preview, recipients });
+          setData({ paymentMethod, version, preview, recipients });
       } catch (failure) {
         if (!controller.signal.aborted)
-          setError(checkoutError(failure).message);
-      } finally {
-        if (!controller.signal.aborted) setLoading(false);
+          setFailure({ key, message: checkoutError(failure).message });
       }
     });
     return () => controller.abort();
-  }, [search, paused, version, paymentMethod]);
+  }, [search, paused, version, paymentMethod, key]);
   return {
-    data: data?.paymentMethod === paymentMethod ? data : null,
-    loading,
+    data,
+    current: Boolean(current),
+    loading: !paused && !current && !error,
     error,
     refresh: () => {
-      setData(null);
       setVersion((value) => value + 1);
     },
   };

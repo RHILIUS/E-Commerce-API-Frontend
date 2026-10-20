@@ -1,7 +1,6 @@
 import {
   act,
   fireEvent,
-  render,
   screen,
   waitFor,
   within,
@@ -18,6 +17,7 @@ import { checkoutProtectedRoutes } from "@/checkout/routes";
 import { ecommercePublicRoutes } from "@/ecommerce/routes";
 import type { ProductDetail } from "@/ecommerce/types";
 
+import { render } from "../render";
 import { server } from "../server";
 
 const endpoint = "http://localhost/api/shop/products/:id/";

@@ -1,20 +1,14 @@
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
+import { SimpleHeader } from "@/app/components/SimpleHeader";
 import { buttonVariants } from "@/app/components/ui/button";
 import { cn } from "@/app/lib/utils";
 
 const NotFoundPage = () => {
   return (
     <div className="flex w-full min-w-0 flex-col">
-      <header className="border-border border-b px-6 py-5 sm:px-10">
-        <Link
-          to="/"
-          className="text-primary focus-visible:ring-ring/50 inline-flex rounded-md text-2xl font-semibold tracking-tight outline-none focus-visible:ring-3"
-        >
-          E-Commerce
-        </Link>
-      </header>
+      <SimpleHeader />
 
       <main className="flex flex-1 items-center justify-center px-6 py-12 sm:py-20">
         <div className="flex w-full max-w-120 min-w-0 flex-col items-center text-center">

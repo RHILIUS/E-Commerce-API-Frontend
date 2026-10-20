@@ -1,16 +1,33 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <script>
+      // Keep this early initializer aligned with src/app/theme/theme.ts.
+      (() => {
+        let theme = "system";
+        try {
+          const saved = localStorage.getItem("ecommerce-theme");
+          if (saved === "light" || saved === "dark" || saved === "system")
+            theme = saved;
+        } catch {
+          /* Appearance still follows the device when storage is blocked. */
+        }
+        const dark =
+          theme === "dark" ||
+          (theme === "system" &&
+            matchMedia("(prefers-color-scheme: dark)").matches);
+        document.documentElement.classList.toggle("dark", dark);
+        document.documentElement.style.colorScheme = dark ? "dark" : "light";
+      })();
+    </script>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>E-Commerce by RhiLius Apps</title>
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>E-Commerce by RhiLius Apps</title>
-</head>
-
-<body>
-  <div id="root"></div>
-  <script type="module" src="/src/app/main.tsx"></script>
-</body>
-
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/app/main.tsx"></script>
+  </body>
 </html>

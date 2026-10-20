@@ -68,9 +68,15 @@ const PasswordFields = ({
 
   return (
     <>
-      <label className="block min-w-0 space-y-2">
-        <span className="block text-sm font-medium">Password</span>
+      <div className="min-w-0 space-y-2">
+        <label
+          htmlFor="register-password"
+          className="block text-sm font-medium"
+        >
+          Password
+        </label>
         <Input
+          id="register-password"
           name="password"
           type="password"
           autoComplete="new-password"
@@ -81,19 +87,29 @@ const PasswordFields = ({
           onBlur={() => setHasPasswordBlurred(true)}
           onInvalid={() => setHasPasswordBlurred(true)}
           aria-invalid={Boolean(serverError) || isPasswordInvalid || undefined}
-          aria-describedby={
+          aria-describedby={[
+            "password-requirements",
             serverError
               ? "password-server-error"
               : isPasswordInvalid
                 ? "password-error"
-                : undefined
-          }
+                : null,
+          ]
+            .filter(Boolean)
+            .join(" ")}
           required
           minLength={PASSWORD_MIN_LENGTH}
           maxLength={PASSWORD_MAX_LENGTH}
           pattern={PASSWORD_PATTERN}
         />
 
+        <p
+          id="password-requirements"
+          className="text-muted-foreground text-xs leading-relaxed"
+        >
+          Use {PASSWORD_MIN_LENGTH}–{PASSWORD_MAX_LENGTH} characters with an
+          uppercase letter, a lowercase letter, and a number.
+        </p>
         {serverError && (
           <span
             id="password-server-error"
@@ -109,21 +125,25 @@ const PasswordFields = ({
             className="text-destructive block text-xs"
             role="alert"
           >
-            Password must be {PASSWORD_MIN_LENGTH}–{PASSWORD_MAX_LENGTH}
-            characters and include an uppercase letter, a lowercase letter, and
-            a number.
+            Your password doesn’t meet the requirements above.
           </span>
         )}
-      </label>
+      </div>
 
-      <label className="block min-w-0 space-y-2">
-        <span className="block text-sm font-medium">Confirm Password</span>
+      <div className="min-w-0 space-y-2">
+        <label
+          htmlFor="register-confirm-password"
+          className="block text-sm font-medium"
+        >
+          Confirm Password
+        </label>
         <Input
+          id="register-confirm-password"
           ref={confirmPasswordInputRef}
           name="confirmPassword"
           type="password"
           autoComplete="new-password"
-          placeholder="Confirm your password"
+          placeholder="Re-enter your password"
           className="h-10"
           value={confirmPassword}
           onChange={handleConfirmPasswordChange}
@@ -148,7 +168,7 @@ const PasswordFields = ({
             Passwords do not match.
           </span>
         )}
-      </label>
+      </div>
     </>
   );
 };

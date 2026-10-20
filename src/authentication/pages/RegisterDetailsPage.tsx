@@ -1,4 +1,5 @@
-import { type SyntheticEvent, useState } from "react";
+import { MapPin, ShieldCheck, UserRound } from "lucide-react";
+import { type SyntheticEvent, useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import {
@@ -11,13 +12,7 @@ import {
   AlertDialogTitle,
 } from "@/app/components/ui/alert-dialog";
 import { Button } from "@/app/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/app/components/ui/card";
+import { Card } from "@/app/components/ui/card";
 import { Input } from "@/app/components/ui/input";
 import { registerApi, type RegisterRequest } from "@/authentication/api";
 import AddressCountryField from "@/authentication/components/AddressCountryField";
@@ -32,6 +27,15 @@ import {
   type RegistrationFieldErrors,
 } from "@/authentication/utils/registerError";
 
+import AuthShell from "../components/AuthShell/AuthShell";
+import {
+  getRegistrationErrorStep,
+  type RegistrationDetailsStep,
+} from "../utils/registrationSteps";
+
+type RegistrationControl =
+  HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+
 // Read text inputs for the request, treating missing or file values as empty.
 const getFormString = (formData: FormData, name: string) => {
   const value = formData.get(name);
@@ -43,6 +47,40 @@ const RegisterDetailsPage = () => {
   const { email } = useRegistration();
   const auth = useAuth();
   const navigate = useNavigate();
+  const [detailsStep, setDetailsStep] = useState<RegistrationDetailsStep>(3);
+  const [furthestStep, setFurthestStep] = useState<RegistrationDetailsStep>(3);
+  const formRef = useRef<HTMLFormElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const invalidControlRef = useRef<RegistrationControl | null>(null);
+
+  useEffect(() => {
+    if (invalidControlRef.current) {
+      invalidControlRef.current.reportValidity();
+      invalidControlRef.current.focus();
+      invalidControlRef.current = null;
+    } else {
+      headingRef.current?.focus();
+    }
+  }, [detailsStep]);
+
+  // Validate only the requested step, revealing it before focusing a hidden error.
+  const validateStep = (step: RegistrationDetailsStep) => {
+    const controls = formRef.current!.querySelectorAll<RegistrationControl>(
+      `[data-details-step="${step}"] input, [data-details-step="${step}"] select, [data-details-step="${step}"] textarea`,
+    );
+    const invalid = Array.from(controls).find(
+      (control) => control.willValidate && !control.checkValidity(),
+    );
+    if (!invalid) return true;
+    if (step === detailsStep) {
+      invalid.reportValidity();
+      invalid.focus();
+    } else {
+      invalidControlRef.current = invalid;
+      setDetailsStep(step);
+    }
+    return false;
+  };
 
   const [isVerificationInvalid, setIsVerificationInvalid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -88,6 +126,18 @@ const RegisterDetailsPage = () => {
       return;
     }
 
+    if (!validateStep(detailsStep)) return;
+    if (detailsStep < 5) {
+      const nextStep = (detailsStep + 1) as RegistrationDetailsStep;
+      setFurthestStep(
+        (previous) => Math.max(previous, nextStep) as RegistrationDetailsStep,
+      );
+      setDetailsStep(nextStep);
+      return;
+    }
+    // Recheck earlier steps before the single account-creation request.
+    if (!validateStep(3) || !validateStep(4)) return;
+
     const formData = new FormData(event.currentTarget);
     const request: RegisterRequest = {
       username: getFormString(formData, "username"),
@@ -116,6 +166,7 @@ const RegisterDetailsPage = () => {
 
       if (registrationError.kind === "validation") {
         setFieldErrors(registrationError.fields);
+        setDetailsStep(getRegistrationErrorStep(registrationError.fields));
         return;
       }
 
@@ -143,93 +194,140 @@ const RegisterDetailsPage = () => {
   };
 
   return (
-    <main className="flex items-start justify-center px-4 py-12 sm:px-6 lg:py-25">
-      <Card
-        role="region"
-        aria-labelledby="register-details-title"
-        className="w-full max-w-145 gap-6 rounded-lg border py-6 shadow-sm ring-0 [--card-spacing:--spacing(6)]"
-      >
-        <CardHeader className="min-w-0 gap-1.5">
-          <CardTitle
+    <AuthShell
+      step={detailsStep}
+      detailsNavigation={{
+        furthestStep,
+        disabled: isSubmitting,
+        onStepChange: setDetailsStep,
+      }}
+    >
+      <div className="min-w-0 space-y-6">
+        <header className="space-y-2">
+          <h1
             id="register-details-title"
-            role="heading"
-            aria-level={1}
-            className="text-xl font-bold"
+            ref={headingRef}
+            tabIndex={-1}
+            className="text-2xl font-semibold tracking-tight"
           >
-            Register
-          </CardTitle>
-          <CardDescription className="min-w-0 text-xs leading-4 wrap-break-word">
-            Please provide your personal information to set up your account.
-          </CardDescription>
-        </CardHeader>
+            {detailsStep === 3
+              ? "Your personal details"
+              : detailsStep === 4
+                ? "Your address"
+                : "Secure your account"}
+          </h1>
+          <p className="text-muted-foreground text-sm leading-relaxed">
+            {detailsStep === 3
+              ? "Let’s start with the basics."
+              : detailsStep === 4
+                ? "Add the address for your account."
+                : "Choose a password to finish creating your account."}
+          </p>
+        </header>
 
-        <CardContent className="min-w-0">
-          <form
-            className="min-w-0 space-y-6"
-            onSubmit={handleSubmit}
-            aria-busy={isSubmitting}
+        <form
+          ref={formRef}
+          noValidate
+          className="flex min-w-0 flex-col gap-5"
+          onSubmit={handleSubmit}
+          aria-busy={isSubmitting}
+        >
+          <fieldset
+            hidden={detailsStep !== 3}
+            data-details-step="3"
+            className="m-0 min-w-0 border-0 p-0"
           >
-            <label className="block min-w-0 space-y-2">
-              <span className="block text-sm font-medium">Email</span>
-              <Input
-                name="email"
-                {...fieldErrorProps("email")}
-                type="email"
-                value={email ?? ""}
-                autoComplete="email"
-                aria-readonly="true"
-                className="h-10"
-                required
-                disabled
-              />
-              {renderFieldError("email")}
-            </label>
-
-            {fieldErrors.email && (
-              <p className="text-sm">
-                <Link to="/login" className="text-primary underline">
-                  Log in
-                </Link>
-                {" or "}
-                <Link
-                  to="/register/enter-email"
-                  className="text-primary underline"
-                >
-                  use a different email
-                </Link>
-                .
-              </p>
-            )}
-
-            <UsernameField
-              serverError={fieldErrors.username}
-              onValueChange={() => clearFieldError("username")}
-            />
-
-            <label className="block min-w-0 space-y-2">
-              <span className="block text-sm font-medium">Full name</span>
-              <Input
-                name="fullName"
-                {...fieldErrorProps("full_name")}
-                type="text"
-                autoComplete="name"
-                placeholder="Enter your full name"
-                className="h-10"
-                required
-              />
-              {renderFieldError("full_name")}
-            </label>
-
-            <PhoneNumberField
-              serverError={fieldErrors.phone_number}
-              onValueChange={() => clearFieldError("phone_number")}
-            />
-
-            <section
-              aria-labelledby="address-section-title"
-              className="border-border min-w-0 space-y-4 border-y py-4"
+            <Card
+              role="region"
+              aria-labelledby="personal-section-title"
+              className="min-w-0 gap-5 rounded-2xl border p-5 shadow-sm ring-0 sm:p-8"
             >
-              <h2 id="address-section-title" className="text-sm font-medium">
+              <h2
+                id="personal-section-title"
+                className="flex items-center gap-2 text-sm font-semibold"
+              >
+                <UserRound
+                  className="text-muted-foreground size-4 shrink-0"
+                  aria-hidden="true"
+                />
+                Personal details
+              </h2>
+              <label className="block min-w-0 space-y-2">
+                <span className="block text-sm font-medium">Email</span>
+                <Input
+                  name="email"
+                  {...fieldErrorProps("email")}
+                  type="email"
+                  value={email ?? ""}
+                  autoComplete="email"
+                  aria-readonly="true"
+                  className="h-10"
+                  required
+                  disabled
+                />
+                {renderFieldError("email")}
+              </label>
+
+              {fieldErrors.email && (
+                <p className="text-sm">
+                  <Link to="/login" className="text-primary underline">
+                    Log in
+                  </Link>
+                  {" or "}
+                  <Link
+                    to="/register/enter-email"
+                    className="text-primary underline"
+                  >
+                    use a different email
+                  </Link>
+                  .
+                </p>
+              )}
+
+              <UsernameField
+                serverError={fieldErrors.username}
+                onValueChange={() => clearFieldError("username")}
+              />
+
+              <label className="block min-w-0 space-y-2">
+                <span className="block text-sm font-medium">Full name</span>
+                <Input
+                  name="fullName"
+                  {...fieldErrorProps("full_name")}
+                  type="text"
+                  autoComplete="name"
+                  placeholder="e.g. Alex Santos"
+                  className="h-10"
+                  required
+                />
+                {renderFieldError("full_name")}
+              </label>
+
+              <PhoneNumberField
+                serverError={fieldErrors.phone_number}
+                onValueChange={() => clearFieldError("phone_number")}
+              />
+            </Card>
+          </fieldset>
+
+          <fieldset
+            hidden={detailsStep !== 4}
+            data-details-step="4"
+            className="m-0 min-w-0 border-0 p-0"
+          >
+            <Card
+              role="region"
+              aria-labelledby="address-section-title"
+              className="min-w-0 gap-5 rounded-2xl border p-5 shadow-sm ring-0 sm:p-8"
+            >
+              <h2
+                id="address-section-title"
+                className="flex items-center gap-2 text-sm font-semibold"
+              >
+                <MapPin
+                  className="text-muted-foreground size-4 shrink-0"
+                  aria-hidden="true"
+                />
                 Address
               </h2>
 
@@ -247,7 +345,7 @@ const RegisterDetailsPage = () => {
                   {...fieldErrorProps("address_line1")}
                   type="text"
                   autoComplete="address-line1"
-                  placeholder="House number, street name or area"
+                  placeholder="e.g. 123 Mabini Street"
                   className="h-10"
                   required
                 />
@@ -263,7 +361,7 @@ const RegisterDetailsPage = () => {
                   {...fieldErrorProps("address_line2")}
                   type="text"
                   autoComplete="address-line2"
-                  placeholder="Apartment, suite, unit, building, or floor"
+                  placeholder="e.g. Unit 4B, Sampaguita Building"
                   className="h-10"
                 />
                 {renderFieldError("address_line2")}
@@ -276,7 +374,7 @@ const RegisterDetailsPage = () => {
                   {...fieldErrorProps("city")}
                   type="text"
                   autoComplete="address-level2"
-                  placeholder="Enter your city or town"
+                  placeholder="e.g. Quezon City"
                   className="h-10"
                   required
                 />
@@ -292,7 +390,7 @@ const RegisterDetailsPage = () => {
                   {...fieldErrorProps("region")}
                   type="text"
                   autoComplete="address-level1"
-                  placeholder="Enter your state, province, or region"
+                  placeholder="e.g. Metro Manila"
                   className="h-10"
                 />
                 {renderFieldError("region")}
@@ -307,50 +405,82 @@ const RegisterDetailsPage = () => {
                   {...fieldErrorProps("postal_code")}
                   type="text"
                   autoComplete="postal-code"
-                  placeholder="Enter your postal or ZIP code"
+                  placeholder="e.g. 1100"
                   className="h-10"
                 />
                 {renderFieldError("postal_code")}
               </label>
-            </section>
+            </Card>
+          </fieldset>
 
-            <PasswordFields
-              serverError={fieldErrors.password}
-              onValueChange={() => clearFieldError("password")}
-            />
+          <fieldset
+            hidden={detailsStep !== 5}
+            data-details-step="5"
+            className="m-0 min-w-0 border-0 p-0"
+          >
+            <Card
+              role="region"
+              aria-labelledby="security-section-title"
+              className="min-w-0 gap-5 rounded-2xl border p-5 shadow-sm ring-0 sm:p-8"
+            >
+              <h2
+                id="security-section-title"
+                className="flex items-center gap-2 text-sm font-semibold"
+              >
+                <ShieldCheck
+                  className="text-muted-foreground size-4 shrink-0"
+                  aria-hidden="true"
+                />
+                Account security
+              </h2>
+              <PasswordFields
+                serverError={fieldErrors.password}
+                onValueChange={() => clearFieldError("password")}
+              />
+            </Card>
+          </fieldset>
 
-            {submissionError && (
-              <p className="text-destructive text-sm" role="alert">
-                {submissionError}
-              </p>
+          {submissionError && (
+            <p className="text-destructive text-sm" role="alert">
+              {submissionError}
+            </p>
+          )}
+
+          {submissionMessage && (
+            <p className="text-muted-foreground text-sm" role="status">
+              {submissionMessage}
+            </p>
+          )}
+
+          <div className="flex gap-3">
+            {detailsStep > 3 && (
+              <Button
+                type="button"
+                variant="outline"
+                className="h-11 px-5"
+                disabled={isSubmitting}
+                onClick={() =>
+                  setDetailsStep((detailsStep - 1) as RegistrationDetailsStep)
+                }
+              >
+                Back
+              </Button>
             )}
-
-            {submissionMessage && (
-              <p className="text-muted-foreground text-sm" role="status">
-                {submissionMessage}
-              </p>
-            )}
-
             <Button
               type="submit"
               size="lg"
-              className="w-full"
+              className="h-11 flex-1"
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Creating account..." : "Create account"}
+              {isSubmitting
+                ? "Creating account..."
+                : detailsStep === 5
+                  ? "Create account"
+                  : "Continue"}
             </Button>
-          </form>
-        </CardContent>
-
-        <div className="flex min-w-0 justify-center px-6">
-          <Link
-            to="/terms"
-            className="text-primary hover:text-primary/80 inline-flex h-9 items-center rounded-lg px-4 text-center text-xs font-medium transition-colors"
-          >
-            Terms of Service
-          </Link>
-        </div>
-      </Card>
+          </div>
+        </form>
+      </div>
 
       <AlertDialog open={isVerificationInvalid}>
         <AlertDialogContent className="max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] overflow-y-auto">
@@ -374,7 +504,7 @@ const RegisterDetailsPage = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </main>
+    </AuthShell>
   );
 };
 

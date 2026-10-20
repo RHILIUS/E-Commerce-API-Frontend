@@ -4,6 +4,7 @@ import { accountProtectedRoutes } from "@/account/routes";
 import RootLayout from "@/app/layout/RootLayout";
 import HomePage from "@/app/pages/HomePage";
 import NotFoundPage from "@/app/pages/NotFoundPage";
+import TermsPage from "@/app/pages/TermsPage";
 import { authenticationRoutes } from "@/authentication/routes";
 import { checkoutProtectedRoutes } from "@/checkout/routes";
 import {
@@ -22,6 +23,7 @@ export const router = createBrowserRouter([
 
       // Public Ecommerce Routes
       ...ecommercePublicRoutes,
+      { path: "/terms", element: <TermsPage /> },
 
       // Unsupported URLs are public, including nested paths.
       { path: "*", element: <NotFoundPage /> },

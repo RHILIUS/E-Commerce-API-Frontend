@@ -1,3 +1,5 @@
+import { useId } from "react";
+
 import {
   Combobox,
   ComboboxContent,
@@ -29,9 +31,10 @@ const AddressCountryField = ({
   serverError?: string;
   onValueChange?: () => void;
 }) => {
+  const id = useId();
   return (
     <div className="min-w-0 space-y-2">
-      <label htmlFor="address-country" className="block text-sm font-medium">
+      <label htmlFor={id} className="block text-sm font-medium">
         Country
       </label>
 
@@ -52,9 +55,9 @@ const AddressCountryField = ({
         itemToStringValue={(item) => item.code}
       >
         <ComboboxInput
-          id="address-country"
+          id={id}
           aria-invalid={Boolean(serverError) || undefined}
-          aria-describedby={serverError ? "address-country-error" : undefined}
+          aria-describedby={serverError ? `${id}-error` : undefined}
           placeholder="Select a country"
           className="h-10 w-full"
         />
@@ -78,7 +81,7 @@ const AddressCountryField = ({
       </Combobox>
       {serverError && (
         <p
-          id="address-country-error"
+          id={`${id}-error`}
           className="text-destructive text-xs wrap-break-word"
           role="alert"
         >

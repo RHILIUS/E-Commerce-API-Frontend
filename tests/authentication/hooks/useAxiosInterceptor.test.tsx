@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { delay, http, HttpResponse } from "msw";
 import { StrictMode, useState } from "react";
@@ -8,6 +8,7 @@ import api from "@/app/api/axios";
 import { AuthProvider } from "@/authentication/contexts/Auth/AuthProvider";
 import { useAuth } from "@/authentication/contexts/Auth/useAuth";
 
+import { render } from "../../render";
 import { server } from "../../server";
 
 const apiUrl = "http://localhost";

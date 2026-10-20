@@ -75,8 +75,8 @@ export function RecipientList({
             </Button>
           )}
           <Button
-            className="min-h-11"
-            variant="destructive"
+            variant="ghost"
+            className="text-destructive hover:text-destructive min-h-11"
             disabled={disabled}
             aria-label={`Delete ${recipient.name}`}
             onClick={(event) => onDelete(recipient, event.currentTarget)}

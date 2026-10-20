@@ -1,8 +1,10 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, test } from "vitest";
 
 import { ProductCard } from "@/ecommerce/components/ProductCard";
+
+import { render } from "../render";
 
 describe("ProductCard currency formatting", () => {
   test.each([

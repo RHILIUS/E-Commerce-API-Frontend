@@ -105,7 +105,7 @@ export function OrderHistoryDialog({
   const descriptionId = useId();
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant="outline" className="min-h-11" />}>
+      <DialogTrigger render={<Button variant="ghost" className="min-h-11" />}>
         View order history
       </DialogTrigger>
       <DialogContent

@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
@@ -10,6 +10,7 @@ import { statusLabels, type UserOrder } from "@/ecommerce/orders/types";
 import { ecommerceProtectedRoutes } from "@/ecommerce/routes";
 
 import { confirmation, member } from "../checkout/fixtures";
+import { render } from "../render";
 import { server } from "../server";
 
 let orders: UserOrder[];
@@ -95,8 +96,8 @@ test("six tabs preserve server statuses, quantities and totals", async () => {
   );
   await user.click(screen.getByRole("tab", { name: "Delivered" }));
   expect(
-    await screen.findByRole("button", { name: "Return — coming soon" }),
-  ).toBeDisabled();
+    await screen.findByText("Product returns are not available in this demo."),
+  ).toBeVisible();
   await user.click(screen.getByRole("tab", { name: "Completed" }));
   await waitFor(() => expect(screen.getAllByRole("article")).toHaveLength(1));
   expect(
@@ -211,10 +212,11 @@ test("account dropdown exposes Orders above Log out without a wallet option", as
   show();
   await user.click(await screen.findByRole("button", { name: "Account" }));
   const items = await screen.findAllByRole("menuitem");
-  expect(items.map((i) => i.textContent)).toEqual([
-    "Account",
-    "Orders",
-    "Log out",
+  expect(items).toEqual([
+    screen.getByRole("menuitem", { name: "Account" }),
+    screen.getByRole("menuitem", { name: "Orders" }),
+    screen.getByRole("menuitem", { name: /Notifications/ }),
+    screen.getByRole("menuitem", { name: "Log out" }),
   ]);
 });
 

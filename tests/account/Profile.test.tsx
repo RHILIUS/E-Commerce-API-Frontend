@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { delay, http, HttpResponse } from "msw";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
@@ -12,6 +12,7 @@ import { AuthProvider } from "@/authentication/contexts/Auth/AuthProvider";
 import { useAuth } from "@/authentication/contexts/Auth/useAuth";
 
 import { member, recipient } from "../checkout/fixtures";
+import { render } from "../render";
 import { server } from "../server";
 
 vi.mock("react-easy-crop", () => ({
@@ -164,6 +165,9 @@ test("maps nested validation errors while retaining the draft", async () => {
   expect(screen.getByLabelText("City")).toHaveAttribute("aria-invalid", "true");
   expect(screen.getByText("Phone number is already taken.")).toBeVisible();
   expect(name).toHaveValue("Draft name");
+  await waitFor(() =>
+    expect(document.activeElement).toHaveAttribute("aria-invalid", "true"),
+  );
 });
 test("cancel restores saved fields and a missing address stays empty", async () => {
   profile.address = null;
@@ -173,7 +177,7 @@ test("cancel restores saved fields and a missing address stays empty", async () 
   expect(screen.getByLabelText("Address line 1")).toHaveValue("");
   await user.clear(name);
   await user.type(name, "Discard me");
-  await user.click(screen.getByRole("button", { name: "Cancel" }));
+  await user.click(screen.getByRole("button", { name: "Discard changes" }));
   expect(screen.getByLabelText("Full name")).toHaveValue(member.fullName);
 });
 test("retries loading and reconciles an uncertain save", async () => {
@@ -193,6 +197,7 @@ test("retries loading and reconciles an uncertain save", async () => {
   open();
   await user.click(await screen.findByRole("button", { name: "Try again" }));
   await screen.findByLabelText("Full name");
+  await user.type(screen.getByLabelText("Full name"), " draft");
   await user.click(screen.getByRole("button", { name: "Save changes" }));
   await screen.findByText(/Your current profile has been reloaded/);
   expect(screen.getByLabelText("Full name")).toHaveValue("Saved on server");
@@ -373,4 +378,23 @@ test("reloads an uncertain photo change before allowing another edit", async () 
   );
   expect(name).toHaveValue("Keep my draft");
   expect(saves).toBe(1);
+});
+
+test("preserves profile edits across tabs and disables unchanged actions", async () => {
+  const user = userEvent.setup();
+  open();
+  const name = await screen.findByLabelText("Full name");
+  expect(screen.getByRole("button", { name: "Save changes" })).toBeDisabled();
+  expect(
+    screen.getByRole("button", { name: "Discard changes" }),
+  ).toBeDisabled();
+  await user.clear(name);
+  await user.type(name, "Draft profile");
+  expect(screen.getByRole("button", { name: "Save changes" })).toBeEnabled();
+  await user.click(screen.getByRole("tab", { name: "Recipients" }));
+  await user.click(screen.getByRole("tab", { name: "Profile" }));
+  expect(screen.getByLabelText("Full name")).toHaveValue("Draft profile");
+  await user.clear(name);
+  await user.type(name, member.fullName);
+  expect(screen.getByRole("button", { name: "Save changes" })).toBeDisabled();
 });

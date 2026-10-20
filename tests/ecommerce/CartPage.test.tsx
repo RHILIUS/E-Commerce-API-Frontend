@@ -1,10 +1,4 @@
-import {
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-  within,
-} from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
@@ -22,6 +16,7 @@ import {
 } from "@/ecommerce/routes";
 
 import { preview, recipient } from "../checkout/fixtures";
+import { render } from "../render";
 import { server } from "../server";
 
 const member = {

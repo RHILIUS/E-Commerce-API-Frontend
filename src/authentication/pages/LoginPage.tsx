@@ -4,8 +4,10 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { Button } from "@/app/components/ui/button";
+import { Card } from "@/app/components/ui/card";
 import { Input } from "@/app/components/ui/input";
 
+import AuthShell from "../components/AuthShell/AuthShell";
 import { useAuth } from "../contexts/Auth/useAuth";
 
 type LoginLocationState = {
@@ -13,6 +15,11 @@ type LoginLocationState = {
   email?: string;
   registrationSucceeded?: boolean;
   passwordChange?: "success" | "uncertain";
+};
+
+type LoginError = {
+  kind: "credentials" | "general";
+  message: string;
 };
 
 const LoginPage = () => {
@@ -30,18 +37,21 @@ const LoginPage = () => {
     email: locationState?.email ?? "",
     password: "",
   });
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<LoginError | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const auth = useAuth();
+  const [googleNotice, setGoogleNotice] = useState(false);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setError(null);
   };
 
   const handleSubmit = async (
     e: SyntheticEvent<HTMLFormElement, SubmitEvent>,
   ) => {
     e.preventDefault();
+    if (isSubmitting) return;
     setError(null);
     setIsSubmitting(true);
 
@@ -50,9 +60,12 @@ const LoginPage = () => {
       navigate(from, { replace: true });
     } catch (err) {
       if (axios.isAxiosError(err) && err.response?.status === 401) {
-        setError("Invalid email or password");
+        setError({ kind: "credentials", message: "Invalid email or password" });
       } else {
-        setError("Something went wrong. Please try again.");
+        setError({
+          kind: "general",
+          message: "Something went wrong. Please try again.",
+        });
       }
     } finally {
       setIsSubmitting(false);
@@ -60,115 +73,125 @@ const LoginPage = () => {
   };
 
   return (
-    <main className="px-6 py-24 sm:py-28">
-      <div className="mx-auto flex w-full max-w-150 min-w-60 flex-col items-stretch gap-10">
-        <header className="space-y-2 text-center">
-          <h1 className="text-foreground text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
-            Welcome Back to
-            <br />
-            E-Commerce
-          </h1>
+    <AuthShell>
+      <Card className="w-full min-w-0 gap-0 rounded-2xl border p-5 shadow-sm ring-0 sm:p-8">
+        <header className="space-y-2">
+          <h1 className="text-2xl font-semibold tracking-tight">Log in</h1>
+          <p className="text-muted-foreground text-sm leading-relaxed">
+            Pick up where you left off.
+          </p>
         </header>
+        {locationState?.registrationSucceeded && (
+          <p className="text-muted-foreground mt-6 text-sm" role="status">
+            Your account was created, but we couldn&apos;t log you in
+            automatically. Please log in.
+          </p>
+        )}
 
-        <div className="bg-border h-px w-full" />
+        {locationState?.passwordChange && (
+          <p className="text-muted-foreground mt-6 text-sm" role="status">
+            {locationState.passwordChange === "success"
+              ? "Password changed successfully. Sign in with your new password."
+              : "The password change may have completed, but we couldn't confirm the response. Please sign in."}
+          </p>
+        )}
 
-        <section className="border-border bg-card rounded-lg border px-6 py-6 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-          <div className="flex items-center justify-between gap-4">
-            <h2 className="text-card-foreground text-sm font-semibold">
-              Login to E-Commerce
-            </h2>
-            <Link
-              to="/register/enter-email"
-              className="text-primary hover:text-primary/80 text-sm font-medium transition-colors"
+        <form
+          className="mt-7 space-y-5"
+          onSubmit={handleSubmit}
+          aria-busy={isSubmitting}
+          aria-describedby={error ? "login-error" : undefined}
+        >
+          <label className="block space-y-2">
+            <span className="text-card-foreground text-sm font-medium">
+              Email
+            </span>
+            <Input
+              className="h-11"
+              placeholder="you@example.com"
+              disabled={isSubmitting}
+              aria-invalid={error?.kind === "credentials" || undefined}
+              aria-describedby={
+                error?.kind === "credentials" ? "login-error" : undefined
+              }
+              name="email"
+              type="email"
+              autoComplete="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+          </label>
+
+          <label className="block space-y-2">
+            <span className="text-card-foreground text-sm font-medium">
+              Password
+            </span>
+            <Input
+              className="h-11"
+              disabled={isSubmitting}
+              aria-invalid={error?.kind === "credentials" || undefined}
+              aria-describedby={
+                error?.kind === "credentials" ? "login-error" : undefined
+              }
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
+          </label>
+
+          {error && (
+            <p
+              id="login-error"
+              role="alert"
+              className="text-destructive text-sm"
             >
-              Register
-            </Link>
-          </div>
-
-          {locationState?.registrationSucceeded && (
-            <p className="text-muted-foreground mt-6 text-sm" role="status">
-              Your account was created, but we couldn&apos;t log you in
-              automatically. Please log in.
+              {error.message}
             </p>
           )}
 
-          {locationState?.passwordChange && (
-            <p className="text-muted-foreground mt-6 text-sm" role="status">
-              {locationState.passwordChange === "success"
-                ? "Password changed successfully. Sign in with your new password."
-                : "The password change may have completed, but we couldn't confirm the response. Please sign in."}
-            </p>
-          )}
-
-          <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
-            <label className="block space-y-2">
-              <span className="text-card-foreground text-sm font-medium">
-                Email
-              </span>
-              <Input
-                name="email"
-                type="email"
-                autoComplete="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-              />
-            </label>
-
-            <label className="block space-y-2">
-              <span className="text-card-foreground text-sm font-medium">
-                Password
-              </span>
-              <Input
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-              />
-            </label>
-
-            {error && <p className="text-destructive text-sm">{error}</p>}
-
-            <Button type="submit" className="w-full rounded-md">
-              {isSubmitting ? "Logging in..." : "Login"}
-            </Button>
-          </form>
-
-          <div className="mt-4 flex items-center gap-3">
-            <div className="bg-border h-px flex-1" />
-            <span className="text-muted-foreground text-sm whitespace-nowrap">
-              or continue with
-            </span>
-            <div className="bg-border h-px flex-1" />
-          </div>
-
-          <Button
-            type="button"
-            variant="outline"
-            className="border-input hover:bg-accent hover:text-accent-foreground mt-4 w-full rounded-md"
-          >
-            <span className="inline-flex items-center gap-2">
-              <span
-                aria-hidden="true"
-                className="text-foreground inline-flex size-4 items-center justify-center rounded-full text-[15px] leading-none font-semibold"
-              >
-                G
-              </span>
-              <span>Login with Google</span>
-            </span>
+          <Button type="submit" disabled={isSubmitting} className="h-11 w-full">
+            {isSubmitting ? "Logging in..." : "Login"}
           </Button>
+        </form>
 
-          <Link
-            to="/terms"
-            className="text-primary hover:text-primary/80 mt-5 block text-center text-sm font-medium transition-colors"
+        <Button
+          type="button"
+          variant="ghost"
+          className="text-muted-foreground mt-3 h-auto min-h-11 w-full flex-wrap gap-x-2 gap-y-1 py-2 whitespace-normal"
+          onClick={() => setGoogleNotice(true)}
+          aria-describedby={googleNotice ? "google-notice" : undefined}
+        >
+          <span>Login with Google</span>
+          <span className="bg-muted text-muted-foreground rounded px-1.5 py-0.5 text-xs">
+            Coming soon
+          </span>
+        </Button>
+        {googleNotice && (
+          <p
+            id="google-notice"
+            role="status"
+            className="text-muted-foreground mt-3 text-sm leading-relaxed"
           >
-            Terms of Service
+            Google sign-in isn’t available yet. Please use your email and
+            password.
+          </p>
+        )}
+
+        <p className="text-muted-foreground mt-6 text-center text-sm">
+          New here?{" "}
+          <Link
+            to="/register/enter-email"
+            className="text-primary focus-visible:outline-ring rounded-sm font-medium underline-offset-4 hover:underline focus-visible:outline-2"
+          >
+            Create an account
           </Link>
-        </section>
-      </div>
-    </main>
+        </p>
+      </Card>
+    </AuthShell>
   );
 };
 

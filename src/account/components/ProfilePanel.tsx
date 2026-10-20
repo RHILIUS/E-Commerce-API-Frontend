@@ -1,4 +1,4 @@
-import { type SyntheticEvent, useId } from "react";
+import { type SyntheticEvent, useEffect, useId, useRef, useState } from "react";
 
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
@@ -79,6 +79,30 @@ function ProfileForm({
   onCancel: () => void;
 }) {
   const id = useId();
+  const formRef = useRef<HTMLFormElement>(null);
+  const baseline = useRef("");
+  const [dirty, setDirty] = useState(false);
+
+  // Compare submitted values so reverting an edit also clears the unsaved state.
+  const checkChanges = () => {
+    queueMicrotask(() => {
+      if (formRef.current)
+        setDirty(
+          JSON.stringify([...new FormData(formRef.current)]) !==
+            baseline.current,
+        );
+    });
+  };
+  useEffect(() => {
+    if (formRef.current)
+      baseline.current = JSON.stringify([...new FormData(formRef.current)]);
+  }, []);
+  useEffect(() => {
+    if (!busy && Object.keys(fields).length)
+      formRef.current
+        ?.querySelector<HTMLElement>('[aria-invalid="true"]')
+        ?.focus();
+  }, [fields, busy]);
   const submit = (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -112,6 +136,7 @@ function ProfileForm({
         id={`${id}-${name}`}
         name={name}
         defaultValue={defaultValue}
+        className="h-11"
         required={required}
         maxLength={maxLength}
         autoComplete={autoComplete}
@@ -126,7 +151,13 @@ function ProfileForm({
     </div>
   );
   return (
-    <form onSubmit={submit} className="space-y-6">
+    <form
+      ref={formRef}
+      onChange={checkChanges}
+      onSubmit={submit}
+      aria-busy={busy}
+      className="space-y-6"
+    >
       <div className="flex min-w-0 items-center gap-4">
         <dl className="min-w-0 space-y-2 text-sm">
           <div>
@@ -139,6 +170,9 @@ function ProfileForm({
           </div>
         </dl>
       </div>
+      <p className="text-muted-foreground text-xs">
+        Username and email are read-only.
+      </p>
       <fieldset disabled={busy} className="min-w-0 space-y-6">
         <div className="space-y-4">
           <h3 className="text-base font-semibold">Personal information</h3>
@@ -154,6 +188,7 @@ function ProfileForm({
             <PhoneNumberField
               defaultValue={profile.phone_number}
               serverError={fields.phone_number}
+              onValueChange={checkChanges}
             />
           </div>
         </div>
@@ -167,6 +202,7 @@ function ProfileForm({
           <AddressCountryField
             defaultValue={profile.address?.country_code}
             serverError={fields.country_code}
+            onValueChange={checkChanges}
           />
           {input(
             "address_line1",
@@ -212,16 +248,17 @@ function ProfileForm({
           </div>
         </div>
         <div className="flex flex-wrap gap-3 border-t pt-5">
-          <Button type="submit" className="min-h-11">
+          <Button type="submit" disabled={!dirty} className="min-h-11">
             {busy ? "Saving…" : "Save changes"}
           </Button>
           <Button
             type="button"
             variant="outline"
             onClick={onCancel}
+            disabled={!dirty}
             className="min-h-11"
           >
-            Cancel
+            Discard changes
           </Button>
         </div>
       </fieldset>

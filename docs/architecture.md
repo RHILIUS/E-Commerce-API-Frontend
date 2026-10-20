@@ -27,8 +27,8 @@ versions used by `npm ci`.
 
 ## From opening the website to seeing a page
 
-1. The browser loads `index.html`, which starts
-   [`src/app/main.tsx`](../src/app/main.tsx).
+1. The browser loads `index.html`, applies the saved appearance preference or
+   device theme, and starts [`src/app/main.tsx`](../src/app/main.tsx).
 2. `AuthProvider` checks whether an existing sign-in can be restored. It also
    makes the current account available to components that need it.
 3. The router matches the URL to a page. `RootLayout` supplies the shared page
@@ -95,7 +95,19 @@ old session.
 
 Registration has three screens: enter an email, verify the emailed one-time code
 (OTP), and enter account details. `RegistrationProvider` holds the email and resend
-countdown in memory. After code verification, the backend uses a separate HttpOnly
+countdown in memory. The account-details screen presents personal details, address,
+and account security as three local steps in the same form. Back and Continue
+preserve entered values while the page stays mounted. Customers can also select
+any details step they have already reached in the progress navigation, including
+on mobile. Unreached details steps are disabled; email and verification are not
+navigation links. Step navigation is disabled during account creation. Continue validates the
+current step; Create account validates all steps and sends one complete request.
+Server field errors return the customer to the earliest affected details step.
+The progress indicator covers all five steps, including email and verification.
+Refreshing the page discards the draft; personal details and passwords are not
+saved to browser storage.
+
+After code verification, the backend uses a separate HttpOnly
 registration cookie to authorize account creation. The backend creates the
 account, personal address, and first default delivery recipient together.
 
@@ -178,11 +190,46 @@ uncertain outcomes.
 [`src/app/index.css`](../src/app/index.css) defines colors, typography, and theme
 values. Classes such as `bg-background` and `text-foreground` use those values,
 allowing the same component to support light and dark appearances. The `.dark`
-class activates the dark theme.
+class activates the dark theme. With no saved choice, the appearance
+follows the device theme and updates when it changes. The header theme button
+switches directly to the opposite visible appearance: its moon icon selects Dark,
+and its sun icon selects Light. Clicking saves an explicit preference, which
+then takes precedence over device changes. There is no control to return to
+System mode.
+
+Button-triggered changes reveal the new theme in a circle expanding from the
+button over 400 ms using the browser View Transitions API. Browsers without that
+API use a short color fade. Reduced-motion preferences, initial page loads, and
+device-driven changes switch immediately. The
+[`useThemeTransition`](../src/app/theme/useThemeTransition.ts) hook owns animation
+cleanup; skipped or failed animations still apply the selected preference.
+The preference is stored under `ecommerce-theme` in local storage, independently
+of sign-in. When storage is unavailable, theme changes still work for the current
+session.
+
+`index.html` applies the initial theme and native-control `color-scheme` before
+styles and React load, preventing a light flash for dark preferences. Its small
+initializer must stay aligned with the storage key and validation in
+[`theme.ts`](../src/app/theme/theme.ts). The app-wide
+[`ThemeProvider`](../src/app/theme/ThemeProvider.tsx) wraps authentication, routes,
+and toasts. It observes device appearance so the button reflects the visible theme
+and removes its listener when the provider unmounts. Device changes affect the
+page appearance only while the preference is System.
 
 Shared controls live in `src/app/components/ui/`. Check them before building
-another button, input, dialog, or menu. Shop pages compose the shared header;
-`RootLayout` itself does not insert it.
+another button, input, dialog, or menu. Shop pages and checkout compose the
+shopping header with search, cart, account, and appearance controls.
+Authentication pages use `AuthShell`, with their own logo, Back to shop link,
+and registration progress instead of a header. A theme toggle sits on the right
+of the Back to shop row above the branding, sharing the saved appearance and
+circular reveal used elsewhere.
+Terms, not-found, and internal test pages use
+[`SimpleHeader`](../src/app/components/SimpleHeader.tsx). The shopping and simple
+headers and authentication pages share
+[`ThemeToggle`](../src/app/components/ThemeToggle.tsx), an accessible one-click button.
+Headers belong to their page layouts; `RootLayout` owns page-height framing and
+the footer. Store-owner management can supply its own header when implemented,
+reusing the theme control and provider.
 
 The document and React root set a minimum supported width of 330px. `RootLayout`
 uses a grid to let the routed page fill the available height. Page components

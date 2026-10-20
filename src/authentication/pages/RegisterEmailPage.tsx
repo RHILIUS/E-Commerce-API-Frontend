@@ -4,7 +4,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/app/components/ui/button";
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -13,6 +12,7 @@ import {
 import { Input } from "@/app/components/ui/input";
 
 import { sendOTPApi } from "../api";
+import AuthShell from "../components/AuthShell/AuthShell";
 import { useRegistration } from "../contexts/Registration/useRegistration";
 import { useCountdown } from "../hooks/useCountdown";
 import {
@@ -82,114 +82,93 @@ const RegisterEmailPage = () => {
   };
 
   return (
-    <main className="flex items-center justify-center px-4 py-12 sm:px-6">
-      <div className="flex w-full max-w-150 flex-col items-center gap-2">
-        <h1 className="text-foreground max-w-72.5 text-center text-4xl font-bold text-balance">
-          Get Started with E-Commerce
-        </h1>
-
-        <div className="flex h-8 w-full items-center" aria-hidden="true">
-          <div className="bg-border h-px w-full" />
-        </div>
-
-        <Card
-          role="region"
-          aria-labelledby="register-title"
-          className="w-full max-w-145 gap-6 rounded-lg border py-6 shadow-sm ring-0 [--card-spacing:--spacing(6)]"
-        >
-          <CardHeader className="gap-1.5">
-            <CardTitle
-              id="register-title"
-              role="heading"
-              aria-level={2}
-              className="text-sm font-bold"
-            >
-              Register
-            </CardTitle>
-            <CardDescription className="text-xs leading-4 font-medium">
-              Enter your email address to receive a one-time passcode (OTP).
-            </CardDescription>
-            <CardAction>
-              <Link
-                to="/login"
-                className="text-primary hover:text-primary/80 inline-flex h-9 items-center rounded-lg px-4 font-medium transition-colors"
-              >
-                Login
-              </Link>
-            </CardAction>
-          </CardHeader>
-
-          <CardContent>
-            <form
-              className="space-y-6"
-              onSubmit={handleSubmit}
-              aria-busy={isSubmitting}
-            >
-              <label className="block space-y-3">
-                <span className="block text-sm font-medium">Email</span>
-                <Input
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  className="h-9"
-                  onChange={handleChange}
-                  value={email}
-                  aria-invalid={errorMessage ? true : undefined}
-                  aria-describedby={emailDescribedBy || undefined}
-                  disabled={isSubmitting}
-                  required
-                />
-              </label>
-
-              {errorMessage && (
-                <p
-                  id="register-email-error"
-                  className="text-destructive text-sm"
-                  role="alert"
-                >
-                  {errorMessage}
-                </p>
-              )}
-
-              {isCoolingDown && (
-                <p
-                  id="register-email-cooldown"
-                  className="text-muted-foreground text-sm"
-                >
-                  You can request another code for this email in{" "}
-                  <span className="font-medium tabular-nums">
-                    {cooldownSeconds}s
-                  </span>
-                  .
-                </p>
-              )}
-
-              <Button
-                type="submit"
-                size="lg"
-                className="w-full"
-                disabled={isSubmitting || isCoolingDown}
-              >
-                {isSubmitting
-                  ? "Sending..."
-                  : isCoolingDown
-                    ? `Try again in ${cooldownSeconds}s`
-                    : "Send OTP"}
-              </Button>
-            </form>
-          </CardContent>
-
-          <div className="flex justify-center px-6">
+    <AuthShell step={1}>
+      <Card
+        role="region"
+        aria-labelledby="register-title"
+        className="w-full min-w-0 gap-6 rounded-2xl border py-6 shadow-sm ring-0 [--card-spacing:--spacing(5)] sm:py-8 sm:[--card-spacing:--spacing(8)]"
+      >
+        <CardHeader className="gap-1.5">
+          <CardTitle
+            id="register-title"
+            role="heading"
+            aria-level={1}
+            className="text-2xl font-semibold tracking-tight"
+          >
+            Create your account
+          </CardTitle>
+          <CardDescription className="text-sm leading-relaxed">
+            We’ll email you a six-digit verification code.
+          </CardDescription>
+          <div className="text-muted-foreground mt-2 text-sm">
+            Already have an account?{" "}
             <Link
-              to="/terms"
-              className="text-primary hover:text-primary/80 inline-flex h-9 items-center rounded-lg px-4 font-medium transition-colors"
+              to="/login"
+              className="text-primary focus-visible:outline-ring rounded-sm font-medium underline-offset-4 hover:underline focus-visible:outline-2"
             >
-              Terms of Service
+              Log in
             </Link>
           </div>
-        </Card>
-      </div>
-    </main>
+        </CardHeader>
+
+        <CardContent>
+          <form
+            className="space-y-6"
+            onSubmit={handleSubmit}
+            aria-busy={isSubmitting}
+          >
+            <label className="block space-y-3">
+              <span className="block text-sm font-medium">Email</span>
+              <Input
+                name="email"
+                type="email"
+                autoComplete="email"
+                placeholder="you@example.com"
+                className="h-11"
+                onChange={handleChange}
+                value={email}
+                aria-invalid={errorMessage ? true : undefined}
+                aria-describedby={emailDescribedBy || undefined}
+                disabled={isSubmitting}
+                required
+              />
+            </label>
+
+            {errorMessage && (
+              <p
+                id="register-email-error"
+                className="text-destructive text-sm"
+                role="alert"
+              >
+                {errorMessage}
+              </p>
+            )}
+
+            {isCoolingDown && (
+              <p
+                id="register-email-cooldown"
+                className="text-muted-foreground text-sm"
+              >
+                You can request another code for this email in{" "}
+                <span className="font-medium tabular-nums">
+                  {cooldownSeconds}s
+                </span>
+                .
+              </p>
+            )}
+
+            <Button
+              type="submit"
+              size="lg"
+              className="h-11 w-full"
+              disabled={isSubmitting || isCoolingDown}
+            >
+              {isSubmitting ? "Sending..." : "Send verification code"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </AuthShell>
   );
 };
 
