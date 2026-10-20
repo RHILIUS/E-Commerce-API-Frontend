@@ -2,6 +2,7 @@ import {
   ProductCard,
   ProductCardSkeleton,
 } from "@/ecommerce/components/ProductCard";
+import { CATALOG_PAGE_SIZE } from "@/ecommerce/hooks/useProductCatalog";
 import type { Product } from "@/ecommerce/types";
 
 type ProductGridProps = {
@@ -20,7 +21,7 @@ export const ProductGrid = ({
     </p>
     <div className="grid grid-cols-2 items-stretch gap-3 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
       {isLoading
-        ? Array.from({ length: 8 }, (_, index) => (
+        ? Array.from({ length: CATALOG_PAGE_SIZE }, (_, index) => (
             <ProductCardSkeleton key={index} />
           ))
         : products.map((product, index) => (

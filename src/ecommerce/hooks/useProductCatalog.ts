@@ -6,7 +6,7 @@ import { productCatalogApi } from "@/ecommerce/api";
 import type { ProductCatalogResponse } from "@/ecommerce/types";
 import { catalogProduct } from "@/ecommerce/utils/catalogProduct";
 
-export const CATALOG_PAGE_SIZE = 8;
+export const CATALOG_PAGE_SIZE = 12;
 
 /** Fetch catalog pages after auth restoration and discard obsolete requests. */
 export const useProductCatalog = (page: number, query: string) => {

@@ -11,7 +11,7 @@ import { render } from "../render";
 import { server } from "../server";
 
 const endpoint = "http://localhost/api/shop/products/";
-const products = Array.from({ length: 12 }, (_, index) => ({
+const products = Array.from({ length: 16 }, (_, index) => ({
   id: index + 1,
   name: `Laptop ${index + 1}`,
   short_description: "A portable computer",
@@ -57,7 +57,7 @@ beforeEach(() => {
         count: matching.length,
         next: page === 1 ? `${endpoint}?page=2` : null,
         previous: page === 2 ? endpoint : null,
-        results: matching.slice((page - 1) * 8, page * 8),
+        results: matching.slice((page - 1) * 12, page * 12),
       });
     }),
   );
@@ -69,13 +69,13 @@ describe("LandingPage API integration", () => {
     expect(
       screen.getByLabelText("Products", { selector: "div" }),
     ).toHaveAttribute("aria-busy", "true");
-    expect(await screen.findAllByRole("article")).toHaveLength(8);
+    expect(await screen.findAllByRole("article")).toHaveLength(12);
     expect(screen.getByText("No image available")).toBeVisible();
-    expect(screen.getAllByText("$1,234.56")).toHaveLength(8);
+    expect(screen.getAllByText("$1,234.56")).toHaveLength(12);
     await userEvent.click(
       screen.getByRole("link", { name: "Go to next page" }),
     );
-    await screen.findByRole("article", { name: "Laptop 9" });
+    await screen.findByRole("article", { name: "Laptop 13" });
     expect(screen.getAllByRole("article")).toHaveLength(4);
     expect(screen.getByRole("link", { name: "Page 1" })).toHaveAttribute(
       "href",
@@ -88,14 +88,14 @@ describe("LandingPage API integration", () => {
 
   test("search resets to page one and empty results can be cleared", async () => {
     renderLandingPage("/?page=2");
-    await screen.findByRole("article", { name: "Laptop 9" });
+    await screen.findByRole("article", { name: "Laptop 13" });
     const user = userEvent.setup();
     await user.type(screen.getByRole("searchbox"), "  missing  {Enter}");
     expect(
       await screen.findByRole("heading", { name: "No products found" }),
     ).toBeVisible();
     await user.click(screen.getByRole("button", { name: "Clear search" }));
-    expect(await screen.findAllByRole("article")).toHaveLength(8);
+    expect(await screen.findAllByRole("article")).toHaveLength(12);
     expect(screen.getByRole("searchbox")).toHaveValue("");
   });
 
@@ -103,7 +103,7 @@ describe("LandingPage API integration", () => {
     "normalizes invalid page %s",
     async (page) => {
       renderLandingPage(`/?page=${page}`);
-      expect(await screen.findAllByRole("article")).toHaveLength(8);
+      expect(await screen.findAllByRole("article")).toHaveLength(12);
       expect(screen.getByRole("link", { name: "Page 1" })).toHaveAttribute(
         "aria-current",
         "page",
@@ -119,7 +119,7 @@ describe("LandingPage API integration", () => {
     await userEvent.click(
       screen.getByRole("button", { name: "Go to first page" }),
     );
-    expect(await screen.findAllByRole("article")).toHaveLength(8);
+    expect(await screen.findAllByRole("article")).toHaveLength(12);
     expect(screen.getByRole("searchbox")).toHaveValue("laptop");
   });
 
@@ -135,7 +135,7 @@ describe("LandingPage API integration", () => {
     );
     expect(screen.queryByText("No products found")).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Try again" }));
-    expect(await screen.findAllByRole("article")).toHaveLength(8);
+    expect(await screen.findAllByRole("article")).toHaveLength(12);
   });
 
   test("waits for restored authentication and sends its bearer token", async () => {
@@ -182,7 +182,7 @@ describe("LandingPage API integration", () => {
     renderLandingPage("/?page=500");
     await screen.findByRole("article");
     expect(screen.getAllByRole("link", { name: /^Page / })).toHaveLength(5);
-    expect(screen.getByRole("link", { name: "Page 125000" })).toBeVisible();
+    expect(screen.getByRole("link", { name: "Page 83334" })).toBeVisible();
   });
 
   test("ignores an obsolete search response", async () => {

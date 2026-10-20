@@ -5,8 +5,12 @@ The backend contract is documented in
 [the backend catalog documentation](../../../backend/docs/api/ecommerce/product-catalog.md).
 
 The frontend displays the API's `results` in their returned order, computes page
-count as `ceil(count / 8)`, sends `q` and `page`, and resets to page 1 when changing
-the search. It waits for authentication restoration before requesting products
+count as `ceil(count / 12)`, sends `q` and `page`, and resets to page 1 when changing
+the search. Each page contains up to 12 products at every screen width, filling
+complete rows in the two-, three-, and four-column layouts. The final page may
+contain fewer products. Loading uses 12 matching card placeholders.
+
+It waits for authentication restoration before requesting products
 and uses the shared Bearer-token client. Loading, empty, and error states are
 distinct; unavailable pages offer navigation back to page 1.
 
