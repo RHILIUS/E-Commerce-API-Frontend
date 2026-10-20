@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { delay, http, HttpResponse } from "msw";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
@@ -12,6 +12,7 @@ import { AuthProvider } from "@/authentication/contexts/Auth/AuthProvider";
 import { useAuth } from "@/authentication/contexts/Auth/useAuth";
 
 import { member, recipient } from "../checkout/fixtures";
+import { render } from "../render";
 import { server } from "../server";
 
 vi.mock("react-easy-crop", () => ({

@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
@@ -7,6 +7,7 @@ import { beforeEach, expect, test } from "vitest";
 import { router as appRouter } from "@/app/router";
 import { AuthProvider } from "@/authentication/contexts/Auth/AuthProvider";
 
+import { render } from "./render";
 import { server } from "./server";
 
 beforeEach(() => {
@@ -39,10 +40,9 @@ test.each(["/unsupported", "/register/unsupported", "/account/unsupported"])(
       await screen.findByRole("heading", { name: "Page not found", level: 1 }),
     ).toBeVisible();
     expect(screen.getByRole("main")).toBeVisible();
-    expect(screen.getByRole("link", { name: "E-Commerce" })).toHaveAttribute(
-      "href",
-      "/",
-    );
+    expect(
+      screen.getByRole("link", { name: "E-Commerce home" }),
+    ).toHaveAttribute("href", "/");
     expect(router.state.location.pathname).toBe(path);
     expect(screen.queryByText("Unexpected Application Error!")).toBeNull();
   },

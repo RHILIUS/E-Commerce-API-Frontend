@@ -10,6 +10,7 @@ import {
 import { useEffect, useId, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
+import { ThemeToggle } from "@/app/components/ThemeToggle";
 import { Button } from "@/app/components/ui/button";
 import {
   DropdownMenu,
@@ -98,7 +99,7 @@ export const Header = ({ searchQuery, onSearch }: HeaderProps) => {
               className="text-foreground focus-visible:ring-ring/50 flex min-h-18 w-fit min-w-0 items-center gap-2 rounded-md font-semibold tracking-tight outline-none focus-visible:ring-3"
             >
               <img src="/favicon.svg" alt="" className="size-9 shrink-0" />
-              <span className="hidden text-lg min-[375px]:block lg:text-xl">
+              <span className="hidden text-lg min-[430px]:block lg:text-xl">
                 E-Commerce
               </span>
             </Link>
@@ -172,6 +173,7 @@ export const Header = ({ searchQuery, onSearch }: HeaderProps) => {
                   <Search className="size-5" aria-hidden="true" />
                 )}
               </Button>
+              <ThemeToggle />
               {auth.isLoading ? (
                 <div role="status" aria-label="Loading account">
                   <Skeleton className="h-11 w-24 sm:w-32" aria-hidden="true" />

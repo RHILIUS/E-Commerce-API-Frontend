@@ -1,10 +1,4 @@
-import {
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-  within,
-} from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { delay, http, HttpResponse } from "msw";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
@@ -13,6 +7,7 @@ import { beforeEach, describe, expect, test } from "vitest";
 import { AuthProvider } from "@/authentication/contexts/Auth/AuthProvider";
 import StorePage from "@/ecommerce/pages/StorePage";
 
+import { render } from "../render";
 import { server } from "../server";
 
 const endpoint = "http://localhost/api/shop/stores/1/";

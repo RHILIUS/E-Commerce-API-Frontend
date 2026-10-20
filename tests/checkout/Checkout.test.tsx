@@ -1,10 +1,4 @@
-import {
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-  within,
-} from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
@@ -16,6 +10,7 @@ import LoginPage from "@/authentication/pages/LoginPage";
 import { checkoutProtectedRoutes } from "@/checkout/routes";
 import type { PlacementRequest } from "@/checkout/types";
 
+import { render } from "../render";
 import { server } from "../server";
 import { confirmation, member, preview, recipient } from "./fixtures";
 

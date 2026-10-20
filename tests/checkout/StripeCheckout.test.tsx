@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { act, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { StrictMode } from "react";
@@ -10,6 +10,7 @@ import { AuthProvider } from "@/authentication/contexts/Auth/AuthProvider";
 import { checkoutProtectedRoutes } from "@/checkout/routes";
 import type { PlacementRequest, StripePayment } from "@/checkout/types";
 
+import { render } from "../render";
 import { server } from "../server";
 import { confirmation, member, preview, recipient } from "./fixtures";
 

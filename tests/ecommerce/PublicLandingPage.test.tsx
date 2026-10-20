@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { delay, http, HttpResponse } from "msw";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, test } from "vitest";
 import { router as appRouter } from "@/app/router";
 import { AuthProvider } from "@/authentication/contexts/Auth/AuthProvider";
 
+import { render } from "../render";
 import { server } from "../server";
 
 const user = {

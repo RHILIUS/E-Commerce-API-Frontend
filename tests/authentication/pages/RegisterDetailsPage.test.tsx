@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
@@ -8,6 +8,7 @@ import { AuthProvider } from "@/authentication/contexts/Auth/AuthProvider";
 import { RegistrationContext } from "@/authentication/contexts/Registration/RegistrationContext";
 import RegisterDetailsPage from "@/authentication/pages/RegisterDetailsPage";
 
+import { render } from "../../render";
 import { server } from "../../server";
 
 const registerUrl = "http://localhost/api/auth/register/";

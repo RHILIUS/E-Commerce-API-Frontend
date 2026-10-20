@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { act, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
@@ -10,6 +10,7 @@ import { AuthProvider } from "@/authentication/contexts/Auth/AuthProvider";
 import LoginPage from "@/authentication/pages/LoginPage";
 
 import { member, recipient } from "../checkout/fixtures";
+import { render } from "../render";
 import { server } from "../server";
 
 const root = "http://localhost/api/account/change-password/";

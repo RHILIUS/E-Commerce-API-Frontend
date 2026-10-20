@@ -27,8 +27,8 @@ versions used by `npm ci`.
 
 ## From opening the website to seeing a page
 
-1. The browser loads `index.html`, which starts
-   [`src/app/main.tsx`](../src/app/main.tsx).
+1. The browser loads `index.html`, applies the saved appearance preference or
+   device theme, and starts [`src/app/main.tsx`](../src/app/main.tsx).
 2. `AuthProvider` checks whether an existing sign-in can be restored. It also
    makes the current account available to components that need it.
 3. The router matches the URL to a page. `RootLayout` supplies the shared page
@@ -187,11 +187,37 @@ uncertain outcomes.
 [`src/app/index.css`](../src/app/index.css) defines colors, typography, and theme
 values. Classes such as `bg-background` and `text-foreground` use those values,
 allowing the same component to support light and dark appearances. The `.dark`
-class activates the dark theme.
+class activates the dark theme. With no saved choice, the appearance
+follows the device theme and updates when it changes. The header theme button
+switches directly to the opposite visible appearance: its moon icon selects Dark,
+and its sun icon selects Light. Clicking saves an explicit preference, which
+then takes precedence over device changes. There is no control to return to
+System mode.
+The preference is stored under `ecommerce-theme` in local storage, independently
+of sign-in. When storage is unavailable, theme changes still work for the current
+session.
+
+`index.html` applies the initial theme and native-control `color-scheme` before
+styles and React load, preventing a light flash for dark preferences. Its small
+initializer must stay aligned with the storage key and validation in
+[`theme.ts`](../src/app/theme/theme.ts). The app-wide
+[`ThemeProvider`](../src/app/theme/ThemeProvider.tsx) wraps authentication, routes,
+and toasts. It observes device appearance so the button reflects the visible theme
+and removes its listener when the provider unmounts. Device changes affect the
+page appearance only while the preference is System.
 
 Shared controls live in `src/app/components/ui/`. Check them before building
-another button, input, dialog, or menu. Shop pages compose the shared header;
-`RootLayout` itself does not insert it.
+another button, input, dialog, or menu. Shop pages and checkout compose the
+shopping header with search, cart, account, and appearance controls.
+Authentication pages use `AuthShell`, with their own logo, Back to shop link,
+and registration progress instead of a header. They inherit the selected theme.
+Terms, not-found, and internal test pages use
+[`SimpleHeader`](../src/app/components/SimpleHeader.tsx). The shopping and simple
+headers share
+[`ThemeToggle`](../src/app/components/ThemeToggle.tsx), an accessible one-click button.
+Headers belong to their page layouts; `RootLayout` owns page-height framing and
+the footer. Store-owner management can supply its own header when implemented,
+reusing the theme control and provider.
 
 The document and React root set a minimum supported width of 330px. `RootLayout`
 uses a grid to let the routed page fill the available height. Page components

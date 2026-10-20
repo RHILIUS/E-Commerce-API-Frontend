@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { SimpleHeader } from "@/app/components/SimpleHeader";
 import { useAuth } from "@/authentication/contexts/Auth/useAuth";
 
 import { Button } from "../components/ui/button";
@@ -18,10 +19,13 @@ const HomePage = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center">
-      <Button onClick={handleLogout} disabled={isLoggingOut}>
-        {isLoggingOut ? "Logging Out...." : "Logout"}
-      </Button>
+    <div className="flex flex-col">
+      <SimpleHeader />
+      <main className="flex flex-1 items-center justify-center">
+        <Button onClick={handleLogout} disabled={isLoggingOut}>
+          {isLoggingOut ? "Logging Out...." : "Logout"}
+        </Button>
+      </main>
     </div>
   );
 };

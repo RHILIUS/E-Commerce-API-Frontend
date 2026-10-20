@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { expect, test, vi } from "vitest";
@@ -7,6 +7,8 @@ import type { AuthContextType } from "@/authentication/contexts/Auth/AuthContext
 import { useAuth } from "@/authentication/contexts/Auth/useAuth";
 import avatarImage from "@/ecommerce/assets/avatar.webp";
 import { Header } from "@/ecommerce/components/Header";
+
+import { render } from "../render";
 
 vi.mock("@/authentication/contexts/Auth/useAuth");
 

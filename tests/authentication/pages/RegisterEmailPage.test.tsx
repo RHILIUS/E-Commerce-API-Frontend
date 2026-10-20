@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
@@ -8,6 +8,7 @@ import { RegistrationProvider } from "@/authentication/contexts/Registration/Reg
 import { useRegistration } from "@/authentication/contexts/Registration/useRegistration";
 import RegisterEmailPage from "@/authentication/pages/RegisterEmailPage";
 
+import { render } from "../../render";
 import { server } from "../../server";
 
 const apiUrl = "http://localhost";

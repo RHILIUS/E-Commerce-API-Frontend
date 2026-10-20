@@ -1,25 +1,13 @@
 import { Link } from "react-router-dom";
 
+import { SimpleHeader } from "@/app/components/SimpleHeader";
+
 const linkClassName =
   "text-primary rounded-sm underline underline-offset-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
 
 const TermsPage = () => (
   <div className="flex w-full min-w-0 flex-col">
-    <header className="border-b px-6 py-5 sm:px-10">
-      <Link
-        to="/"
-        className="focus-visible:ring-ring/50 inline-flex min-h-11 items-center gap-3 rounded-md outline-none focus-visible:ring-3"
-        aria-label="E-Commerce home"
-      >
-        <img src="/favicon.svg" alt="" className="size-9" />
-        <span>
-          <span className="block text-lg font-semibold">E-Commerce</span>
-          <span className="text-muted-foreground block text-xs">
-            by RhiLius Apps
-          </span>
-        </span>
-      </Link>
-    </header>
+    <SimpleHeader />
 
     <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-10 sm:py-14">
       <h1 className="text-3xl leading-tight sm:text-4xl">Demo Terms of Use</h1>

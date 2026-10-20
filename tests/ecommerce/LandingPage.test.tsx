@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { delay, http, HttpResponse } from "msw";
 import { MemoryRouter } from "react-router-dom";
@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, test } from "vitest";
 import { AuthProvider } from "@/authentication/contexts/Auth/AuthProvider";
 import LandingPage from "@/ecommerce/pages/LandingPage";
 
+import { render } from "../render";
 import { server } from "../server";
 
 const endpoint = "http://localhost/api/shop/products/";
