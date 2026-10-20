@@ -149,3 +149,53 @@
     @apply text-base font-medium;
   }
 }
+
+/* Reveal the new snapshot above the old one in either switching direction. */
+html.theme-reveal::view-transition-old(root),
+html.theme-reveal::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+html.theme-reveal::view-transition-old(root) {
+  z-index: 1;
+}
+html.theme-reveal::view-transition-new(root) {
+  z-index: 2;
+  animation: theme-reveal 400ms ease-out both;
+}
+html.theme-reveal::view-transition {
+  pointer-events: none;
+}
+html.theme-reveal *,
+html.theme-reveal *::before,
+html.theme-reveal *::after {
+  transition: none !important;
+}
+
+@keyframes theme-reveal {
+  from {
+    clip-path: circle(0 at var(--theme-reveal-x) var(--theme-reveal-y));
+  }
+  to {
+    clip-path: circle(
+      var(--theme-reveal-radius) at var(--theme-reveal-x) var(--theme-reveal-y)
+    );
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html.theme-fade,
+  html.theme-fade *,
+  html.theme-fade *::before,
+  html.theme-fade *::after {
+    transition-property:
+      background-color, color, border-color, outline-color, fill, stroke !important;
+    transition-duration: 180ms !important;
+    transition-timing-function: ease-out !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html.theme-reveal::view-transition-new(root) {
+    animation: none;
+  }
+}

@@ -13,6 +13,7 @@ import {
   THEME_STORAGE_KEY,
 } from "./theme";
 import { ThemeContext } from "./ThemeContext";
+import { type ThemeOrigin, useThemeTransition } from "./useThemeTransition";
 
 // Keep device appearance reactive so the toggle describes the visible theme.
 function subscribeToSystemTheme(onChange: () => void) {
@@ -28,6 +29,7 @@ function isSystemDark() {
 
 /** Keep one appearance preference across routes, following the device only in System mode. */
 export function ThemeProvider({ children }: { children: ReactNode }) {
+  const transitionTheme = useThemeTransition();
   const [theme, updateTheme] = useState<Theme>(readTheme);
   const systemDark = useSyncExternalStore(subscribeToSystemTheme, isSystemDark);
   const resolvedTheme =
@@ -36,15 +38,16 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     applyTheme(theme);
   }, [theme, systemDark]);
 
-  const setTheme = (value: Theme) => {
-    updateTheme(value);
-    applyTheme(value);
-    try {
-      localStorage.setItem(THEME_STORAGE_KEY, value);
-    } catch {
-      // The current session still uses the selected theme when persistence is blocked.
-    }
-  };
+  const setTheme = (value: Theme, origin?: ThemeOrigin) =>
+    transitionTheme(() => {
+      updateTheme(value);
+      applyTheme(value);
+      try {
+        localStorage.setItem(THEME_STORAGE_KEY, value);
+      } catch {
+        // The current session still uses the selected theme when persistence is blocked.
+      }
+    }, origin);
 
   return (
     <ThemeContext value={{ theme, resolvedTheme, setTheme }}>

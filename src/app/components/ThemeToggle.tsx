@@ -17,7 +17,11 @@ export function ThemeToggle() {
       className="size-11 rounded-xl motion-reduce:transition-none"
       aria-label={label}
       title={label}
-      onClick={() => setTheme(nextTheme)}
+      onClick={(event) => {
+        const { left, top, width, height } =
+          event.currentTarget.getBoundingClientRect();
+        setTheme(nextTheme, { x: left + width / 2, y: top + height / 2 });
+      }}
     >
       <Icon className="size-5" aria-hidden="true" />
     </Button>

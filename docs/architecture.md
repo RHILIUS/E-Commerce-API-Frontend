@@ -193,6 +193,13 @@ switches directly to the opposite visible appearance: its moon icon selects Dark
 and its sun icon selects Light. Clicking saves an explicit preference, which
 then takes precedence over device changes. There is no control to return to
 System mode.
+
+Button-triggered changes reveal the new theme in a circle expanding from the
+button over 400 ms using the browser View Transitions API. Browsers without that
+API use a short color fade. Reduced-motion preferences, initial page loads, and
+device-driven changes switch immediately. The
+[`useThemeTransition`](../src/app/theme/useThemeTransition.ts) hook owns animation
+cleanup; skipped or failed animations still apply the selected preference.
 The preference is stored under `ecommerce-theme` in local storage, independently
 of sign-in. When storage is unavailable, theme changes still work for the current
 session.
