@@ -12,7 +12,10 @@ export const Footer = () => (
         <p className="text-xs">Portfolio demo · No real purchases</p>
       </div>
       <nav aria-label="Footer" className="flex flex-wrap gap-x-6 gap-y-1">
-        <a href="https://github.com/RHILIUS" className={linkClassName}>
+        <a
+          href="https://github.com/RHILIUS/E-Commerce-API-Frontend"
+          className={linkClassName}
+        >
           GitHub
         </a>
         <Link to="/terms" className={linkClassName}>
