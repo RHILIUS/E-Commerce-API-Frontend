@@ -64,63 +64,152 @@ beforeEach(() => {
 });
 
 describe("LandingPage API integration", () => {
-  test("loads server pages, keeps search, and displays decimal prices and missing images", async () => {
+  test("appends pages, preserves cards and search, and replaces the button at the end", async () => {
     renderLandingPage("/?q=laptop");
     expect(
       screen.getByLabelText("Products", { selector: "div" }),
     ).toHaveAttribute("aria-busy", "true");
     expect(await screen.findAllByRole("article")).toHaveLength(12);
+    const first = screen.getByRole("article", { name: "Laptop 1" });
     expect(screen.getByText("No image available")).toBeVisible();
     expect(screen.getAllByText("$1,234.56")).toHaveLength(12);
-    await userEvent.click(
-      screen.getByRole("link", { name: "Go to next page" }),
-    );
+    await userEvent.click(screen.getByRole("button", { name: "Load more" }));
     await screen.findByRole("article", { name: "Laptop 13" });
-    expect(screen.getAllByRole("article")).toHaveLength(4);
-    expect(screen.getByRole("link", { name: "Page 1" })).toHaveAttribute(
-      "href",
-      "/?q=laptop&page=1",
-    );
+    expect(screen.getAllByRole("article")).toHaveLength(16);
+    expect(screen.getByRole("article", { name: "Laptop 1" })).toBe(first);
+    expect(screen.getByText("You’re all caught up")).toBeVisible();
     expect(
-      screen.getByRole("link", { name: "Go to next page" }),
-    ).toHaveAttribute("aria-disabled", "true");
+      screen.queryByRole("button", { name: "Load more" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("navigation", { name: "Product pages" }),
+    ).not.toBeInTheDocument();
   });
 
-  test("search resets to page one and empty results can be cleared", async () => {
-    renderLandingPage("/?page=2");
+  test("keyboard loading continues focus into the appended cards", async () => {
+    renderLandingPage();
+    await screen.findByRole("article", { name: "Laptop 1" });
+    screen.getByRole("button", { name: "Load more" }).focus();
+    await userEvent.keyboard("{Enter}");
+    await screen.findByText("You’re all caught up");
+    await waitFor(() =>
+      expect(
+        screen.getByRole("link", { name: "View Laptop 13" }),
+      ).toHaveFocus(),
+    );
+  });
+
+  test("search resets appended results and empty results can be cleared", async () => {
+    renderLandingPage();
+    await screen.findByRole("article", { name: "Laptop 1" });
+    await userEvent.click(screen.getByRole("button", { name: "Load more" }));
     await screen.findByRole("article", { name: "Laptop 13" });
     const user = userEvent.setup();
     await user.type(screen.getByRole("searchbox"), "  missing  {Enter}");
     expect(
       await screen.findByRole("heading", { name: "No products found" }),
     ).toBeVisible();
+    expect(screen.queryByText("You’re all caught up")).not.toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Clear search" }));
     expect(await screen.findAllByRole("article")).toHaveLength(12);
     expect(screen.getByRole("searchbox")).toHaveValue("");
   });
 
-  test.each(["-1", "NaN", "1.5"])(
-    "normalizes invalid page %s",
-    async (page) => {
-      renderLandingPage(`/?page=${page}`);
-      expect(await screen.findAllByRole("article")).toHaveLength(12);
-      expect(screen.getByRole("link", { name: "Page 1" })).toHaveAttribute(
-        "aria-current",
-        "page",
-      );
-    },
-  );
-
-  test("offers recovery from an out-of-range page", async () => {
+  test("old page URLs begin at the start of the catalog", async () => {
     renderLandingPage("/?q=laptop&page=999");
+    await screen.findByRole("article", { name: "Laptop 1" });
+    expect(screen.getAllByRole("article")).toHaveLength(12);
+  });
+
+  test("keeps cards during loading, blocks repeated requests, and retries the same page", async () => {
+    let requests = 0;
+    server.use(
+      http.get(endpoint, async ({ request }) => {
+        const page = Number(new URL(request.url).searchParams.get("page"));
+        if (page === 1)
+          return HttpResponse.json({
+            count: 16,
+            next: endpoint,
+            previous: null,
+            results: products.slice(0, 12),
+          });
+        requests++;
+        await delay(100);
+        if (requests === 1) return HttpResponse.json({}, { status: 500 });
+        return HttpResponse.json({
+          count: 16,
+          next: null,
+          previous: endpoint,
+          results: products.slice(12),
+        });
+      }),
+    );
+    renderLandingPage();
+    await screen.findByRole("article", { name: "Laptop 1" });
+    const button = screen.getByRole("button", { name: "Load more" });
+    await userEvent.dblClick(button);
+    expect(button).toHaveAttribute("aria-disabled", "true");
+    expect(screen.getByText("Loading products…")).toBeVisible();
+    expect(screen.getAllByRole("article")).toHaveLength(12);
     expect(await screen.findByRole("alert")).toHaveTextContent(
-      "page is unavailable",
+      "Unable to load more",
     );
-    await userEvent.click(
-      screen.getByRole("button", { name: "Go to first page" }),
+    expect(requests).toBe(1);
+    await userEvent.click(screen.getByRole("button", { name: "Try again" }));
+    await screen.findByText("You’re all caught up");
+    expect(screen.getAllByRole("article")).toHaveLength(16);
+    expect(requests).toBe(2);
+  });
+
+  test("discards an in-flight appended page when search changes", async () => {
+    server.use(
+      http.get(endpoint, async ({ request }) => {
+        const url = new URL(request.url);
+        const q = url.searchParams.get("q");
+        const page = Number(url.searchParams.get("page"));
+        if (q)
+          return HttpResponse.json({
+            count: 1,
+            next: null,
+            previous: null,
+            results: [products[1]],
+          });
+        if (page === 2) await delay(150);
+        return HttpResponse.json({
+          count: 16,
+          next: page === 1 ? endpoint : null,
+          previous: null,
+          results: page === 1 ? products.slice(0, 12) : products.slice(12),
+        });
+      }),
     );
-    expect(await screen.findAllByRole("article")).toHaveLength(12);
-    expect(screen.getByRole("searchbox")).toHaveValue("laptop");
+    renderLandingPage();
+    await screen.findByRole("article", { name: "Laptop 1" });
+    await userEvent.click(screen.getByRole("button", { name: "Load more" }));
+    await userEvent.type(screen.getByRole("searchbox"), "new{Enter}");
+    await screen.findByText("You’re all caught up");
+    await delay(180);
+    expect(screen.getAllByRole("article")).toHaveLength(1);
+    expect(screen.getByRole("article", { name: "Laptop 2" })).toBeVisible();
+  });
+
+  test("does not repeat cards if live rankings shift between pages", async () => {
+    server.use(
+      http.get(endpoint, ({ request }) => {
+        const page = Number(new URL(request.url).searchParams.get("page"));
+        return HttpResponse.json({
+          count: 16,
+          next: page === 1 ? endpoint : null,
+          previous: null,
+          results: page === 1 ? products.slice(0, 12) : products.slice(11),
+        });
+      }),
+    );
+    renderLandingPage();
+    await screen.findByRole("article", { name: "Laptop 1" });
+    await userEvent.click(screen.getByRole("button", { name: "Load more" }));
+    await screen.findByText("You’re all caught up");
+    expect(screen.getAllByRole("article")).toHaveLength(16);
   });
 
   test("retries server errors without displaying an empty result", async () => {
@@ -166,23 +255,6 @@ describe("LandingPage API integration", () => {
     renderLandingPage();
     await screen.findByRole("article");
     expect(authorization).toBe("Bearer test-access");
-  });
-
-  test("keeps pagination bounded for a million products", async () => {
-    server.use(
-      http.get(endpoint, () =>
-        HttpResponse.json({
-          count: 1000000,
-          next: endpoint,
-          previous: endpoint,
-          results: [products[0]],
-        }),
-      ),
-    );
-    renderLandingPage("/?page=500");
-    await screen.findByRole("article");
-    expect(screen.getAllByRole("link", { name: /^Page / })).toHaveLength(5);
-    expect(screen.getByRole("link", { name: "Page 83334" })).toBeVisible();
   });
 
   test("ignores an obsolete search response", async () => {

@@ -227,3 +227,25 @@ html.theme-reveal *::after {
     animation: none;
   }
 }
+
+/* A restrained loading shake; the logo stays still for reduced-motion users. */
+@media (prefers-reduced-motion: no-preference) {
+  .catalog-loading-logo {
+    animation: catalog-loading-shake 900ms ease-in-out infinite;
+  }
+}
+
+@keyframes catalog-loading-shake {
+  0%,
+  60%,
+  100% {
+    transform: translateX(0) rotate(0);
+  }
+  15%,
+  45% {
+    transform: translateX(-2px) rotate(-5deg);
+  }
+  30% {
+    transform: translateX(2px) rotate(5deg);
+  }
+}

@@ -1,29 +1,18 @@
 import { useSearchParams } from "react-router-dom";
 
 import { Button } from "@/app/components/ui/button";
+import { CatalogContinuation } from "@/ecommerce/components/CatalogContinuation";
 import { Header } from "@/ecommerce/components/Header";
 import { ProductGrid } from "@/ecommerce/components/ProductGrid";
-import { ProductPagination } from "@/ecommerce/components/ProductPagination";
-import {
-  CATALOG_PAGE_SIZE,
-  useProductCatalog,
-} from "@/ecommerce/hooks/useProductCatalog";
+import { useProductCatalog } from "@/ecommerce/hooks/useProductCatalog";
 
 const LandingPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   // The query value from the url query params
   const query = searchParams.get("q")?.trim() ?? "";
-  const requestedPage = Number(searchParams.get("page") ?? 1);
-  const page =
-    Number.isSafeInteger(requestedPage) && requestedPage > 0
-      ? requestedPage
-      : 1;
-  const { products, count, isLoading, error, retry } = useProductCatalog(
-    page,
-    query,
-  );
-  const pageCount = Math.ceil(count / CATALOG_PAGE_SIZE);
+  const { products, isLoading, error, retry, ...continuation } =
+    useProductCatalog(query);
 
   // A new search always starts at the first page of its own results.
   const handleSearch = (value: string) => {
@@ -54,12 +43,6 @@ const LandingPage = () => {
               : "Handpicked products worth discovering today."}
           </p>
         </div>
-        {!isLoading && !error && (
-          <p role="status" className="sr-only">
-            {count} products found.{" "}
-            {pageCount > 0 ? `Page ${page} of ${pageCount}.` : ""}
-          </p>
-        )}
         {isLoading ? (
           <ProductGrid products={[]} isLoading />
         ) : error ? (
@@ -71,23 +54,14 @@ const LandingPage = () => {
             <Button variant="outline" onClick={retry}>
               Try again
             </Button>
-            {page > 1 && (
-              <Button variant="outline" onClick={() => handleSearch(query)}>
-                Go to first page
-              </Button>
-            )}
           </div>
         ) : products.length > 0 ? (
           <>
-            {/* Show products in the page when there is more than zero */}
             <ProductGrid products={products} />
-            {pageCount > 1 && (
-              <ProductPagination
-                page={page}
-                pageCount={pageCount}
-                searchParams={searchParams}
-              />
-            )}
+            <CatalogContinuation
+              {...continuation}
+              productCount={products.length}
+            />
           </>
         ) : (
           // Else, show this
