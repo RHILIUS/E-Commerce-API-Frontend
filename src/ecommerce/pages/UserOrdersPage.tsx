@@ -1,5 +1,12 @@
 import axios from "axios";
-import { PackageOpen } from "lucide-react";
+import {
+  CircleCheck,
+  ClipboardList,
+  PackageCheck,
+  PackageOpen,
+  PackageX,
+  Truck,
+} from "lucide-react";
 import { useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
@@ -23,8 +30,21 @@ import { formatMoney } from "@/ecommerce/cart/utils";
 import { Header } from "@/ecommerce/components/Header";
 import { cancelOrder } from "@/ecommerce/orders/api";
 import { OrderRecordCard } from "@/ecommerce/orders/OrderRecordCard";
-import { orderTabs, type UserOrder } from "@/ecommerce/orders/types";
+import {
+  type OrderTab,
+  orderTabs,
+  type UserOrder,
+} from "@/ecommerce/orders/types";
 import { useOrders } from "@/ecommerce/orders/useOrders";
+
+const orderTabIcons = {
+  all: ClipboardList,
+  to_ship: PackageOpen,
+  to_receive: Truck,
+  cancelled: PackageX,
+  delivered: PackageCheck,
+  completed: CircleCheck,
+} satisfies Record<OrderTab, typeof ClipboardList>;
 
 /** Customer purchase history, with URL-backed tabs and server-authorized cancellation. */
 export default function UserOrdersPage() {
@@ -117,15 +137,19 @@ export default function UserOrdersPage() {
             aria-label="Order status"
             className="grid w-full grid-cols-3 gap-1 rounded-xl p-1 group-data-horizontal/tabs:h-auto sm:grid-cols-6"
           >
-            {orderTabs.map((item) => (
-              <TabsTrigger
-                key={item.value}
-                value={item.value}
-                className="data-active:text-primary dark:data-active:text-primary min-h-11 rounded-lg px-1 text-sm"
-              >
-                {item.label}
-              </TabsTrigger>
-            ))}
+            {orderTabs.map((item) => {
+              const Icon = orderTabIcons[item.value];
+              return (
+                <TabsTrigger
+                  key={item.value}
+                  value={item.value}
+                  className="data-active:text-primary dark:data-active:text-primary min-h-16 flex-col rounded-lg px-1 py-2 text-sm lg:min-h-11 lg:flex-row"
+                >
+                  <Icon aria-hidden="true" className="size-4" />
+                  {item.label}
+                </TabsTrigger>
+              );
+            })}
           </TabsList>
           {orderTabs.map((item) => (
             <TabsContent

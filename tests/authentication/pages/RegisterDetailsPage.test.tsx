@@ -194,30 +194,22 @@ test("unlocks reached details steps and revalidates edits after jumping forward"
     }),
   );
   const user = openDetails();
+  expect(screen.getByRole("button", { name: "Address" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "Security" })).toBeDisabled();
   expect(
-    screen.getByRole("button", { name: "Address", exact: true }),
-  ).toBeDisabled();
-  expect(
-    screen.getByRole("button", { name: "Security", exact: true }),
-  ).toBeDisabled();
-  expect(
-    screen.queryByRole("button", { name: "Email", exact: true }),
+    screen.queryByRole("button", { name: "Email" }),
   ).not.toBeInTheDocument();
   expect(
-    screen.queryByRole("button", { name: "Verify", exact: true }),
+    screen.queryByRole("button", { name: "Verify" }),
   ).not.toBeInTheDocument();
   expect(
-    screen.queryByRole("button", { name: "Back", exact: true }),
+    screen.queryByRole("button", { name: "Back" }),
   ).not.toBeInTheDocument();
   await fillPersonal(user);
-  expect(
-    screen.getByRole("button", { name: "Security", exact: true }),
-  ).toBeDisabled();
+  expect(screen.getByRole("button", { name: "Security" })).toBeDisabled();
   await fillAddress(user);
   await fillSecurity(user);
-  await user.click(
-    screen.getByRole("button", { name: "Personal details", exact: true }),
-  );
+  await user.click(screen.getByRole("button", { name: "Personal details" }));
   expect(
     screen.getByRole("heading", { name: "Your personal details" }),
   ).toHaveFocus();
@@ -225,7 +217,6 @@ test("unlocks reached details steps and revalidates edits after jumping forward"
   await user.clear(screen.getByLabelText("Full name"));
   const security = screen.getByRole("button", {
     name: "Security",
-    exact: true,
   });
   security.focus();
   await user.keyboard("{Enter}");
@@ -236,9 +227,7 @@ test("unlocks reached details steps and revalidates edits after jumping forward"
   expect(requests).toBe(0);
   expect(screen.getByLabelText("Full name")).toHaveFocus();
   await user.type(screen.getByLabelText("Full name"), "Updated Shopper");
-  await user.click(
-    screen.getByRole("button", { name: "Address", exact: true }),
-  );
+  await user.click(screen.getByRole("button", { name: "Address" }));
   expect(screen.getByLabelText("City / Town")).toHaveValue("Manila");
   expect(screen.getByLabelText("Email", { exact: true })).toHaveValue(
     "shopper@example.com",
