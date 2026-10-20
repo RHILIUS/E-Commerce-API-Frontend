@@ -601,3 +601,139 @@ test("order detail failures can be retried without disabling pending payment act
   await screen.findByText("Camera");
   expect(reads).toBe(2);
 });
+
+test("payment cards stay mounted while the selected method gets a fresh review", async () => {
+  let release: (() => void) | undefined;
+  const waiting = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  server.use(
+    http.post(`${root}/checkout/preview/`, async ({ request }) => {
+      const body = (await request.json()) as { payment_method: string };
+      const data = preview();
+      if (body.payment_method === "stripe") {
+        await waiting;
+        data.total = { amount: "10.00", currency: "USD" };
+        data.currency = "USD";
+      }
+      return HttpResponse.json(data);
+    }),
+  );
+  renderCheckout();
+  const user = userEvent.setup();
+  await screen.findByRole("button", { name: "Place Order" });
+  const card = screen.getByRole("radio", { name: "Card (Stripe test)" });
+  await user.click(
+    screen.getByText("Stripe test payment in USD. No real charge."),
+  );
+  expect(card).toBeChecked();
+  expect(screen.getByRole("radio", { name: "Card (Stripe test)" })).toBe(card);
+  expect(
+    screen.queryByRole("button", { name: "Place Order" }),
+  ).not.toBeInTheDocument();
+  expect(
+    screen.getByRole("button", { name: "Continue to payment" }),
+  ).toBeDisabled();
+  expect(screen.getByText("Camera", { exact: true })).toBeVisible();
+  expect(screen.getByText(recipient.name, { exact: true })).toBeVisible();
+  expect(screen.getByText("Updating payment details…")).toBeVisible();
+  release?.();
+  await waitFor(() =>
+    expect(
+      screen.getByRole("button", { name: "Continue to payment" }),
+    ).toBeEnabled(),
+  );
+  expect(
+    screen.getByRole("heading", { name: "Payment and total" }),
+  ).toBeVisible();
+  expect(
+    screen.queryByRole("heading", { name: "Payment method" }),
+  ).not.toBeInTheDocument();
+});
+
+test("switching back cannot reuse the earlier preview and ignores a late response", async () => {
+  let releaseStripe!: () => void;
+  let releaseCod!: () => void;
+  const stripeWait = new Promise<void>((resolve) => {
+    releaseStripe = resolve;
+  });
+  const codWait = new Promise<void>((resolve) => {
+    releaseCod = resolve;
+  });
+  let codReads = 0;
+  server.use(
+    http.post(`${root}/checkout/preview/`, async ({ request }) => {
+      const { payment_method } = (await request.json()) as {
+        payment_method: string;
+      };
+      const data = preview();
+      if (payment_method === "stripe") {
+        await stripeWait;
+        data.total = { amount: "10.00", currency: "USD" };
+      } else if (++codReads > 1) {
+        await codWait;
+        data.total = { amount: "260.00", currency: "PHP" };
+      }
+      return HttpResponse.json(data);
+    }),
+  );
+  renderCheckout();
+  const user = userEvent.setup();
+  await waitFor(() =>
+    expect(screen.getByRole("button", { name: "Place Order" })).toBeEnabled(),
+  );
+  await user.click(screen.getByRole("radio", { name: "Card (Stripe test)" }));
+  await user.click(screen.getByRole("radio", { name: "Cash on Delivery" }));
+  expect(screen.getByRole("button", { name: "Place Order" })).toBeDisabled();
+  expect(screen.getByText("Camera", { exact: true })).toBeVisible();
+  releaseCod();
+  await waitFor(() =>
+    expect(screen.getByRole("button", { name: "Place Order" })).toBeEnabled(),
+  );
+  releaseStripe();
+  await act(async () => {
+    await stripeWait;
+  });
+  expect(screen.getByRole("radio", { name: "Cash on Delivery" })).toBeChecked();
+  expect(screen.getByText("₱260.00")).toBeVisible();
+  expect(screen.queryByText("$10.00")).not.toBeInTheDocument();
+});
+
+test("a failed payment refresh keeps the order visible and blocks checkout until retry", async () => {
+  let stripeReads = 0;
+  server.use(
+    http.post(`${root}/checkout/preview/`, async ({ request }) => {
+      const { payment_method } = (await request.json()) as {
+        payment_method: string;
+      };
+      const data = preview();
+      if (payment_method === "stripe") {
+        if (++stripeReads === 1)
+          return HttpResponse.json(
+            { detail: "Payment preview unavailable" },
+            { status: 503 },
+          );
+        data.total = { amount: "10.00", currency: "USD" };
+      }
+      return HttpResponse.json(data);
+    }),
+  );
+  renderCheckout();
+  const user = userEvent.setup();
+  await screen.findByRole("button", { name: "Place Order" });
+  const item = screen.getByText("Camera", { exact: true });
+  await user.click(screen.getByRole("radio", { name: "Card (Stripe test)" }));
+  await screen.findByText("Payment preview unavailable");
+  expect(screen.getByText("Camera", { exact: true })).toBe(item);
+  expect(screen.getByText(recipient.name, { exact: true })).toBeVisible();
+  expect(
+    screen.getByRole("button", { name: "Continue to payment" }),
+  ).toBeDisabled();
+  await user.click(screen.getByRole("button", { name: "Try again" }));
+  await waitFor(() =>
+    expect(
+      screen.getByRole("button", { name: "Continue to payment" }),
+    ).toBeEnabled(),
+  );
+  expect(screen.getByText("Camera", { exact: true })).toBe(item);
+});

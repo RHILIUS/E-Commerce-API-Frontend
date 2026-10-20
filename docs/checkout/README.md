@@ -17,6 +17,22 @@ Checkout URLs contain identifiers and quantities only. Login preserves the query
 API contracts: [recipients](../../../backend/docs/api/checkout/recipients.md), [preview](../../../backend/docs/api/checkout/preview.md), and [COD placement/confirmation](../../../backend/docs/api/checkout/cash-on-delivery.md). Current backend serializers and services were checked against these contracts. Stripe contracts and setup: [online checkout](../../../backend/docs/api/checkout/stripe.md).
 The [shared COD business flow](../../../docs/diagrams/specific-business-processes/checkout/cod-checkout.md) also matches these API handoffs. The backend API documentation and shared business flow record the implemented COD frontend and backend scope; Stripe test payment is now implemented; fulfillment and settlement release remain future work.
 
+## Payment selection and layout
+
+Checkout presents the delivery recipient, order items, then one **Payment and
+total** section. Cash on Delivery and Stripe test card payments use selectable
+cards with icons, radio indicators, and a primary border and tint for the selected
+method. Cards stack on narrow screens and sit side by side from `sm`.
+
+Both methods are demonstrations: COD orders do not ship or collect payment, and
+Stripe uses test mode in USD. The method selector stays available during review
+loading and failures, so customers can choose another method. Changing the method
+requests a fresh preview. The recipient and item sections stay visible during refresh. An updating message
+replaces the total and checkout stays disabled until the new review is ready.
+If review fails, the previous information remains visible for reference, the total
+is unavailable, and checkout stays disabled until a successful retry. Saved
+recipient selection is preserved by ID when that recipient remains available. Payment selection is disabled during placement.
+
 ## Review and recipient selection
 
 The page loads the server preview and saved recipients. A saved default is selected initially; customers can choose exactly one recipient, create a new one, or edit a saved recipient. New recipients use the existing international phone and address-country controls. Choosing a recipient does not change the saved default. Required fields and server field errors remain visible in the recipient form.

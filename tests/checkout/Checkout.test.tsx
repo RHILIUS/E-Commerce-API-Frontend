@@ -211,9 +211,9 @@ describe("COD checkout", () => {
     ).toBeVisible();
     expect(screen.getByRole("button", { name: "Place Order" })).toBeDisabled();
     expect(
-      within(screen.getByRole("region", { name: "Payment" })).getByText(
-        "Unavailable",
-      ),
+      within(
+        screen.getByRole("region", { name: "Payment and total" }),
+      ).getByText("Unavailable"),
     ).toBeVisible();
   });
   test("requires explicit refresh when the preview expires", async () => {
