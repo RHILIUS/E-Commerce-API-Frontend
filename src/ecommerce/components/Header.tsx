@@ -89,7 +89,7 @@ export const Header = ({ searchQuery, onSearch }: HeaderProps) => {
             "bg-card motion-safe:transition-[border-radius,box-shadow,transform,width] motion-safe:duration-200",
             isFloating
               ? "mx-auto w-[calc(100%-1.5rem)] max-w-300 translate-y-3 rounded-2xl border shadow-lg"
-              : "border-b-border w-full border border-transparent",
+              : "w-full border border-x-transparent border-t-transparent",
           )}
         >
           <div className="mx-auto grid w-full max-w-400 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 px-3 sm:px-5 lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:gap-x-8">
