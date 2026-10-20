@@ -21,6 +21,14 @@
   --color-chart-3: var(--chart-3);
   --color-chart-2: var(--chart-2);
   --color-chart-1: var(--chart-1);
+  --color-order-pending: var(--order-pending);
+  --color-order-pending-foreground: var(--order-pending-foreground);
+  --color-order-processing: var(--order-processing);
+  --color-order-processing-foreground: var(--order-processing-foreground);
+  --color-order-shipping: var(--order-shipping);
+  --color-order-shipping-foreground: var(--order-shipping-foreground);
+  --color-order-success: var(--order-success);
+  --color-order-success-foreground: var(--order-success-foreground);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -49,6 +57,16 @@
 }
 
 :root {
+  /* Order progress tags use paired surface and text colors in each theme. */
+  --order-pending: #fffbeb;
+  --order-pending-foreground: #92400e;
+  --order-processing: #eff6ff;
+  --order-processing-foreground: #1e40af;
+  --order-shipping: #faf5ff;
+  --order-shipping-foreground: #6b21a8;
+  --order-success: #f0fdf4;
+  --order-success-foreground: #166534;
+
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -84,6 +102,16 @@
 }
 
 .dark {
+  /* Order progress tags use paired surface and text colors in each theme. */
+  --order-pending: #422006;
+  --order-pending-foreground: #fde68a;
+  --order-processing: #172554;
+  --order-processing-foreground: #bfdbfe;
+  --order-shipping: #3b0764;
+  --order-shipping-foreground: #e9d5ff;
+  --order-success: #052e16;
+  --order-success-foreground: #bbf7d0;
+
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);

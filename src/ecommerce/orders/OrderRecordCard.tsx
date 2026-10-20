@@ -13,7 +13,19 @@ import { CheckoutImage } from "@/checkout/components/CheckoutImage";
 import { formatMoney } from "@/ecommerce/cart/utils";
 
 import { OrderHistoryDialog } from "./OrderHistoryDialog";
-import { statusLabels, type UserOrder } from "./types";
+import { type OrderStatus, statusLabels, type UserOrder } from "./types";
+
+// Group related fulfillment stages while preserving each status label and icon.
+const statusTagClasses = {
+  pending: "bg-order-pending text-order-pending-foreground",
+  accepted: "bg-order-processing text-order-processing-foreground",
+  packed: "bg-order-processing text-order-processing-foreground",
+  shipment_arranged: "bg-order-processing text-order-processing-foreground",
+  shipped: "bg-order-shipping text-order-shipping-foreground",
+  delivered: "bg-order-success text-order-success-foreground",
+  completed: "bg-order-success text-order-success-foreground",
+  cancelled: "bg-secondary text-secondary-foreground",
+} satisfies Record<OrderStatus, string>;
 
 /** One purchase from one store, preserving historical names, quantities and totals. */
 export function OrderRecordCard({
@@ -60,7 +72,9 @@ export function OrderRecordCard({
             <p className="text-muted-foreground text-xs">Order #{order.id}</p>
           </div>
         </Link>
-        <span className="bg-secondary text-secondary-foreground inline-flex max-w-full shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium">
+        <span
+          className={`${statusTagClasses[order.status]} inline-flex max-w-full shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium`}
+        >
           <StatusIcon className="size-4 shrink-0" aria-hidden="true" />
           {statusLabels[order.status]}
         </span>
