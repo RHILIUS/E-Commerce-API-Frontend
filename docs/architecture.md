@@ -97,7 +97,10 @@ Registration has three screens: enter an email, verify the emailed one-time code
 (OTP), and enter account details. `RegistrationProvider` holds the email and resend
 countdown in memory. The account-details screen presents personal details, address,
 and account security as three local steps in the same form. Back and Continue
-preserve entered values while the page stays mounted. Continue validates the
+preserve entered values while the page stays mounted. Customers can also select
+any details step they have already reached in the progress navigation, including
+on mobile. Unreached details steps are disabled; email and verification are not
+navigation links. Step navigation is disabled during account creation. Continue validates the
 current step; Create account validates all steps and sends one complete request.
 Server field errors return the customer to the earliest affected details step.
 The progress indicator covers all five steps, including email and verification.

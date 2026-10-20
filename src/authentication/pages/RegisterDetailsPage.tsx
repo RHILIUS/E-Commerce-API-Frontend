@@ -48,6 +48,7 @@ const RegisterDetailsPage = () => {
   const auth = useAuth();
   const navigate = useNavigate();
   const [detailsStep, setDetailsStep] = useState<RegistrationDetailsStep>(3);
+  const [furthestStep, setFurthestStep] = useState<RegistrationDetailsStep>(3);
   const formRef = useRef<HTMLFormElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const invalidControlRef = useRef<RegistrationControl | null>(null);
@@ -127,7 +128,11 @@ const RegisterDetailsPage = () => {
 
     if (!validateStep(detailsStep)) return;
     if (detailsStep < 5) {
-      setDetailsStep((detailsStep + 1) as RegistrationDetailsStep);
+      const nextStep = (detailsStep + 1) as RegistrationDetailsStep;
+      setFurthestStep(
+        (previous) => Math.max(previous, nextStep) as RegistrationDetailsStep,
+      );
+      setDetailsStep(nextStep);
       return;
     }
     // Recheck earlier steps before the single account-creation request.
@@ -189,7 +194,14 @@ const RegisterDetailsPage = () => {
   };
 
   return (
-    <AuthShell step={detailsStep}>
+    <AuthShell
+      step={detailsStep}
+      detailsNavigation={{
+        furthestStep,
+        disabled: isSubmitting,
+        onStepChange: setDetailsStep,
+      }}
+    >
       <div className="min-w-0 space-y-6">
         <header className="space-y-2">
           <h1

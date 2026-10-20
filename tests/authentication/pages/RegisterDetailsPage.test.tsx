@@ -184,3 +184,63 @@ test("returns to the earliest server error and keeps later-step errors and value
     "Manila",
   );
 });
+
+test("unlocks reached details steps and revalidates edits after jumping forward", async () => {
+  let requests = 0;
+  server.use(
+    http.post(registerUrl, () => {
+      requests++;
+      return HttpResponse.json({ message: "Created" }, { status: 201 });
+    }),
+  );
+  const user = openDetails();
+  expect(
+    screen.getByRole("button", { name: "Address", exact: true }),
+  ).toBeDisabled();
+  expect(
+    screen.getByRole("button", { name: "Security", exact: true }),
+  ).toBeDisabled();
+  expect(
+    screen.queryByRole("button", { name: "Email", exact: true }),
+  ).not.toBeInTheDocument();
+  expect(
+    screen.queryByRole("button", { name: "Verify", exact: true }),
+  ).not.toBeInTheDocument();
+  expect(
+    screen.queryByRole("button", { name: "Back", exact: true }),
+  ).not.toBeInTheDocument();
+  await fillPersonal(user);
+  expect(
+    screen.getByRole("button", { name: "Security", exact: true }),
+  ).toBeDisabled();
+  await fillAddress(user);
+  await fillSecurity(user);
+  await user.click(
+    screen.getByRole("button", { name: "Personal details", exact: true }),
+  );
+  expect(
+    screen.getByRole("heading", { name: "Your personal details" }),
+  ).toHaveFocus();
+  expect(screen.getByLabelText("Full name")).toHaveValue("Sample Shopper");
+  await user.clear(screen.getByLabelText("Full name"));
+  const security = screen.getByRole("button", {
+    name: "Security",
+    exact: true,
+  });
+  security.focus();
+  await user.keyboard("{Enter}");
+  expect(screen.getByLabelText("Password", { exact: true })).toHaveValue(
+    "Password123",
+  );
+  await user.click(screen.getByRole("button", { name: "Create account" }));
+  expect(requests).toBe(0);
+  expect(screen.getByLabelText("Full name")).toHaveFocus();
+  await user.type(screen.getByLabelText("Full name"), "Updated Shopper");
+  await user.click(
+    screen.getByRole("button", { name: "Address", exact: true }),
+  );
+  expect(screen.getByLabelText("City / Town")).toHaveValue("Manila");
+  expect(screen.getByLabelText("Email", { exact: true })).toHaveValue(
+    "shopper@example.com",
+  );
+});

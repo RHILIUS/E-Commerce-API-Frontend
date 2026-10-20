@@ -5,6 +5,8 @@ import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 
 import { ThemeToggle } from "@/app/components/ThemeToggle";
+import { Button } from "@/app/components/ui/button";
+import type { RegistrationDetailsStep } from "@/authentication/utils/registrationSteps";
 
 const registrationSteps = [
   "Email",
@@ -18,9 +20,15 @@ const registrationSteps = [
 const AuthShell = ({
   children,
   step,
+  detailsNavigation,
 }: {
   children: ReactNode;
   step?: number;
+  detailsNavigation?: {
+    furthestStep: RegistrationDetailsStep;
+    disabled: boolean;
+    onStepChange: (step: RegistrationDetailsStep) => void;
+  };
 }) => (
   <main className="bg-muted/30 flex items-center px-4 py-6 sm:px-8 sm:py-10 lg:px-12">
     <div className="mx-auto grid w-full max-w-280 min-w-0 items-start gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14">
@@ -88,12 +96,18 @@ const AuthShell = ({
                 />
               ))}
             </div>
-            <ol className="sr-only sm:not-sr-only sm:flex sm:items-start sm:gap-2">
+            <ol
+              className={
+                detailsNavigation
+                  ? "flex items-start gap-2"
+                  : "sr-only sm:not-sr-only sm:flex sm:items-start sm:gap-2"
+              }
+            >
               {registrationSteps.map((label, index) => (
                 <li
                   key={label}
                   aria-current={step === index + 1 ? "step" : undefined}
-                  className="flex min-w-0 flex-1 flex-col gap-2"
+                  className={`${detailsNavigation && index < 2 ? "hidden sm:flex" : "flex"} min-w-0 flex-1 flex-col gap-2`}
                 >
                   <div className="flex items-center gap-2" aria-hidden="true">
                     <span
@@ -111,15 +125,34 @@ const AuthShell = ({
                       />
                     )}
                   </div>
-                  <span
-                    className={`text-xs ${step === index + 1 ? "text-foreground font-semibold" : "text-muted-foreground"}`}
-                  >
-                    <span className="sr-only">Step {index + 1}: </span>
-                    {label}
-                    {step > index + 1 && (
-                      <span className="sr-only"> (completed)</span>
-                    )}
-                  </span>
+                  {detailsNavigation && index >= 2 ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className={`h-auto min-h-11 w-full min-w-0 justify-start px-1 py-2 text-left text-xs whitespace-normal ${step === index + 1 ? "bg-accent text-foreground font-semibold" : "text-muted-foreground"}`}
+                      disabled={
+                        detailsNavigation.disabled ||
+                        index + 1 > detailsNavigation.furthestStep
+                      }
+                      onClick={() =>
+                        detailsNavigation.onStepChange(
+                          (index + 1) as RegistrationDetailsStep,
+                        )
+                      }
+                    >
+                      {label}
+                    </Button>
+                  ) : (
+                    <span
+                      className={`text-xs ${step === index + 1 ? "text-foreground font-semibold" : "text-muted-foreground"}`}
+                    >
+                      <span className="sr-only">Step {index + 1}: </span>
+                      {label}
+                      {step > index + 1 && (
+                        <span className="sr-only"> (completed)</span>
+                      )}
+                    </span>
+                  )}
                 </li>
               ))}
             </ol>
