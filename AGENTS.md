@@ -21,6 +21,7 @@ Read and apply the linked skills when their task conditions match. Combine them 
 | Implement or change a page, control, reusable UI, or styling            | [frontend-ui](.agents/skills/frontend-ui/SKILL.md)                                                         |
 | Write or revise maintained documentation, including alongside code      | [documentation-writing](.agents/skills/documentation-writing/SKILL.md)                                     |
 | Introduce/change a business workflow                                    | [system-diagrams](.agents/skills/system-diagrams/SKILL.md)                                                 |
+| Create, inspect, or refine an editable Draw.io SBP flowchart             | [drawio-sbp](.agents/skills/drawio-sbp/SKILL.md)                                                            |
 | Create/update backend ERD documentation or document changed data models | [erd-documentation](../backend/.agents/skills/erd-documentation/SKILL.md); also documentation-writing      |
 | Create/update an editable Draw.io ERD illustration                      | [drawio-erd](../backend/.agents/skills/drawio-erd/SKILL.md)                                                |
 | Write a PR description or PR documentation                              | [pull-request-writing](.agents/skills/pull-request-writing/SKILL.md)                                       |
