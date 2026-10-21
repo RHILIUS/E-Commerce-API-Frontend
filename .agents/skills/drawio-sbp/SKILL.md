@@ -33,7 +33,7 @@ Use Draw.io's **Cross-Functional Flowchart** table as the parent:
 - Include internal application logic as process steps in its owning environment. Use a short **“(So …)”** explanation when the purpose would confuse a first-time reader; omit it for obvious steps.
 - Use decisions with explicit outcome labels, recovery loops and meaningful handoffs. Errors do not automatically end the process. A complete flow reaches an **End terminator** through its intended completion path; do not close a still-in-progress training example prematurely.
 
-Read [visual conventions](references/visual-conventions.md) when creating or changing symbols, layout, colors or headers. It contains the symbol mapping, palette, spacing and title ratios.
+Read [visual conventions](references/visual-conventions.md) when creating or changing symbols, layout, colors or headers. It contains the symbol mapping, palette, spacing, body typography and title ratios.
 
 ## Edit reliably
 

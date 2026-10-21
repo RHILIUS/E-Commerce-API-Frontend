@@ -47,6 +47,28 @@ Success/error meaning overrides the normal shape palette. Reserve the stronger r
 
 Use dark text, such as `#18212c`. Annotations have no fill and inherit their associated symbol's outline color. Keep connectors neutral. Use subtle neutral header fills rather than success/error colors. These values assume a light canvas; if the user requests dark rendering, check contrast and visibility in that rendering instead of assuming light colors remain suitable.
 
+## Body typography and text fit
+
+Use a shared **20 px body size**, independent of each symbol's width or the total diagram width. Keep supporting text at **0.9 × body size (18 px)**. Do not shrink individual labels to make them fit.
+
+| Text | Size | Weight |
+| --- | --- | --- |
+| Shape/action labels | 20 px | Semibold (600) |
+| Decision questions and Start/End | 20 px | Bold (700) |
+| Connector labels | 18 px | Semibold (600) |
+| Annotation text | 18 px | Regular (400); bold field headings such as Status, Method and Body |
+| Secondary “(So …)” explanations | 18 px | Regular (400) |
+
+Use an installed font with these weights when available; a browser may map semibold to bold when only regular/bold faces exist. Keep the semantic hierarchy consistent in both SVG text and editable Draw.io HTML labels.
+
+Use line height **1.25–1.35 × font size** (the sample uses 1.3) and internal padding of at least **0.75 × font size**. Allow at least **2 × body size** between ordinary sequential components where routing permits, with extra room for labels and return paths. The dedicated symbol-to-annotation gap remains **20 px**.
+
+Grow shapes and annotation heights to fit the text; preserve centerline alignment, grouped annotations and narrow annotation widths. Shorten wording or move supporting details into annotations before making a shape unnecessarily large. Wrap long endpoints at sensible separators. Decisions, parallelograms, displays and manual-input shapes need extra clearance from their sloping sides.
+
+Use existing whitespace before expanding the entire diagram. Uniformly enlarging both text and the whole canvas offers no improvement in a fit-to-width view. Target readable body text when viewing one phase; in the whole-diagram overview, prioritize legible titles and navigable structure. If every detail must be readable in one overview, simplify or split the flow rather than promising that bold text alone will solve it.
+
+Validate actual rendered text bounds, larger connector-label bounds, and collision/border clearance after reflow. Never rely only on the nominal font-size style.
+
 ## Proportional titles and header containers
 
 Let `clamp(min, value, max)` bound the font size; round to whole pixels.
@@ -63,6 +85,6 @@ Use **at least 1.6 × font size** for header height or environment-strip width. 
 
 Fit real text, not just a nominal font: wrap a long title or enlarge its header before shrinking it. For a rotated environment title, check its length against the row height. Increasing header dimensions must shift content, connector waypoints and labels consistently; do not overlay a larger title on an unchanged flow.
 
-For the 5,064 px-wide sample, these rules produce a **61 px** main title in a **98 px** header, **29/28/38/40 px** phase titles in a shared **64 px** header, and **40 px** environment titles in a **64 px** strip. These are example results, not fixed sizes for every diagram.
+For the current 6,314 px-wide sample, these rules produce a **64 px** main title in a **103 px** header, **37/35/40/40 px** phase titles in a shared **64 px** header, and **40 px** environment titles in a **64 px** strip. These are example results, not fixed sizes for every diagram.
 
 Inspect the entire diagram zoomed out as well as detailed crops. Titles should remain useful for navigation when individual step labels are too small to read. Avoid large commentary blocks outside the main parent; use concise local annotations or a brief handoff explanation instead.
