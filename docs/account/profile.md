@@ -164,5 +164,5 @@ its coordinates.
 
 See the backend contracts for [personal details](../../../backend/docs/api/account/profile.md)
 and [photos](../../../backend/docs/api/account/profile-photo.md) for exact request
-and response definitions. The central [diagram index](../../../docs/diagrams/README.md)
+and response definitions. The central [diagram index](../../../docs/specific-business-processes/README.md)
 is the starting point for shared business-process documentation.

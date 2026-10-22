@@ -15,7 +15,7 @@ The checkout back link follows its source: Back to product returns to the select
 Checkout URLs contain identifiers and quantities only. Login preserves the query string. Invalid, duplicate, empty, and oversized selections are rejected locally; ownership and availability remain server validations.
 
 API contracts: [recipients](../../../backend/docs/api/checkout/recipients.md), [preview](../../../backend/docs/api/checkout/preview.md), and [COD placement/confirmation](../../../backend/docs/api/checkout/cash-on-delivery.md). Current backend serializers and services were checked against these contracts. Stripe contracts and setup: [online checkout](../../../backend/docs/api/checkout/stripe.md).
-The [shared COD business flow](../../../docs/diagrams/specific-business-processes/checkout/cod-checkout.md) also matches these API handoffs. The backend API documentation and shared business flow record the implemented COD frontend and backend scope; Stripe test payment is now implemented; fulfillment and settlement release remain future work.
+The backend API documentation records the implemented COD frontend and backend scope; Stripe test payment is now implemented; fulfillment and settlement release remain future work.
 
 ## Payment selection and layout
 

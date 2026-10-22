@@ -4,9 +4,8 @@ Authenticated customers open `/account?tab=change-password` or select **Change
 Password** on the account page. The feature requires the current password and
 an email OTP before committing a new password.
 
-The maintained [business-process diagrams](../../../docs/diagrams/specific-business-processes/account/change-password.md)
-live in the central documentation repository. See the
-[backend API contract](../../../backend/docs/api/account/change-password.md).
+See the [backend API contract](../../../backend/docs/api/account/change-password.md)
+for verification rules and session invalidation.
 
 ## Interface and lifecycle
 

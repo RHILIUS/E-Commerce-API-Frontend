@@ -54,7 +54,7 @@ system.
 - [Backend documentation](../../backend/docs/)
 - [Project-wide documentation](../../docs/README.md)
 - [Shared architecture](../../docs/architecture/README.md)
-- [Business-process and data diagrams](../../docs/diagrams/README.md)
+- [Specific business processes](../../docs/specific-business-processes/README.md)
 
 Sibling links assume the repository layout in the project README. If you are
 reading on GitHub, use its
