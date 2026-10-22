@@ -43,6 +43,13 @@ Treat the symbol, its supporting annotation and their annotation connector as on
 
 Use the requested file/location. In a repository, follow its documentation ownership rules; this skill does not migrate existing Mermaid documents, ERDs, or indexes without scope to do so. Existing filesystem approval boundaries still apply.
 
+For this project's shared SBPs, use `../docs/specific-business-processes/diagrams/<module>/<process-name>.drawio.svg`
+and pair it with `guide/<module>/<process-name>.md` under the same SBP root.
+Follow [system-diagrams](../system-diagrams/SKILL.md) for the required guide and
+module index, and [documentation-writing](../documentation-writing/SKILL.md) for
+beginner-friendly explanations. Keep the diagram and guide consistent when the
+requested workflow changes.
+
 ## Validate and deliver
 
 Run the structural helper after edits, using `--complete` for a completed flow. Check the intended business path and every decision/recovery branch separately; structural checks cannot prove business correctness.
