@@ -78,7 +78,7 @@ export function ChangePasswordPanel({ active = true }: { active?: boolean }) {
       ) : flow.step === "email" ? (
         <div className="space-y-4">
           <p className="text-sm leading-relaxed wrap-break-word">
-            We’ll send a verification code to <strong>{flow.email}</strong>.
+            We’ll send a verification code to your account email.
           </p>
           <Button
             className="min-h-11 w-full whitespace-normal sm:w-auto"

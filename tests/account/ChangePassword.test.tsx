@@ -154,7 +154,11 @@ test("fixed email and three stages use authentication, fresh CSRF and the exact 
   }
   const interaction = userEvent.setup();
   const router = open();
-  expect(await screen.findByText("b***@example.com")).toBeVisible();
+  expect(
+    await screen.findByText(
+      "We’ll send a verification code to your account email.",
+    ),
+  ).toBeVisible();
   expect(screen.queryByLabelText("Current password")).not.toBeInTheDocument();
   expect(screen.queryByLabelText("New password")).not.toBeInTheDocument();
   expect(requests).toEqual([]);

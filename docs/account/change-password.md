@@ -12,7 +12,7 @@ explain the flow across the three sibling repositories.
 
 ## Customer experience
 
-1. Show the masked, fixed account email and **Send verification code**. Opening
+1. Explain that the code will be sent to the account email and show **Send verification code**. Opening
    the tab loads the destination; it does not send email. A loading failure offers
    **Try again**.
 2. After requesting a code, show the six-digit input, expiry, and resend cooldown.
