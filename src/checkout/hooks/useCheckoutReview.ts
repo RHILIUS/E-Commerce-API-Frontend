@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { fetchRecipients } from "@/account/api";
+import { fetchRecipients } from "@/account/api/recipientApi";
 import type { Recipient } from "@/account/types";
 
 import { fetchPreview } from "../api";

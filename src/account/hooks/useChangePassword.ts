@@ -6,43 +6,60 @@ import { useCountdown } from "@/authentication/hooks/useCountdown";
 
 import {
   confirmPasswordChange,
+  fetchPasswordBootstrap,
   type PasswordChallenge,
-  type PasswordCredentials,
   requestPasswordCode,
   resendPasswordCode,
-} from "../passwordApi";
+  verifyPasswordCode,
+} from "../api/passwordApi";
 import {
   passwordChangeError,
   type PasswordFieldErrors,
 } from "../utils/passwordChangeError";
 
-/** Own the challenge lifecycle; keep passwords only in the mounted form. */
+type PasswordStep = "email" | "otp" | "password";
+
+/** Own account verification and permission deadlines; sensitive drafts belong to their forms. */
 export function useChangePassword() {
   const { endSession, user } = useAuth();
   const navigate = useNavigate();
+  const [step, setStep] = useState<PasswordStep>("email");
+  const [email, setEmail] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
   const [challenge, setChallenge] = useState<PasswordChallenge | null>(null);
+  const [deadline, setDeadline] = useState<number | null>(null);
   const [cooldownEndsAt, setCooldownEndsAt] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [fields, setFields] = useState<PasswordFieldErrors>({});
-  const [expired, setExpired] = useState(false);
   const mounted = useRef(false);
   const pending = useRef(false);
   const cooldown = useCountdown(cooldownEndsAt);
-  const expiresIn = useCountdown(
-    challenge ? Date.parse(challenge.expires_at) : null,
-  );
+  const remaining = useCountdown(deadline);
 
   useEffect(() => {
     mounted.current = true;
+    const controller = new AbortController();
+    fetchPasswordBootstrap(controller.signal)
+      .then((result) => {
+        if (!controller.signal.aborted) {
+          setEmail(result.masked_email);
+          setLoadError(null);
+        }
+      })
+      .catch((error: unknown) => {
+        if (!controller.signal.aborted)
+          setLoadError(passwordChangeError(error).message);
+      });
     return () => {
       mounted.current = false;
+      controller.abort();
     };
-  }, []);
+  }, [attempt]);
 
-  // Ending authentication is required even if the form unmounts during confirmation.
+  // Commit Login before clearing authentication so the route guard preserves the notice.
   const finish = (uncertain: boolean) => {
-    // Commit the login route before clearing auth so the guard cannot overwrite its notice.
     navigate("/login", {
       flushSync: true,
       replace: true,
@@ -54,50 +71,77 @@ export function useChangePassword() {
     endSession();
   };
 
+  // Restart clears permission-dependent UI while retaining the server-authoritative cooldown.
+  const reset = () => {
+    setStep("email");
+    setChallenge(null);
+    setDeadline(null);
+    setFields({});
+  };
+
   const run = async (
-    action: "request" | "resend" | "confirm",
-    credentials?: PasswordCredentials,
-    otp?: string,
+    action: "request" | "resend" | "verify" | "confirm",
+    value = "",
   ) => {
-    if (pending.current) return false;
+    if (pending.current || !mounted.current) return;
+    if ((action === "verify" || action === "resend") && !challenge) return;
     pending.current = true;
     setBusy(true);
     setMessage(null);
     setFields({});
+    let submitted = false;
     try {
-      if (action === "confirm" && challenge && credentials && otp) {
-        await confirmPasswordChange(credentials, challenge.challenge_id, otp);
+      // A bootstrap failure is safe to retry: the password-save POST has not begun.
+      const bootstrap = await fetchPasswordBootstrap();
+      if (!mounted.current) return;
+      setEmail(bootstrap.masked_email);
+      submitted = true;
+      if (action === "confirm") {
+        await confirmPasswordChange(value, bootstrap.csrf_token);
+        // A committed change must end authentication even after navigating away.
         finish(false);
+      } else if (action === "verify" && challenge) {
+        const result = await verifyPasswordCode(
+          challenge.challenge_id,
+          value,
+          bootstrap.csrf_token,
+        );
+        if (mounted.current) {
+          setDeadline(Date.parse(result.expires_at));
+          setStep("password");
+        }
       } else {
         const result =
-          action === "request" && credentials
-            ? await requestPasswordCode(credentials)
-            : await resendPasswordCode(challenge!.challenge_id);
+          action === "resend" && challenge
+            ? await resendPasswordCode(
+                challenge.challenge_id,
+                bootstrap.csrf_token,
+              )
+            : await requestPasswordCode(bootstrap.csrf_token);
         if (mounted.current) {
           setChallenge(result);
-          setExpired(false);
+          setEmail(result.masked_email);
+          setDeadline(Date.parse(result.expires_at));
           setCooldownEndsAt(Date.now() + result.retry_after * 1000);
+          setStep("otp");
         }
       }
-      return true;
     } catch (error) {
       const result = passwordChangeError(error);
-      if (action === "confirm" && result.uncertain) {
+      if (action === "confirm" && submitted && result.uncertain) {
         finish(true);
       } else if (mounted.current) {
-        setFields(result.fields);
-        setMessage(result.message);
-        if (result.retryAfter)
-          setCooldownEndsAt(Date.now() + result.retryAfter * 1000);
         if (
           result.restart ||
-          result.fields.current_password ||
-          result.fields.new_password
+          (submitted && result.uncertain && action !== "confirm")
         )
-          setChallenge(null);
-        if (result.expired) setExpired(true);
+          reset();
+        setFields(result.fields);
+        setMessage(result.message);
+        if (result.retryAfter > 0)
+          setCooldownEndsAt(Date.now() + result.retryAfter * 1000);
+        if (result.expired) setDeadline(Date.now());
       }
-      return false;
     } finally {
       pending.current = false;
       if (mounted.current) setBusy(false);
@@ -105,23 +149,28 @@ export function useChangePassword() {
   };
 
   return {
-    challenge,
+    step,
+    email,
+    loadError,
+    loading: email === null && loadError === null,
+    retryLoad: () => {
+      setLoadError(null);
+      setAttempt((current) => current + 1);
+    },
     busy,
     message,
     fields,
     cooldown,
-    expiresIn,
-    isExpired: expired || (challenge !== null && expiresIn === 0),
-    request: (credentials: PasswordCredentials) => run("request", credentials),
+    remaining,
+    expired: deadline !== null && remaining === 0,
+    request: () => run("request"),
     resend: () => run("resend"),
-    confirm: (credentials: PasswordCredentials, otp: string) =>
-      run("confirm", credentials, otp),
-    back: () => {
-      if (!pending.current) {
-        setChallenge(null);
-        setFields({});
-        setMessage(null);
-      }
+    verify: (otp: string) => run("verify", otp),
+    confirm: (password: string) => run("confirm", password),
+    restart: () => {
+      if (pending.current) return;
+      reset();
+      setMessage(null);
     },
   };
 }

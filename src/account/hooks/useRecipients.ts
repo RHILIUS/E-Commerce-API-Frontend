@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { fetchRecipients } from "../api";
+import { fetchRecipients } from "../api/recipientApi";
 import type { Recipient } from "../types";
 
 /** Load the account address book with cancellable requests and explicit retry. */

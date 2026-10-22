@@ -5,7 +5,7 @@ import {
   deleteRecipient,
   fetchRecipients,
   updateRecipient,
-} from "../api";
+} from "../api/recipientApi";
 import type { Recipient, RecipientInput } from "../types";
 import { recipientError } from "../utils/recipientError";
 

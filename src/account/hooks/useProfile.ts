@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { useAuth } from "@/authentication/contexts/Auth/useAuth";
 
-import { fetchProfile, saveProfile } from "../api";
+import { fetchProfile, saveProfile } from "../api/profileApi";
 import type { Profile, ProfileInput } from "../types";
 import { profileError } from "../utils/profileError";
 

@@ -13,7 +13,7 @@ both Account and Checkout. Account has no order-selection radio buttons. Both
 screens use semantic theme tokens and responsive, scrollable dialogs. The Figma
 canvas has not been modified; migration-file mapping remains pending.
 
-`src/account/api.ts` and `src/account/types.ts` own the recipient API and types.
+`src/account/api/recipientApi.ts` and `src/account/types.ts` own the recipient API and types.
 Shared address display, form, list and editor/confirmation components live in
 `src/account/components/`; loading and mutation hooks live in `src/account/hooks/`;
 error parsing lives in `src/account/utils/recipientError.ts`.

@@ -158,7 +158,8 @@ its coordinates.
 | [useProfile](../../src/account/hooks/useProfile.ts)                         | Load, save, restore, and reconcile personal details                                   |
 | [ProfilePhotoManager](../../src/account/components/ProfilePhotoManager.tsx) | Compose photo actions, crop editor, and removal confirmation                          |
 | [useProfilePhoto](../../src/account/hooks/useProfilePhoto.ts)               | Load and change photos, recover uncertain outcomes, and synchronize the account photo |
-| [Account API functions](../../src/account/api.ts)                           | Send profile, photo, and recipient requests                                           |
+| [Profile API functions](../../src/account/api/profileApi.ts)                | Send personal-profile requests                                                        |
+| [Profile photo API functions](../../src/account/api/profilePhotoApi.ts)     | Send photo and crop requests                                                          |
 | [Account types](../../src/account/types.ts)                                 | Describe the expected profile, address, and photo data                                |
 | [Profile error helper](../../src/account/utils/profileError.ts)             | Translate save errors into field messages and identify uncertain outcomes             |
 
