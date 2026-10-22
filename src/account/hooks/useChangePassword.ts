@@ -161,7 +161,6 @@ export function useChangePassword() {
     message,
     fields,
     cooldown,
-    remaining,
     expired: deadline !== null && remaining === 0,
     request: () => run("request"),
     resend: () => run("resend"),

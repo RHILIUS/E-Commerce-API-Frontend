@@ -96,7 +96,6 @@ export function ChangePasswordPanel({ active = true }: { active?: boolean }) {
         <VerificationForm
           busy={flow.busy}
           expired={flow.expired}
-          remaining={flow.remaining}
           cooldown={flow.cooldown}
           fieldError={flow.fields.otp}
           verify={flow.verify}
@@ -135,7 +134,6 @@ export function ChangePasswordPanel({ active = true }: { active?: boolean }) {
 function VerificationForm({
   busy,
   expired,
-  remaining,
   cooldown,
   fieldError,
   verify,
@@ -143,7 +141,6 @@ function VerificationForm({
 }: {
   busy: boolean;
   expired: boolean;
-  remaining: number;
   cooldown: number;
   fieldError?: string;
   verify: (otp: string) => Promise<void>;
@@ -169,9 +166,9 @@ function VerificationForm({
         aria-label="Six-digit verification code"
         aria-invalid={Boolean(fieldError) || undefined}
         aria-describedby={
-          fieldError
-            ? "password-code-help password-code-error"
-            : "password-code-help"
+          [expired && "password-code-help", fieldError && "password-code-error"]
+            .filter(Boolean)
+            .join(" ") || undefined
         }
         containerClassName="w-full justify-center"
       >
@@ -186,14 +183,15 @@ function VerificationForm({
           ))}
         </InputOTPGroup>
       </InputOTP>
-      <p
-        id="password-code-help"
-        className="text-muted-foreground text-center text-sm"
-      >
-        {expired
-          ? "This code has expired. Request a new code."
-          : `Code expires in ${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, "0")}.`}
-      </p>
+      {expired && (
+        <p
+          id="password-code-help"
+          className="text-muted-foreground text-center text-sm"
+          role="status"
+        >
+          This code has expired. Request a new code.
+        </p>
+      )}
       {fieldError && (
         <p
           id="password-code-error"
