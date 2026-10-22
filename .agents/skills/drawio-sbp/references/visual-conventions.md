@@ -4,15 +4,27 @@ These are the user's reusable visual rules. Adjust measurements when the user re
 
 ## Symbols and connectors
 
-| Meaning | Draw.io shape/style |
-| --- | --- |
-| Start / End terminator | `shape=mxgraph.flowchart.start_1` (oval used in the sample) |
-| Action or internal logic | Rounded process rectangle |
-| Rendered page or displayed UI | `shape=mxgraph.flowchart.display` |
-| User entering/submitting data | `shape=manualInput` |
-| Request, response or data transfer | `shape=parallelogram` |
-| Conditional branch | `shape=mxgraph.flowchart.decision` |
-| Supporting explanation or API details | `shape=mxgraph.flowchart.annotation_1` |
+| Meaning                                                     | Draw.io shape/style                                         |
+| ----------------------------------------------------------- | ----------------------------------------------------------- |
+| Start / End terminator                                      | `shape=mxgraph.flowchart.start_1` (oval used in the sample) |
+| Action or internal logic                                    | Rounded process rectangle                                   |
+| Rendered page or displayed UI                               | `shape=mxgraph.flowchart.display`                           |
+| User entering/submitting data                               | `shape=manualInput`                                         |
+| Request, response or data transfer                          | `shape=parallelogram`                                       |
+| Browser persistence (cookies, localStorage, sessionStorage) | Stored Data: `shape=dataStorage`                            |
+| Database-backed records                                     | Database cylinder: `shape=cylinder3`                        |
+| Conditional branch                                          | `shape=mxgraph.flowchart.decision`                          |
+| Supporting explanation or API details                       | `shape=mxgraph.flowchart.annotation_1`                      |
+
+Choose a storage symbol by what holds the data, not by the word “save.” Use
+Stored Data for browser persistence and name the actual mechanism in its label
+or annotation. Cookies, localStorage, and sessionStorage are distinct stores.
+For an HttpOnly cookie, show the backend setting it through `Set-Cookie` and the
+browser storing it; do not imply frontend JavaScript reads or writes the token.
+Use a database cylinder for an actual database in its owning environment.
+In-memory state, such as React context, remains a process step explicitly labeled
+“in memory”; it is not browser persistence. Do not introduce a store that the
+verified implementation does not use.
 
 Use solid directional arrows for flow within an environment. Use dashed directional arrows for communication between environments. Use rounded orthogonal bends for column shifts and return routes. Use a short dashed connector **without an arrowhead** for an annotation. An annotation explains a step; it does not execute or receive a request.
 
@@ -34,16 +46,17 @@ For an HTTP transfer, put the short action in the symbol and supporting method, 
 
 Success/error meaning overrides the normal shape palette. Reserve the stronger red/green fills for outcome responses and confirmation/error displays. Do not color every preceding process green just because it lies on the successful path. Labels and decision outcomes must remain understandable without color.
 
-| Component | Fill | Outline |
-| --- | --- | --- |
-| Error response/display | `#f8cecc` | `#b85450` |
+| Component                     | Fill      | Outline   |
+| ----------------------------- | --------- | --------- |
+| Error response/display        | `#f8cecc` | `#b85450` |
 | Success response/confirmation | `#d5e8d4` | `#82b366` |
-| Ordinary process | `#f3f6fb` | `#8fa4bc` |
-| Manual input | `#f6f2fa` | `#a99bb8` |
-| Page/display | `#f0f7f8` | `#91adb0` |
-| Decision | `#fff8e8` | `#b9aa82` |
-| Neutral request/response | `#f4f5f6` | `#a4abb2` |
-| Start/End | `#eef1f4` | `#586574` |
+| Ordinary process              | `#f3f6fb` | `#8fa4bc` |
+| Manual input                  | `#f6f2fa` | `#a99bb8` |
+| Page/display                  | `#f0f7f8` | `#91adb0` |
+| Decision                      | `#fff8e8` | `#b9aa82` |
+| Stored Data / database        | `#f4f5f6` | `#a4abb2` |
+| Neutral request/response      | `#f4f5f6` | `#a4abb2` |
+| Start/End                     | `#eef1f4` | `#586574` |
 
 Use dark text, such as `#18212c`. Annotations have no fill and inherit their associated symbol's outline color. Keep connectors neutral. Use subtle neutral header fills rather than success/error colors. These values assume a light canvas; if the user requests dark rendering, check contrast and visibility in that rendering instead of assuming light colors remain suitable.
 
@@ -51,13 +64,12 @@ Use dark text, such as `#18212c`. Annotations have no fill and inherit their ass
 
 Use a shared **20 px body size**, independent of each symbol's width or the total diagram width. Keep supporting text at **0.9 × body size (18 px)**. Do not shrink individual labels to make them fit.
 
-| Text | Size | Weight |
-| --- | --- | --- |
-| Shape/action labels | 20 px | Semibold (600) |
-| Decision questions and Start/End | 20 px | Bold (700) |
-| Connector labels | 18 px | Semibold (600) |
-| Annotation text | 18 px | Regular (400); bold field headings such as Status, Method and Body |
-| Secondary “(So …)” explanations | 18 px | Regular (400) |
+| Text                             | Size  | Weight                                                             |
+| -------------------------------- | ----- | ------------------------------------------------------------------ |
+| Shape/action labels              | 20 px | Semibold (600)                                                     |
+| Decision questions and Start/End | 20 px | Bold (700)                                                         |
+| Connector labels                 | 18 px | Semibold (600)                                                     |
+| Annotation text                  | 18 px | Regular (400); bold field headings such as Status, Method and Body |
 
 Use an installed font with these weights when available; a browser may map semibold to bold when only regular/bold faces exist. Keep the semantic hierarchy consistent in both SVG text and editable Draw.io HTML labels.
 
@@ -73,11 +85,11 @@ Validate actual rendered text bounds, larger connector-label bounds, and collisi
 
 Let `clamp(min, value, max)` bound the font size; round to whole pixels.
 
-| Title | Font rule | Range |
-| --- | --- | --- |
-| Main SBP | `0.012 × total parent width` | 28–64 px |
-| Phase | `0.028 × that phase's column width` | 22–40 px |
-| Environment | Largest phase-title font size | 22–40 px |
+| Title       | Font rule                           | Range    |
+| ----------- | ----------------------------------- | -------- |
+| Main SBP    | `0.012 × total parent width`        | 28–64 px |
+| Phase       | `0.028 × that phase's column width` | 22–40 px |
+| Environment | Largest phase-title font size       | 22–40 px |
 
 Make titles bold and explicit dark text. Center the main title and phase labels. Environment labels are rotated in a shared left strip, as in the sample.
 

@@ -30,7 +30,7 @@ Use Draw.io's **Cross-Functional Flowchart** table as the parent:
 - Columns: named business phases, aligned across all environment rows. Prefer short, parallel action names such as “Send OTP Email” and “Verify OTP.” The number and names follow the actual workflow.
 - Start with a **Start terminator**. For a customer-facing feature, begin in Frontend from the user's perspective, showing how they reach and access the feature. Do not invent a client interaction for a genuinely server-triggered process.
 - Begin at the left and proceed downward; expand into aligned columns to the right as the flow grows. These internal alignment columns are separate from phase columns. Return arrows may travel upward or leftward when responsibility or retry behavior requires it.
-- Include internal application logic as process steps in its owning environment. Use a short **“(So …)”** explanation when the purpose would confuse a first-time reader; omit it for obvious steps.
+- Include internal application logic as process steps in its owning environment. Keep action labels short. Use supporting annotations for non-obvious purpose, rules, or API details. Omit explanations that merely repeat the action; no fixed wording or prefix is required.
 - Use decisions with explicit outcome labels, recovery loops and meaningful handoffs. Errors do not automatically end the process. A complete flow reaches an **End terminator** through its intended completion path; do not close a still-in-progress training example prematurely.
 
 Read [visual conventions](references/visual-conventions.md) when creating or changing symbols, layout, colors or headers. It contains the symbol mapping, palette, spacing, body typography and title ratios.
