@@ -53,7 +53,7 @@ export function ChangePasswordPanel({ active = true }: { active?: boolean }) {
           {flow.step === "email"
             ? "Verify your account email to choose a new password."
             : flow.step === "otp"
-              ? `Your verification email is queued for ${flow.email}. Enter the six-digit code when it arrives.`
+              ? "We’ve queued a verification code for your account email. Enter the six-digit code when it arrives."
               : "Saving your new password signs you out on all devices."}
         </p>
       </header>
