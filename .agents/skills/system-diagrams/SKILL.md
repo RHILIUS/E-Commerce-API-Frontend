@@ -10,7 +10,10 @@ Stay within the requested scope; do not invent endpoints, policies, integrations
 or permission rules.
 
 Shared SBPs belong in the sibling documentation repository at
-`../docs/specific-business-processes/<module>/`, distinct from frontend `docs/`.
+`../docs/specific-business-processes/`, distinct from frontend `docs/`. Pair each
+`diagrams/<module>/<process-name>.drawio.svg` with a beginner-friendly
+`guide/<module>/<process-name>.md`. The matching guide explains the flow;
+`guide/<module>/README.md` indexes both files.
 
 ## Choose the applicable reference
 

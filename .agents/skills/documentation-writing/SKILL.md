@@ -48,4 +48,13 @@ For setup and deployment guides, first explain what the services do and how they
 
 ## Check the result
 
+For shared specific business processes, every
+`../docs/specific-business-processes/diagrams/<module>/<process-name>.drawio.svg`
+has a matching `guide/<module>/<process-name>.md` under that SBP root. Explain
+the diagram for a beginner: purpose, entry point, phases, responsibilities,
+decisions, recovery and completion. Link both files from
+`guide/<module>/README.md`, keeping proposed behavior distinct. The
+[system-diagrams workflow](../system-diagrams/SKILL.md) owns the detailed pairing
+and index requirements.
+
 Confirm the guide matches current implementation and contracts, that its reading order introduces concepts before details, and that file links and Markdown anchors resolve. Review formatting with the project's configured formatter. Report checks and unresolved inconsistencies in the handoff; do not add historical validation reports to the guide.

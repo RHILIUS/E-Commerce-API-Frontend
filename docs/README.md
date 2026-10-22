@@ -17,19 +17,20 @@ the frontend uses to talk to the backend.
 
 ## Find a guide
 
-| Area        | Guide                                              | What it explains                                                   |
-| ----------- | -------------------------------------------------- | ------------------------------------------------------------------ |
-| Foundations | [Frontend architecture](architecture.md)           | How pages, shared state, requests, and folders fit together        |
-| Browsing    | [Product catalog](ecommerce/product-catalog.md)    | Loading and displaying the product list                            |
-| Browsing    | [Product page](ecommerce/product-page.md)          | Product details and purchase actions                               |
-| Browsing    | [Store page](ecommerce/store-page.md)              | Browsing a store and its products                                  |
-| Shopping    | [Shopping cart](ecommerce/cart.md)                 | Grouping items by store, quantities, and checkout selection        |
-| Shopping    | [Checkout](checkout/README.md)                     | Reviewing orders, choosing recipients, payment, and recovery       |
-| Orders      | [Customer orders](ecommerce/user-orders.md)        | Saved orders and their history                                     |
-| Account     | [Account profile](account/profile.md)              | Personal details, personal address, and profile photos             |
-| Account     | [Delivery recipients](account/recipients.md)       | Saved delivery details shared by Account and Checkout              |
-| Account     | [Change password](account/change-password.md)      | Changing a password using the current password and an emailed code |
-| Hosting     | [Cloudflare Pages](deployment/cloudflare-pages.md) | Publishing the frontend and connecting it to the backend           |
+| Area        | Guide                                                | What it explains                                                   |
+| ----------- | ---------------------------------------------------- | ------------------------------------------------------------------ |
+| Foundations | [Frontend architecture](architecture.md)             | How pages, shared state, requests, and folders fit together        |
+| Browsing    | [Product catalog](ecommerce/product-catalog.md)      | Loading and displaying the product list                            |
+| Browsing    | [Product page](ecommerce/product-page.md)            | Product details and purchase actions                               |
+| Browsing    | [Store page](ecommerce/store-page.md)                | Browsing a store and its products                                  |
+| Shopping    | [Shopping cart](ecommerce/cart.md)                   | Grouping items by store, quantities, and checkout selection        |
+| Shopping    | [Checkout](checkout/README.md)                       | Reviewing orders, choosing recipients, payment, and recovery       |
+| Orders      | [Customer orders](ecommerce/user-orders.md)          | Saved orders and their history                                     |
+| Sign-in     | [Forgot password](authentication/forgot-password.md) | Email verification and password recovery                           |
+| Account     | [Account profile](account/profile.md)                | Personal details, personal address, and profile photos             |
+| Account     | [Delivery recipients](account/recipients.md)         | Saved delivery details shared by Account and Checkout              |
+| Account     | [Change password](account/change-password.md)        | Changing a password using the current password and an emailed code |
+| Hosting     | [Cloudflare Pages](deployment/cloudflare-pages.md)   | Publishing the frontend and connecting it to the backend           |
 
 Sign-in and registration are introduced in the architecture guide. Their code
 lives in `src/authentication/`.
