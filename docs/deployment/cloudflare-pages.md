@@ -94,6 +94,5 @@ backend hostname. `/static/*` and `/media/*` are not Pages proxy routes. Existin
 media URLs continue to use the backend's HTTPS origin (or Azure when enabled).
 Stripe webhooks go directly to the backend's signed webhook endpoint.
 
-The maintained system context and process are in the sibling documentation repo:
-[architecture](../../../docs/architecture/production-deployment.md) and
-[API proxy process](../../../docs/diagrams/specific-business-processes/deployment/same-origin-api-proxy.md).
+The [shared production architecture](../../../docs/architecture/production-deployment.md)
+explains the hosting context.
