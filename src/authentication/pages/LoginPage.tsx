@@ -15,6 +15,7 @@ type LoginLocationState = {
   email?: string;
   registrationSucceeded?: boolean;
   passwordChange?: "success" | "uncertain";
+  passwordReset?: "success" | "uncertain";
 };
 
 type LoginError = {
@@ -96,6 +97,14 @@ const LoginPage = () => {
           </p>
         )}
 
+        {locationState?.passwordReset && (
+          <p className="text-muted-foreground mt-6 text-sm" role="status">
+            {locationState.passwordReset === "success"
+              ? "Password reset successfully. Sign in with your new password."
+              : "The password reset may have completed, but we couldn't confirm the response. Please sign in."}
+          </p>
+        )}
+
         <form
           className="mt-7 space-y-5"
           onSubmit={handleSubmit}
@@ -142,6 +151,14 @@ const LoginPage = () => {
               required
             />
           </label>
+
+          <Link
+            to="/forgot-password"
+            state={{ email: formData.email }}
+            className="text-primary focus-visible:outline-ring inline-flex min-h-11 items-center rounded-sm text-sm underline-offset-4 hover:underline focus-visible:outline-2"
+          >
+            Forgot password?
+          </Link>
 
           {error && (
             <p
