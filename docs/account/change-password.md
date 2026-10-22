@@ -15,7 +15,8 @@ explain the flow across the three sibling repositories.
 1. Explain that the code will be sent to the account email and show **Send verification code**. Opening
    the tab loads the destination; it does not send email. A loading failure offers
    **Try again**.
-2. After requesting a code, show the six-digit input, expiry, and resend cooldown.
+2. After requesting a code, show the six-digit input and resend cooldown.
+   Show an expiry message only once the code has expired.
    **Verify code** exchanges the latest code for temporary permission; the
    password has not changed yet. Resend replaces both code and challenge ID.
 3. Show new-password and confirmation fields after successful verification.
@@ -44,7 +45,7 @@ frontend fetches a fresh CSRF token and sends it in `X-CSRFToken`, with cookies.
 CSRF protects cookie-bearing actions from requests forged by another website.
 The bootstrap request does not clear existing permission.
 
-Countdowns use server expiry timestamps and `retry_after` values. The backend
+Expiry checks and the resend countdown use server timestamps and `retry_after` values. The backend
 remains authoritative if the browser reloads or its clock changes. Verification
 permission expires after ten minutes. Once expired, saving is disabled and the
 customer can restart verification.
