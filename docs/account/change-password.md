@@ -1,51 +1,96 @@
 # Change Password
 
-Authenticated customers open `/account?tab=change-password` or select **Change
-Password** on the account page. The feature requires the current password and
-an email OTP before committing a new password.
+Signed-in customers open `/account?tab=change-password` or select **Change
+Password** on the account page. They verify access to their account email before
+choosing a new password.
 
-See the [backend API contract](../../../backend/docs/api/account/change-password.md)
-for verification rules and session invalidation.
+The [backend contract](../../../backend/docs/api/account/change-password.md)
+defines authorization, limits and session invalidation. The approved
+[process guide](../../../docs/specific-business-processes/guide/account/change-password.md)
+and [editable diagram](../../../docs/specific-business-processes/diagrams/account/change-password.drawio.svg)
+explain the flow across the three sibling repositories.
 
-## Interface and lifecycle
+## Customer experience
 
-The first step collects current, new and confirmed passwords, offers show/hide
-controls and applies the existing registration password policy. The backend also
-validates current/new passwords before sending a code. The second step displays
-a masked email address, six-digit OTP input, expiry and resend countdowns, Back,
-and Verify and change password. All devices are signed out after success.
+1. Explain that the code will be sent to the account email and show **Send verification code**. Opening
+   the tab loads the destination; it does not send email. A loading failure offers
+   **Try again**.
+2. After requesting a code, show the six-digit input, expiry, and resend cooldown.
+   **Verify code** exchanges the latest code for temporary permission; the
+   password has not changed yet. Resend replaces both code and challenge ID.
+3. Show new-password and confirmation fields after successful verification.
+   Offer show/hide controls, check that both entries match, and apply the existing
+   registration password policy. The backend independently validates the password
+   and rejects reuse of the current password.
+4. **Change password** saves once, signs out existing sessions, and returns to
+   Login with a success message. The backend queues a password-changed notice.
 
-Password and OTP values remain in component memory. Switching account tabs hides
-the mounted form and preserves the current step, entered values, and original
-expiry and cooldown deadlines. Returning does not request another code. Leaving
-the account page, reloading, signing out, or changing accounts clears the form.
-Back returns to the password details; another request creates a
-new challenge, subject to the server cooldown and durable account limits.
+Each stage has a heading and accessible field names and error associations.
+Visible stage changes move focus to the heading; switching account tabs retains
+normal tab focus. Existing controls and semantic theme tokens support both themes.
 
-`ChangePasswordPanel` composes the interface. `useChangePassword` owns challenge
-requests and recovery, reusing `useCountdown`; `passwordApi.ts` defines the exact
-contract and `passwordChangeError.ts` maps backend errors. Existing shadcn/ui
-inputs, tabs, buttons and OTP slots use semantic theme tokens.
+## Drafts, permission and navigation
 
-## Recovery and authentication
+Code and password values remain only in component memory. Switching account tabs
+hides the mounted form and preserves its stage, inputs, and original deadlines.
+Returning does not request another code. Leaving the account page, reloading,
+signing out, or changing accounts discards the form. Restarting email verification
+unmounts password inputs and clears drafts, while retaining any resend cooldown.
 
-Field errors preserve the draft. An incorrect OTP can be retried within the
-backend attempt budget. An expired code can be replaced; unavailable or exhausted
-challenges restart the form. Resend clears the old input even when delivery fails,
-since the backend already replaced the old code. Server `retry_after` controls
-cooldowns after rate-limit or delivery errors.
+The backend supplies short-lived, single-use permission through a separate
+HttpOnly cookie. JavaScript cannot read it. All operations remain authenticated;
+a public recovery cookie cannot authorize this flow. Before each POST, the
+frontend fetches a fresh CSRF token and sends it in `X-CSRFToken`, with cookies.
+CSRF protects cookie-bearing actions from requests forged by another website.
+The bootstrap request does not clear existing permission.
 
-Confirmation is never automatically replayed after an uncertain response. A lost
-response or server error directs the user to sign in with an outcome-uncertain
-message. A successful response commits the login route before clearing local
-authentication, preserving the success message through the protected-route guard.
-Session-generation checks discard refresh responses that finish after sign-out.
+Countdowns use server expiry timestamps and `retry_after` values. The backend
+remains authoritative if the browser reloads or its clock changes. Verification
+permission expires after ten minutes. Once expired, saving is disabled and the
+customer can restart verification.
 
-## Background email delivery
+## Errors and recovery
 
-Request and resend success confirm broker acceptance of the verification email.
-The OTP step tells customers the email is queued. A Celery worker checks current
-challenge ownership, email and credential binding, consumption and expiry before
-each delivery attempt. Temporary transport failures have bounded retries. Later
-delivery failures do not produce a new API response; controlled resend remains
-available after cooldown. There is no completion email after a password change.
+Incorrect codes allow correction while attempts remain. Expired codes require
+resend. Unavailable challenges or permission restart email verification; exhausted
+attempts retain the server's wait before issuance becomes available again.
+Password-policy errors preserve the password form for correction.
+
+Resend clears the old input immediately. If replacement has an uncertain response
+or email queuing fails, restart issuance subject to the server cooldown, because
+the old identifier may already be invalid. A lost verification response also
+restarts rather than assuming permission was obtained. No operation automatically
+resends an email after an uncertain response.
+
+A bootstrap failure before final save preserves the draft because the save POST
+has not started. An explicit CSRF rejection permits a deliberate retry with a
+fresh bootstrap. The existing authenticated client may refresh and retry an
+explicit 401, which rejects the request before mutation; failed refresh requires
+sign-in.
+
+A lost final-save response or server error returns to Login with an uncertain
+message and never automatically replays the save. Only confirmed success displays
+success. Login navigation commits before local authentication is cleared, so the
+protected-route guard preserves the notice. Session-generation checks discard
+late refresh responses after sign-out.
+
+## Email delivery and implementation
+
+Request/resend success confirms broker acceptance, not inbox delivery. The email
+worker checks current challenge ownership, email and credential binding, code
+consumption, and expiry before delivery. Temporary transport failures have bounded
+retries. Controlled resend remains available if delivery later fails. Notification
+failure after a successful save cannot undo the password change. There is no
+outbox guaranteeing delivery.
+
+`ChangePasswordPanel` composes the three stages; phase-local forms own sensitive
+inputs. `useChangePassword` coordinates requests, recovery and deadlines using
+`useCountdown`. `api/passwordApi.ts` models the revised contract directly, and
+`utils/passwordChangeError.ts` maps field errors, waits and restart behavior.
+`UserAccountPage` mounts the panel on its first visit and preserves it across tabs;
+its account-keyed tab container discards state when the customer changes.
+
+Frontend and backend revisions must be released together. Apply the backend's
+state migration and restart email workers with matching source before using the
+revised flow. Source implementation alone does not establish deployment or email
+delivery readiness.

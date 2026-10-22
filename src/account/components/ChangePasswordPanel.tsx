@@ -1,5 +1,5 @@
 import { REGEXP_ONLY_DIGITS } from "input-otp";
-import { type SyntheticEvent, useRef, useState } from "react";
+import { type SyntheticEvent, useEffect, useRef, useState } from "react";
 
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
@@ -16,281 +16,351 @@ import {
 
 import { useChangePassword } from "../hooks/useChangePassword";
 
-/** Two-step password form with verification inside the account tab. */
-export function ChangePasswordPanel() {
+/** Verify the fixed account email before mounting a fresh password form. */
+export function ChangePasswordPanel({ active = true }: { active?: boolean }) {
   const flow = useChangePassword();
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmation, setConfirmation] = useState("");
-  const [otp, setOtp] = useState("");
-  const [visible, setVisible] = useState(false);
-  const [mismatch, setMismatch] = useState(false);
-  const confirmationRef = useRef<HTMLInputElement>(null);
-  const credentials = {
-    current_password: currentPassword,
-    new_password: newPassword,
-  };
+  const heading = useRef<HTMLHeadingElement>(null);
+  const previousStep = useRef(flow.step);
 
-  const submit = async (
-    event: SyntheticEvent<HTMLFormElement, SubmitEvent>,
-  ) => {
-    event.preventDefault();
-    if (!flow.challenge) {
-      if (newPassword !== confirmation) {
-        setMismatch(true);
-        confirmationRef.current?.focus();
-        return;
-      }
-      if (await flow.request(credentials)) setOtp("");
-    } else {
-      await flow.confirm(credentials, otp);
-    }
-  };
+  useEffect(() => {
+    if (active && previousStep.current !== flow.step) heading.current?.focus();
+    previousStep.current = flow.step;
+  }, [active, flow.step]);
 
   return (
     <section
       className="bg-card min-w-0 space-y-5 rounded-xl border p-4 sm:p-6"
       aria-labelledby="change-password-heading"
+      aria-busy={flow.loading || flow.busy}
     >
-      <div className="space-y-2">
-        <h2 id="change-password-heading" className="text-xl">
-          Change password
-        </h2>
-        <p className="text-muted-foreground text-sm">
-          Verify the change with a code sent to your registered email. Changing
-          your password signs you out on all devices.
+      <header className="space-y-2">
+        <p className="text-muted-foreground text-xs font-medium">
+          Step {flow.step === "email" ? 1 : flow.step === "otp" ? 2 : 3} of 3
         </p>
-      </div>
-      <form
-        className="min-w-0 space-y-5"
-        onSubmit={submit}
-        aria-busy={flow.busy}
-      >
-        {flow.challenge ? (
-          <div className="min-w-0 space-y-4">
-            <p className="text-sm wrap-break-word">
-              Your verification email is queued for{" "}
-              {flow.challenge.masked_email}. Enter the six-digit code when it
-              arrives.
-            </p>
-            <InputOTP
-              maxLength={6}
-              pattern={REGEXP_ONLY_DIGITS}
-              value={otp}
-              onChange={setOtp}
-              autoFocus
-              autoComplete="one-time-code"
-              disabled={flow.busy}
-              aria-label="Six-digit verification code"
-              aria-invalid={Boolean(flow.fields.otp) || undefined}
-              aria-describedby={
-                flow.fields.otp
-                  ? "password-code-help password-code-error"
-                  : "password-code-help"
-              }
-              containerClassName="mx-auto w-fit max-w-full"
-            >
-              <InputOTPGroup>
-                {Array.from({ length: 6 }, (_, index) => (
-                  <InputOTPSlot key={index} index={index} className="size-9" />
-                ))}
-              </InputOTPGroup>
-            </InputOTP>
-            <p
-              id="password-code-help"
-              className="text-muted-foreground text-center text-sm"
-            >
-              {flow.isExpired
-                ? "This code has expired. Request a new code."
-                : `Code expires in ${Math.floor(flow.expiresIn / 60)}:${String(flow.expiresIn % 60).padStart(2, "0")}.`}
-            </p>
-            {flow.fields.otp && (
-              <p
-                id="password-code-error"
-                className="text-destructive text-sm"
-                role="alert"
-              >
-                {flow.fields.otp}
-              </p>
-            )}
-            <Button
-              type="button"
-              variant="outline"
-              className="min-h-11 w-full whitespace-normal"
-              disabled={flow.busy || flow.cooldown > 0}
-              onClick={async () => {
-                setOtp("");
-                await flow.resend();
-              }}
-            >
-              {flow.cooldown > 0
-                ? `Resend code in ${flow.cooldown}s`
-                : "Resend code"}
-            </Button>
-          </div>
-        ) : (
-          <div className="min-w-0 space-y-4">
-            <label className="block space-y-2">
-              <span id="current-password-label" className="text-sm font-medium">
-                Current password
-              </span>
-              <Input
-                className="h-11"
-                name="current_password"
-                aria-labelledby="current-password-label"
-                type={visible ? "text" : "password"}
-                autoComplete="current-password"
-                value={currentPassword}
-                onChange={(event) => setCurrentPassword(event.target.value)}
-                required
-                maxLength={128}
-                disabled={flow.busy}
-                aria-invalid={
-                  Boolean(flow.fields.current_password) || undefined
-                }
-                aria-describedby={
-                  flow.fields.current_password
-                    ? "current-password-error"
-                    : undefined
-                }
-              />
-              {flow.fields.current_password && (
-                <span
-                  id="current-password-error"
-                  className="text-destructive block text-sm"
-                  role="alert"
-                >
-                  {flow.fields.current_password}
-                </span>
-              )}
-            </label>
-            <label className="block space-y-2">
-              <span id="new-password-label" className="text-sm font-medium">
-                New password
-              </span>
-              <Input
-                className="h-11"
-                name="new_password"
-                aria-labelledby="new-password-label"
-                type={visible ? "text" : "password"}
-                autoComplete="new-password"
-                value={newPassword}
-                onChange={(event) => {
-                  setNewPassword(event.target.value);
-                  setMismatch(false);
-                }}
-                required
-                minLength={PASSWORD_MIN_LENGTH}
-                maxLength={PASSWORD_MAX_LENGTH}
-                pattern={PASSWORD_PATTERN}
-                disabled={flow.busy}
-                aria-invalid={Boolean(flow.fields.new_password) || undefined}
-                aria-describedby={
-                  flow.fields.new_password
-                    ? "new-password-help new-password-error"
-                    : "new-password-help"
-                }
-              />
-              <span
-                id="new-password-help"
-                className="text-muted-foreground block text-xs"
-              >
-                Use 8–64 characters with an uppercase letter, a lowercase letter
-                and a number.
-              </span>
-              {flow.fields.new_password && (
-                <span
-                  id="new-password-error"
-                  className="text-destructive block text-sm"
-                  role="alert"
-                >
-                  {flow.fields.new_password}
-                </span>
-              )}
-            </label>
-            <label className="block space-y-2">
-              <span id="confirm-password-label" className="text-sm font-medium">
-                Confirm new password
-              </span>
-              <Input
-                ref={confirmationRef}
-                className="h-11"
-                name="confirm_password"
-                aria-labelledby="confirm-password-label"
-                type={visible ? "text" : "password"}
-                autoComplete="new-password"
-                value={confirmation}
-                onChange={(event) => {
-                  setConfirmation(event.target.value);
-                  setMismatch(false);
-                }}
-                required
-                disabled={flow.busy}
-                aria-invalid={mismatch || undefined}
-                aria-describedby={mismatch ? "password-match-error" : undefined}
-              />
-              {mismatch && (
-                <span
-                  id="password-match-error"
-                  className="text-destructive block text-sm"
-                  role="alert"
-                >
-                  Passwords do not match.
-                </span>
-              )}
-            </label>
-            <Button
-              type="button"
-              variant="outline"
-              className="min-h-11"
-              aria-pressed={visible}
-              disabled={flow.busy}
-              onClick={() => setVisible(!visible)}
-            >
-              {visible ? "Hide passwords" : "Show passwords"}
-            </Button>
-          </div>
-        )}
-        {flow.message && (
+        <h2
+          ref={heading}
+          id="change-password-heading"
+          tabIndex={-1}
+          className="text-xl"
+        >
+          {flow.step === "email"
+            ? "Change password"
+            : flow.step === "otp"
+              ? "Check your email"
+              : "Choose a new password"}
+        </h2>
+        <p className="text-muted-foreground text-sm leading-relaxed wrap-break-word">
+          {flow.step === "email"
+            ? "Verify your account email to choose a new password."
+            : flow.step === "otp"
+              ? "We’ve queued a verification code for your account email. Enter the six-digit code when it arrives."
+              : "Saving your new password signs you out on all devices."}
+        </p>
+      </header>
+
+      {flow.loading ? (
+        <p className="text-muted-foreground text-sm" role="status">
+          Loading account email…
+        </p>
+      ) : flow.loadError ? (
+        <div className="space-y-3">
           <p className="text-destructive text-sm wrap-break-word" role="alert">
-            {flow.message}
+            {flow.loadError}
           </p>
-        )}
-        <div className="flex flex-col gap-3 sm:flex-row-reverse">
           <Button
-            type="submit"
-            className="min-h-11 whitespace-normal sm:flex-1"
-            disabled={
-              flow.busy ||
-              (flow.challenge
-                ? otp.length !== 6 || flow.isExpired
-                : flow.cooldown > 0)
-            }
+            variant="outline"
+            className="min-h-11"
+            onClick={flow.retryLoad}
+          >
+            Try again
+          </Button>
+        </div>
+      ) : flow.step === "email" ? (
+        <div className="space-y-4">
+          <p className="text-sm leading-relaxed wrap-break-word">
+            We’ll send a verification code to your account email.
+          </p>
+          <Button
+            className="min-h-11 w-full whitespace-normal sm:w-auto"
+            disabled={flow.busy || flow.cooldown > 0}
+            onClick={() => void flow.request()}
           >
             {flow.busy
-              ? "Please wait…"
-              : flow.challenge
-                ? "Verify and change password"
-                : flow.cooldown > 0
-                  ? `Send code in ${flow.cooldown}s`
-                  : "Send verification code"}
+              ? "Sending…"
+              : flow.cooldown > 0
+                ? `Send code in ${flow.cooldown}s`
+                : "Send verification code"}
           </Button>
-          {flow.challenge && (
-            <Button
-              type="button"
-              variant="outline"
-              className="min-h-11"
-              disabled={flow.busy}
-              onClick={() => {
-                flow.back();
-                setOtp("");
-              }}
-            >
-              Back
-            </Button>
-          )}
         </div>
-      </form>
+      ) : flow.step === "otp" ? (
+        <VerificationForm
+          busy={flow.busy}
+          expired={flow.expired}
+          remaining={flow.remaining}
+          cooldown={flow.cooldown}
+          fieldError={flow.fields.otp}
+          verify={flow.verify}
+          resend={flow.resend}
+        />
+      ) : (
+        <NewPasswordForm
+          busy={flow.busy}
+          expired={flow.expired}
+          fieldError={flow.fields.new_password}
+          confirm={flow.confirm}
+        />
+      )}
+
+      {flow.message && Object.keys(flow.fields).length === 0 && (
+        <p className="text-destructive text-sm wrap-break-word" role="alert">
+          {flow.message}
+        </p>
+      )}
+      {flow.step !== "email" && (
+        <Button
+          type="button"
+          variant="link"
+          className="min-h-11 whitespace-normal"
+          disabled={flow.busy}
+          onClick={flow.restart}
+        >
+          Restart email verification
+        </Button>
+      )}
     </section>
+  );
+}
+
+/** Keep the code local so leaving verification clears the previous code input. */
+function VerificationForm({
+  busy,
+  expired,
+  remaining,
+  cooldown,
+  fieldError,
+  verify,
+  resend,
+}: {
+  busy: boolean;
+  expired: boolean;
+  remaining: number;
+  cooldown: number;
+  fieldError?: string;
+  verify: (otp: string) => Promise<void>;
+  resend: () => Promise<void>;
+}) {
+  const [otp, setOtp] = useState("");
+  return (
+    <form
+      className="min-w-0 space-y-4"
+      aria-busy={busy}
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (!busy && !expired && otp.length === 6) void verify(otp);
+      }}
+    >
+      <InputOTP
+        maxLength={6}
+        pattern={REGEXP_ONLY_DIGITS}
+        value={otp}
+        onChange={setOtp}
+        autoComplete="one-time-code"
+        disabled={busy}
+        aria-label="Six-digit verification code"
+        aria-invalid={Boolean(fieldError) || undefined}
+        aria-describedby={
+          fieldError
+            ? "password-code-help password-code-error"
+            : "password-code-help"
+        }
+        containerClassName="w-full justify-center"
+      >
+        <InputOTPGroup>
+          {Array.from({ length: 6 }, (_, index) => (
+            <InputOTPSlot
+              key={index}
+              index={index}
+              className="size-9"
+              aria-invalid={Boolean(fieldError) || undefined}
+            />
+          ))}
+        </InputOTPGroup>
+      </InputOTP>
+      <p
+        id="password-code-help"
+        className="text-muted-foreground text-center text-sm"
+      >
+        {expired
+          ? "This code has expired. Request a new code."
+          : `Code expires in ${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, "0")}.`}
+      </p>
+      {fieldError && (
+        <p
+          id="password-code-error"
+          className="text-destructive text-sm"
+          role="alert"
+        >
+          {fieldError}
+        </p>
+      )}
+      <div className="flex flex-col gap-3 sm:flex-row-reverse">
+        <Button
+          type="submit"
+          className="min-h-11 whitespace-normal sm:flex-1"
+          disabled={busy || expired || otp.length !== 6}
+        >
+          {busy ? "Please wait…" : "Verify code"}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          className="min-h-11 whitespace-normal sm:flex-1"
+          disabled={busy || cooldown > 0}
+          onClick={() => {
+            setOtp("");
+            void resend();
+          }}
+        >
+          {cooldown > 0 ? `Resend code in ${cooldown}s` : "Resend code"}
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+/** Unmount password drafts when verification restarts or the account page closes. */
+function NewPasswordForm({
+  busy,
+  expired,
+  fieldError,
+  confirm,
+}: {
+  busy: boolean;
+  expired: boolean;
+  fieldError?: string;
+  confirm: (password: string) => Promise<void>;
+}) {
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmation, setConfirmation] = useState("");
+  const [visible, setVisible] = useState(false);
+  const [mismatch, setMismatch] = useState(false);
+  const confirmationRef = useRef<HTMLInputElement>(null);
+
+  const submit = (event: SyntheticEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (busy || expired) return;
+    if (newPassword !== confirmation) {
+      setMismatch(true);
+      confirmationRef.current?.focus();
+      return;
+    }
+    void confirm(newPassword);
+  };
+
+  return (
+    <form className="min-w-0 space-y-4" onSubmit={submit} aria-busy={busy}>
+      <label className="block space-y-2">
+        <span id="new-password-label" className="text-sm font-medium">
+          New password
+        </span>
+        <Input
+          className="h-11"
+          name="new_password"
+          aria-labelledby="new-password-label"
+          type={visible ? "text" : "password"}
+          autoComplete="new-password"
+          value={newPassword}
+          onChange={(event) => {
+            setNewPassword(event.target.value);
+            setMismatch(false);
+          }}
+          required
+          minLength={PASSWORD_MIN_LENGTH}
+          maxLength={PASSWORD_MAX_LENGTH}
+          pattern={PASSWORD_PATTERN}
+          disabled={busy || expired}
+          aria-invalid={Boolean(fieldError) || undefined}
+          aria-describedby={
+            fieldError
+              ? "new-password-help new-password-error"
+              : "new-password-help"
+          }
+        />
+        <span
+          id="new-password-help"
+          className="text-muted-foreground block text-xs"
+        >
+          Use 8–64 characters with an uppercase letter, a lowercase letter and a
+          number.
+        </span>
+        {fieldError && (
+          <span
+            id="new-password-error"
+            className="text-destructive block text-sm"
+            role="alert"
+          >
+            {fieldError}
+          </span>
+        )}
+      </label>
+      <label className="block space-y-2">
+        <span id="confirm-password-label" className="text-sm font-medium">
+          Confirm new password
+        </span>
+        <Input
+          ref={confirmationRef}
+          className="h-11"
+          name="confirm_password"
+          maxLength={PASSWORD_MAX_LENGTH}
+          aria-labelledby="confirm-password-label"
+          type={visible ? "text" : "password"}
+          autoComplete="new-password"
+          value={confirmation}
+          onChange={(event) => {
+            setConfirmation(event.target.value);
+            setMismatch(false);
+          }}
+          required
+          disabled={busy || expired}
+          aria-invalid={mismatch || undefined}
+          aria-describedby={mismatch ? "password-match-error" : undefined}
+        />
+        {mismatch && (
+          <span
+            id="password-match-error"
+            className="text-destructive block text-sm"
+            role="alert"
+          >
+            Passwords do not match.
+          </span>
+        )}
+      </label>
+
+      {expired && (
+        <p className="text-muted-foreground text-sm" role="status">
+          Verification has expired. Verify your email again to change your
+          password.
+        </p>
+      )}
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <Button
+          type="button"
+          variant="outline"
+          className="min-h-11"
+          aria-pressed={visible}
+          disabled={busy || expired}
+          onClick={() => setVisible(!visible)}
+        >
+          {visible ? "Hide passwords" : "Show passwords"}
+        </Button>{" "}
+        <Button
+          type="submit"
+          className="min-h-11 w-full whitespace-normal sm:w-auto"
+          disabled={busy || expired}
+        >
+          {busy ? "Saving…" : "Change password"}
+        </Button>
+      </div>
+    </form>
   );
 }

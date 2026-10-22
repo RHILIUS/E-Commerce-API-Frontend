@@ -7,7 +7,7 @@ import {
   fetchProfilePhoto,
   removeProfilePhoto,
   saveProfilePhoto,
-} from "../api";
+} from "../api/profilePhotoApi";
 import type { PhotoCrop, ProfilePhoto } from "../types";
 
 /** Own independent photo requests, preserving the personal-details form's draft. */

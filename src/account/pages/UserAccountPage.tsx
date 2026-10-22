@@ -29,6 +29,9 @@ export default function UserAccountPage() {
       ? requestedTab
       : "profile";
   const [profileVisited, setProfileVisited] = useState(tab === "profile");
+  const [passwordVisited, setPasswordVisited] = useState(
+    tab === "change-password",
+  );
   return (
     <div className="bg-background text-foreground flex min-w-0 flex-col">
       <Header
@@ -49,6 +52,7 @@ export default function UserAccountPage() {
             key={user.id}
             value={tab}
             onValueChange={(value) => {
+              if (value === "change-password") setPasswordVisited(true);
               if (tab === "profile" || value === "profile")
                 setProfileVisited(true);
               setParams({ tab: String(value) });
@@ -82,7 +86,9 @@ export default function UserAccountPage() {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="change-password" keepMounted>
-              <ChangePasswordPanel />
+              {(passwordVisited || tab === "change-password") && (
+                <ChangePasswordPanel active={tab === "change-password"} />
+              )}
             </TabsContent>
             <TabsContent value="profile" keepMounted>
               {(profileVisited || tab === "profile") && <ProfilePanel />}
