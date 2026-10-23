@@ -58,7 +58,7 @@ both date and ID. Store totals retain archived/deleted-product order history;
 product lists exclude drafts and archived products for every viewer, even members.
 
 Store cards, the landing catalog, and ProductPage use the same qualifying lifetime
-units rather than the legacy stored `Product.sold_count`. The landing ranking
+units calculated from order history. The landing ranking
 still uses its personalized/non-cancelled order logic, so its ordering can differ
 from store rankings even though displayed sold counts agree. Display currencies reuse existing
 backend conversion and fallback behavior without frontend exchange calculations.
