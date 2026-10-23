@@ -57,9 +57,8 @@ history. Ties prefer newest product creation, then highest ID. Oldest reverses
 both date and ID. Store totals retain archived/deleted-product order history;
 product lists exclude drafts and archived products for every viewer, even members.
 
-Store-card sold counts use qualifying lifetime units, not the legacy stored
-`Product.sold_count`. The landing page and ProductPage still expose that legacy
-counter and the landing ranking still uses its prior personalized/non-cancelled
-order logic. These existing screens can therefore show different sales counts or
-rankings; this feature does not redefine them. Display currencies reuse existing
+Store cards, the landing catalog, and ProductPage use the same qualifying lifetime
+units rather than the legacy stored `Product.sold_count`. The landing ranking
+still uses its personalized/non-cancelled order logic, so its ordering can differ
+from store rankings even though displayed sold counts agree. Display currencies reuse existing
 backend conversion and fallback behavior without frontend exchange calculations.
