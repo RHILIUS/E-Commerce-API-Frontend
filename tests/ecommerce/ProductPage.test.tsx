@@ -29,7 +29,7 @@ const product: ProductDetail = {
   price: "79990.00",
   currency: "PHP",
   display_price: { amount: "1428.39", currency: "USD" },
-  sold_count: 2400,
+  ordered_count: 2400,
   stock: 3,
   status: "active",
   archived_at: null,

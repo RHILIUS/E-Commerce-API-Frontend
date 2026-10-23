@@ -24,7 +24,7 @@ const products = Array.from({ length: 16 }, (_, index) => ({
   price: "1234.56",
   currency: "USD",
   display_price: { amount: "1234.56", currency: "USD" },
-  sold_count: 25,
+  ordered_count: 25,
   default_image:
     index === 0
       ? null

@@ -105,7 +105,7 @@ export const ProductPurchasePanel = ({
         <p className="text-muted-foreground text-sm font-medium">
           {draft
             ? "Not published"
-            : `${new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(product.sold_count).toLowerCase()} sold`}
+            : `${new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(product.ordered_count).toLowerCase()} ${product.ordered_count === 1 ? "unit" : "units"} ordered`}
         </p>
       </div>
       <p className="text-sm font-medium">

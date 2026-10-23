@@ -133,9 +133,9 @@ export const StoreProfile = ({ store }: { store: PublicStore }) => {
               </dd>
             </div>
             <div>
-              <dt className="text-muted-foreground">Items sold</dt>
+              <dt className="text-muted-foreground">Units ordered</dt>
               <dd className="mt-1 font-semibold">
-                {store.items_sold.toLocaleString()}
+                {store.items_ordered.toLocaleString()}
               </dd>
             </div>
             <div>

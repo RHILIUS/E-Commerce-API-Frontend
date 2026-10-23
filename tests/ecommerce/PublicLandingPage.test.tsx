@@ -54,7 +54,7 @@ beforeEach(() => {
             display_price: authorization
               ? { amount: "6913.20", currency: "PHP" }
               : { amount: "123.45", currency: "USD" },
-            sold_count: 2,
+            ordered_count: 2,
             default_image: null,
           },
         ],

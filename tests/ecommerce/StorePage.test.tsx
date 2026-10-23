@@ -28,7 +28,7 @@ const store = {
   public_phone: "+63 917 123 4567",
   address: null,
   listed_product_count: 12,
-  items_sold: 4,
+  items_ordered: 4,
   categories: [{ id: 8, name: "Shoes", product_count: 12 }],
 };
 const products = Array.from({ length: 12 }, (_, index) => ({
@@ -38,7 +38,7 @@ const products = Array.from({ length: 12 }, (_, index) => ({
   price: "560.00",
   currency: "PHP",
   display_price: { amount: "10.00", currency: "USD" },
-  sold_count: 2,
+  ordered_count: 2,
   default_image: null,
   stock: index === 0 ? 0 : 5,
 }));
@@ -70,7 +70,7 @@ beforeEach(() => {
       HttpResponse.json({
         new_products: products.slice(0, 10),
         trending_products: [],
-        best_sellers: [],
+        most_ordered: [],
       }),
     ),
     http.get(`${endpoint}products/`, ({ request }) => {
@@ -170,6 +170,10 @@ describe("Store Page", () => {
     expect(await screen.findAllByRole("article")).toHaveLength(10);
     expect(screen.getByText("Out of stock")).toBeVisible();
     expect(screen.getByText("No trending products yet.")).toBeVisible();
+    expect(screen.getByText("Units ordered")).toBeVisible();
+    expect(
+      screen.getByRole("link", { name: "View all most ordered" }),
+    ).toHaveAttribute("href", "/stores/1?tab=products&sort=most_ordered");
     expect(
       screen.getByRole("link", { name: "View all trending products" }),
     ).toHaveAttribute("href", "/stores/1?tab=products&sort=popular");

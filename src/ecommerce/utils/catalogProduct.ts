@@ -9,7 +9,7 @@ export const catalogProduct = (
   description: product.short_description,
   price: Number(product.display_price.amount),
   currency: product.display_price.currency,
-  soldCount: product.sold_count,
+  orderedCount: product.ordered_count,
   imageUrl: product.default_image?.image ?? null,
   imageAlt: product.default_image?.alt_text || product.name,
   isOutOfStock: product.stock === 0,
