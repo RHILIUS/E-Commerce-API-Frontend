@@ -1,7 +1,7 @@
 import "@testing-library/jest-dom/vitest";
 
 import { cleanup } from "@testing-library/react";
-import { afterAll, afterEach, beforeAll } from "vitest";
+import { afterAll, afterEach, beforeAll, vi } from "vitest";
 
 import { server } from "./server";
 
@@ -28,3 +28,15 @@ if (typeof window !== "undefined")
       dispatchEvent: () => true,
     }),
   });
+
+// jsdom does not lay out pages; navigation tests provide explicit scroll assertions.
+beforeAll(() => {
+  if (typeof window === "undefined") return;
+  window.scrollTo = vi.fn();
+  window.HTMLElement.prototype.scrollIntoView = vi.fn();
+  globalThis.ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+});

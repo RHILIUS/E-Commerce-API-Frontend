@@ -105,6 +105,10 @@ When implementing or modifying a page:
 
 Before considering a UI change complete, verify it at representative widths of 330px, 375px, 768px, 1024px, and a wide desktop viewport. Also check at least one short viewport height, light and dark modes when both are supported, and confirm there is no unexpected overflow in either axis. Run the relevant type-check, lint, and production-build commands after implementation.
 
+## Navigation and Scroll Position
+
+For changes affecting navigation, scroll position, or focus, apply [navigation-ux](../navigation-ux/SKILL.md). It owns the reusable behavior and verification guidance. Adapt its rules to the project's routing and layout; keep implementation locations and deliberate project exceptions in project documentation.
+
 ## Completion
 
 Review the affected interface against the brand direction: clear purpose and primary action, restrained component and icon use, current theme tokens, consistent rounding, and purposeful feedback. For changed interactions, check keyboard and touch access, focus visibility, relevant loading/error states, and reduced-motion behavior alongside the responsive and theme checks above.

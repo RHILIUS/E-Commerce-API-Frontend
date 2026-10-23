@@ -1,27 +1,23 @@
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
+import { useLocation, useNavigationType } from "react-router-dom";
 
 import { useAuth } from "@/authentication/contexts/Auth/useAuth";
 import { productCatalogApi } from "@/ecommerce/api";
-import type { Product } from "@/ecommerce/types";
 import { catalogProduct } from "@/ecommerce/utils/catalogProduct";
 
-export const CATALOG_PAGE_SIZE = 12;
+import { CatalogHistoryContext, type CatalogResult } from "./catalogHistory";
 
-type CatalogResult = {
-  key: string;
-  products: Product[];
-  page: number;
-  hasMore: boolean;
-  error?: string;
-  moreError?: string;
-  isLoadingMore: boolean;
-};
+export const CATALOG_PAGE_SIZE = 12;
 
 /** Accumulate catalog pages and cancel obsolete search or viewer requests. */
 export const useProductCatalog = (query: string) => {
   const { accessToken, user, isLoading: authLoading } = useAuth();
+  const history = useContext(CatalogHistoryContext);
+  const location = useLocation();
+  const navigationType = useNavigationType();
   const [attempt, setAttempt] = useState(0);
   const key = JSON.stringify([
+    location.key,
     query,
     accessToken,
     user?.address_country_code,
@@ -30,8 +26,17 @@ export const useProductCatalog = (query: string) => {
   const [result, setResult] = useState<CatalogResult | null>(null);
   const moreRequest = useRef<AbortController | null>(null);
 
+  const historyKey = key;
+  const cached =
+    navigationType === "POP" ? history?.get(historyKey) : undefined;
   useEffect(() => {
     if (authLoading) return;
+    if (navigationType === "POP" && history?.has(historyKey)) {
+      return () => {
+        moreRequest.current?.abort();
+        moreRequest.current = null;
+      };
+    }
     const controller = new AbortController();
     productCatalogApi(1, query, controller.signal, accessToken).then(
       (data) => {
@@ -63,9 +68,27 @@ export const useProductCatalog = (query: string) => {
       moreRequest.current?.abort();
       moreRequest.current = null;
     };
-  }, [query, accessToken, authLoading, key]);
+  }, [
+    query,
+    accessToken,
+    authLoading,
+    key,
+    history,
+    historyKey,
+    navigationType,
+  ]);
 
-  const current = !authLoading && result?.key === key ? result : null;
+  const current = authLoading
+    ? null
+    : result?.key === key
+      ? result
+      : (cached ?? null);
+
+  useEffect(() => {
+    if (!current || current.error || current.isLoadingMore || !history) return;
+    history.set(historyKey, current);
+    if (history.size > 20) history.delete(history.keys().next().value!);
+  }, [current, history, historyKey]);
 
   // Lock immediately, before React renders, so repeated clicks cannot skip pages.
   const loadMore = async () => {

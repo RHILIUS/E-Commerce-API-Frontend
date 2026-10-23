@@ -1,0 +1,3 @@
+interface:
+  display_name: "Navigation UX"
+  short_description: "Predictable navigation, scroll restoration, and focus"

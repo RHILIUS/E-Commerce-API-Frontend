@@ -1,9 +1,15 @@
 import { screen, waitFor } from "@testing-library/react";
+import { act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { delay, http, HttpResponse } from "msw";
-import { MemoryRouter } from "react-router-dom";
-import { beforeEach, describe, expect, test } from "vitest";
+import {
+  createMemoryRouter,
+  MemoryRouter,
+  RouterProvider,
+} from "react-router-dom";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
+import RootLayout from "@/app/layout/RootLayout";
 import { AuthProvider } from "@/authentication/contexts/Auth/AuthProvider";
 import LandingPage from "@/ecommerce/pages/LandingPage";
 
@@ -279,4 +285,37 @@ describe("LandingPage API integration", () => {
       ).not.toBeInTheDocument(),
     );
   });
+});
+
+test("Back restores catalog cards loaded beyond the first page", async () => {
+  vi.stubGlobal(
+    "ResizeObserver",
+    class {
+      observe() {}
+      disconnect() {}
+    },
+  );
+  vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+  const router = createMemoryRouter([
+    {
+      element: <RootLayout />,
+      children: [
+        { path: "/", element: <LandingPage /> },
+        { path: "/products/:id", element: <h1>Product details</h1> },
+      ],
+    },
+  ]);
+  render(
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>,
+  );
+  await screen.findByRole("article", { name: "Laptop 1" });
+  await userEvent.click(screen.getByRole("button", { name: "Load more" }));
+  await screen.findByRole("article", { name: "Laptop 13" });
+  await act(() => router.navigate("/products/13"));
+  await screen.findByRole("heading", { name: "Product details" });
+  await act(() => router.navigate(-1));
+  await screen.findByRole("article", { name: "Laptop 13" });
+  expect(screen.getAllByRole("article")).toHaveLength(16);
 });

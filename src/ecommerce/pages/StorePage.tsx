@@ -129,7 +129,9 @@ const StorePage = () => {
               <Tabs
                 value={tab}
                 onValueChange={(value) =>
-                  setParams(value === "home" ? {} : { tab: String(value) })
+                  setParams(value === "home" ? {} : { tab: String(value) }, {
+                    preventScrollReset: true,
+                  })
                 }
                 className="min-w-0 gap-6"
               >
