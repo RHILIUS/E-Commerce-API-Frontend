@@ -35,6 +35,12 @@ the frontend uses to talk to the backend.
 Sign-in and registration are introduced in the architecture guide. Their code
 lives in `src/authentication/`.
 
+## Implementation planning
+
+- [Multi-currency commerce](planning/multi-currency-commerce.md) records the
+  current-system audit, proposed contracts, staged rollout, and financial migration
+  constraints. It describes proposed behavior separately from implemented guides.
+
 ## Design resources
 
 Application guides explain how the website works. Design resources have a separate

@@ -70,3 +70,10 @@ backend cannot convert a price, it returns the original store amount and currenc
 which the card displays without relabeling it. A page may then show multiple
 currencies. Logging out reloads guest prices; personal-address country changes trigger a
 new request. Conversion is a display estimate, not a checkout currency guarantee.
+
+The backend shares its personal-address currency default with checkout through
+[`default_currency_for_user`](../../../backend/core/common/currencies.py).
+This helper chooses a currency; it does not fetch rates or establish payment
+support. Browsing keeps its source-price fallback, checkout requires usable
+conversion rates, and Stripe test checkout continues to override the default
+with USD. Manual currency selection and location-based defaults remain planned.
