@@ -79,13 +79,13 @@ function ProfileForm({
   const [dirty, setDirty] = useState(false);
 
   // Compare submitted values so reverting an edit also clears the unsaved state.
-  const checkChanges = () => {
+  const checkChanges = (countryCode?: string) => {
     queueMicrotask(() => {
-      if (formRef.current)
-        setDirty(
-          JSON.stringify([...new FormData(formRef.current)]) !==
-            baseline.current,
-        );
+      if (!formRef.current) return;
+      const data = new FormData(formRef.current);
+      // The combobox callback can precede its hidden input's React commit.
+      if (countryCode !== undefined) data.set("addressCountry", countryCode);
+      setDirty(JSON.stringify([...data]) !== baseline.current);
     });
   };
   useEffect(() => {
@@ -148,7 +148,7 @@ function ProfileForm({
   return (
     <form
       ref={formRef}
-      onChange={checkChanges}
+      onChange={() => checkChanges()}
       onSubmit={submit}
       aria-busy={busy}
       className="space-y-6"

@@ -29,7 +29,7 @@ const AddressCountryField = ({
 }: {
   defaultValue?: string;
   serverError?: string;
-  onValueChange?: () => void;
+  onValueChange?: (countryCode: string) => void;
 }) => {
   const id = useId();
   return (
@@ -45,7 +45,7 @@ const AddressCountryField = ({
         }
         items={COUNTRY_OPTIONS}
         name="addressCountry"
-        onValueChange={() => onValueChange?.()}
+        onValueChange={(country) => onValueChange?.(country?.code ?? "")}
         required
         autoComplete="country"
         autoHighlight

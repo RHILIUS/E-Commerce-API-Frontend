@@ -495,3 +495,29 @@ test("profile without a photo has no empty preview control", async () => {
     screen.queryByRole("button", { name: "View profile photo" }),
   ).not.toBeInTheDocument();
 });
+
+test("the first country selection enables saving and reverting clears the change", async () => {
+  const user = userEvent.setup();
+  let saved: ProfileInput | undefined;
+  server.use(
+    http.put(url, async ({ request }) => {
+      saved = (await request.json()) as ProfileInput;
+      return HttpResponse.json({ ...profile, ...saved });
+    }),
+  );
+  open();
+  const country = await screen.findByRole("combobox", { name: "Country" });
+  const save = screen.getByRole("button", { name: "Save changes" });
+  expect(save).toBeDisabled();
+  await user.click(country);
+  await user.click(await screen.findByRole("option", { name: /Japan/ }));
+  expect(save).toBeEnabled();
+  await user.click(country);
+  await user.click(await screen.findByRole("option", { name: /Philippines/ }));
+  expect(save).toBeDisabled();
+  await user.click(country);
+  await user.click(await screen.findByRole("option", { name: /Japan/ }));
+  await user.click(save);
+  await screen.findByText("Profile saved.");
+  expect(saved?.address.country_code).toBe("JP");
+});
