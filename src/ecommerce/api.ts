@@ -6,11 +6,13 @@ export const productDetailApi = async (
   id: string,
   signal: AbortSignal,
   accessToken: string | null,
+  displayCurrency?: string,
 ) => {
   const response = await api.get<ProductDetail>(
     `/api/shop/products/${encodeURIComponent(id)}/`,
     {
       signal,
+      params: { display_currency: displayCurrency },
       headers: accessToken
         ? { Authorization: `Bearer ${accessToken}` }
         : undefined,
@@ -25,11 +27,12 @@ export const productCatalogApi = async (
   query: string,
   signal: AbortSignal,
   accessToken: string | null,
+  displayCurrency?: string,
 ) => {
   const response = await api.get<ProductCatalogResponse>(
     "/api/shop/products/",
     {
-      params: { page, q: query },
+      params: { page, q: query, display_currency: displayCurrency },
       signal,
       headers: accessToken
         ? { Authorization: `Bearer ${accessToken}` }

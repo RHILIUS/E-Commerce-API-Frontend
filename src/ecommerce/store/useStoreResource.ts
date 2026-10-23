@@ -3,17 +3,20 @@ import { useEffect, useState } from "react";
 
 import api from "@/app/api/axios";
 import { useAuth } from "@/authentication/contexts/Auth/useAuth";
+import { useDisplayCurrency } from "@/ecommerce/currency/context";
 
 type StoreResult<T> = { key: string; data?: T; status?: number };
 
 /** Load a public store resource, refreshing viewer prices and discarding stale requests. */
 export const useStoreResource = <T>(path: string) => {
   const { accessToken, user, isLoading: authLoading } = useAuth();
+  const { currency } = useDisplayCurrency();
   const [attempt, setAttempt] = useState(0);
   const key = JSON.stringify([
     path,
     accessToken,
     user?.address_country_code,
+    currency,
     attempt,
   ]);
   const [result, setResult] = useState<StoreResult<T> | null>(null);
@@ -23,6 +26,7 @@ export const useStoreResource = <T>(path: string) => {
     api
       .get<T>(path, {
         signal: controller.signal,
+        params: { display_currency: currency },
         headers: accessToken
           ? { Authorization: `Bearer ${accessToken}` }
           : undefined,
@@ -42,7 +46,7 @@ export const useStoreResource = <T>(path: string) => {
         },
       );
     return () => controller.abort();
-  }, [path, accessToken, authLoading, key]);
+  }, [path, accessToken, currency, authLoading, key]);
   const current = !authLoading && result?.key === key ? result : null;
   return {
     data: current?.data,

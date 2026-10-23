@@ -3,6 +3,7 @@ import { useLocation, useNavigationType } from "react-router-dom";
 
 import { useAuth } from "@/authentication/contexts/Auth/useAuth";
 import { productCatalogApi } from "@/ecommerce/api";
+import { useDisplayCurrency } from "@/ecommerce/currency/context";
 import { catalogProduct } from "@/ecommerce/utils/catalogProduct";
 
 import { CatalogHistoryContext, type CatalogResult } from "./catalogHistory";
@@ -15,12 +16,14 @@ export const useProductCatalog = (query: string) => {
   const history = useContext(CatalogHistoryContext);
   const location = useLocation();
   const navigationType = useNavigationType();
+  const { currency } = useDisplayCurrency();
   const [attempt, setAttempt] = useState(0);
   const key = JSON.stringify([
     location.key,
     query,
     accessToken,
     user?.address_country_code,
+    currency,
     attempt,
   ]);
   const [result, setResult] = useState<CatalogResult | null>(null);
@@ -38,7 +41,7 @@ export const useProductCatalog = (query: string) => {
       };
     }
     const controller = new AbortController();
-    productCatalogApi(1, query, controller.signal, accessToken).then(
+    productCatalogApi(1, query, controller.signal, accessToken, currency).then(
       (data) => {
         if (!controller.signal.aborted) {
           setResult({
@@ -71,6 +74,7 @@ export const useProductCatalog = (query: string) => {
   }, [
     query,
     accessToken,
+    currency,
     authLoading,
     key,
     history,
@@ -102,6 +106,7 @@ export const useProductCatalog = (query: string) => {
         query,
         controller.signal,
         accessToken,
+        currency,
       );
       if (controller.signal.aborted) return false;
       // Rankings can shift between requests; keep already displayed cards unique.

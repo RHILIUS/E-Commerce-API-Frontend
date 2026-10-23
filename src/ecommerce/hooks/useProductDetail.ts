@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 
 import { useAuth } from "@/authentication/contexts/Auth/useAuth";
 import { productDetailApi } from "@/ecommerce/api";
+import { useDisplayCurrency } from "@/ecommerce/currency/context";
 import type { ProductDetail } from "@/ecommerce/types";
 
 type DetailResult = {
@@ -14,11 +15,13 @@ type DetailResult = {
 /** Discard stale responses and hide prior data when the route or viewer changes. */
 export const useProductDetail = (id: string) => {
   const { accessToken, user, isLoading: authLoading } = useAuth();
+  const { currency } = useDisplayCurrency();
   const [attempt, setAttempt] = useState(0);
   const key = JSON.stringify([
     id,
     accessToken,
     user?.address_country_code,
+    currency,
     attempt,
   ]);
   const [result, setResult] = useState<DetailResult | null>(null);
@@ -26,7 +29,7 @@ export const useProductDetail = (id: string) => {
   useEffect(() => {
     if (authLoading) return;
     const controller = new AbortController();
-    productDetailApi(id, controller.signal, accessToken).then(
+    productDetailApi(id, controller.signal, accessToken, currency).then(
       (data) => {
         if (!controller.signal.aborted) setResult({ key, data });
       },
@@ -42,7 +45,7 @@ export const useProductDetail = (id: string) => {
       },
     );
     return () => controller.abort();
-  }, [id, accessToken, authLoading, key]);
+  }, [id, accessToken, currency, authLoading, key]);
 
   const current = !authLoading && result?.key === key ? result : null;
   return {

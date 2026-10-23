@@ -107,3 +107,32 @@ test("an older refresh cannot overwrite a mutation and overlapping writes are bl
   expect(result.current.data).toEqual(updated);
   expect(result.current.pending).toBe(false);
 });
+
+test("a currency change during a cart edit reads new prices without repeating the edit", async () => {
+  const { result, rerender } = renderHook(({ currency }) => useCart(currency), {
+    initialProps: { currency: "PHP" },
+  });
+  await waitFor(() => expect(result.current.data).toEqual({ carts: [] }));
+  let finish!: (data: CartResponse) => void;
+  vi.mocked(updateCartQuantity).mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+  let mutation!: Promise<boolean>;
+  act(() => {
+    mutation = result.current.updateQuantity(1, 2);
+  });
+  rerender({ currency: "EUR" });
+  expect(result.current.data).toBeNull();
+  await act(async () => {
+    finish({ carts: [] });
+    await mutation;
+  });
+  await waitFor(() =>
+    expect(fetchCarts).toHaveBeenLastCalledWith(expect.any(AbortSignal), "EUR"),
+  );
+  expect(updateCartQuantity).toHaveBeenCalledExactlyOnceWith(1, 2, "PHP");
+  await waitFor(() => expect(result.current.data).toEqual({ carts: [] }));
+});

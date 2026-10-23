@@ -129,27 +129,8 @@ and verified node IDs in the registry after synchronization. Checkout/order
 creation remains deferred, and prototype cart actions must not imply real stock
 reservation or API writes.
 
-## Verification
+## Display currency
 
-`tests/ecommerce/CartPage.test.tsx` covers auth routing, mixed selection, currency
-totals, quantity changes, stock conflicts, confirmed removal and retry, the
-500-product removal limit, refresh, empty/error states, and product-page adds
-through the real HTTP client with mocked API responses.
-`tests/ecommerce/useCart.test.tsx` covers visible-page polling, cleanup, stale
-responses, and overlapping writes.
-`tests/ecommerce/ProductPage.test.tsx` also checks guest sign-in destinations,
-stock-conflict messages, and duplicate prevention while an add is pending.
-
-The completed frontend checks passed all 67 tests, ESLint, Prettier, TypeScript,
-and the production build. Vite reports a bundle-size warning for the main chunk.
-Chromium checks covered 330, 375, 768, 1024, and 1440px in light and dark modes,
-plus 375 × 568 and 768 × 375 short viewports. They checked horizontal overflow,
-selection, dialog viewport fit and keyboard focus, confirmed removal, and the
-empty state, with no browser runtime errors. Mobile light and desktop dark
-screenshots were visually reviewed. Browser checks used contract-shaped mocked
-HTTP responses; a live backend/database smoke test remains outstanding.
-
-The success-popup update passed the 24 cart/product tests, lint, formatting,
-TypeScript, and production build. Chromium verified popup placement at the same
-widths and short heights in both themes, close and View cart actions, repeated
-additions, automatic dismissal, and no horizontal overflow or runtime errors.
+The shared header supports [display-currency selection](display-currency.md).
+Browsing requests and cart edit responses use that preference; original store
+prices and checkout rules remain separate.

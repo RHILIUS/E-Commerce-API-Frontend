@@ -1,7 +1,9 @@
 # Multi-currency commerce plan
 
-Status: proposed implementation design. No behavior or database changes are
-introduced by this document. It covers the frontend, backend, and deployment;
+Status: staged design. Shared default resolution and manual browsing selection
+are implemented; [display currency](../ecommerce/display-currency.md) describes
+current behavior. Automatic location defaults, selected-currency checkout, and
+accounting/payout extensions below remain proposals. It covers the frontend, backend, and deployment;
 exact server contracts belong in backend documentation when implemented.
 
 Customers should be able to choose a browsing currency and, where supported,
@@ -58,8 +60,8 @@ No new service deployment or frontend currency conversion engine is needed.
 | Provider onboarding and withdrawals                   | Later payout responsibility, integrated with the ledger    |
 
 Use separate supported sets for display conversion, Stripe charging, COD, and
-seller payouts. Derive them from explicit application configuration intersected
-with verified provider capabilities; Babel metadata alone grants no eligibility.
+seller payouts. Browsing choices come from cached provider capabilities, optionally narrowed by
+application configuration. Payment capabilities remain separately controlled; Babel metadata alone grants no eligibility.
 Retain known same-currency behavior where permitted by the relevant payment method.
 
 Resolve browsing defaults in this order: explicit browser preference, account
@@ -82,7 +84,10 @@ currency even if the header preference changes.
 
 ## Proposed API contracts
 
-These routes and fields are proposals, not currently accepted API inputs.
+Currency metadata and browsing/cart `display_currency` inputs are implemented.
+Checkout currency inputs and allocation extensions remain proposals. Read the
+[implemented backend contract](../../../backend/docs/api/ecommerce/currencies.md)
+for current behavior; country-based defaults are not enabled.
 
 | Surface                                                   | Proposed contract                                                                                                                                                                                                                                                                  |
 | --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

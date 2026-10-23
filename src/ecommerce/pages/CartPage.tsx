@@ -20,6 +20,7 @@ import { CartStoreCard } from "@/ecommerce/cart/CartStoreCard";
 import { useCart } from "@/ecommerce/cart/useCart";
 import { formatMoney, selectedTotals } from "@/ecommerce/cart/utils";
 import { Header } from "@/ecommerce/components/Header";
+import { useDisplayCurrency } from "@/ecommerce/currency/context";
 
 /** Keep account-specific cart and selection state isolated across account changes. */
 const CartPage = () => {
@@ -29,7 +30,8 @@ const CartPage = () => {
 
 function CartContent() {
   const navigate = useNavigate();
-  const cart = useCart();
+  const { currency } = useDisplayCurrency();
+  const cart = useCart(currency);
   const [selection, setSelection] = useState<Set<number>>(new Set());
   const [removing, setRemoving] = useState<number[]>([]);
   const [notice, setNotice] = useState("");

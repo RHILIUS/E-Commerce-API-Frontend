@@ -20,7 +20,7 @@ Keyboard activation moves focus to the first new card without scrolling.
 
 The search stays in the URL as `q`; submitting a different search starts again
 with page 1. Accumulated products live in memory and reset when the catalog
-unmounts, reloads, or the viewer/token or personal-address country changes.
+unmounts, reloads, or the viewer/token or personal-address country or selected display currency changes.
 Legacy `page` URL parameters do not select a starting page. The frontend sends
 successive `page` numbers internally and follows the API's `next` availability.
 Rankings can change between requests, so already displayed product IDs are not
@@ -64,7 +64,7 @@ Cards display the backend's `display_price.amount` and `display_price.currency`,
 formatted with `Intl.NumberFormat`. The original `price` belongs to the store's
 `currency`; it is not necessarily USD. The frontend does not compute exchange rates.
 
-Guests receive prices converted to USD; signed-in users receive their personal-address
+With Automatic selected, guests receive prices converted to USD; signed-in users receive their personal-address
 country's currency (USD when no address exists). Same-currency products retain their original amount. If the
 backend cannot convert a price, it returns the original store amount and currency,
 which the card displays without relabeling it. A page may then show multiple
@@ -76,4 +76,4 @@ The backend shares its personal-address currency default with checkout through
 This helper chooses a currency; it does not fetch rates or establish payment
 support. Browsing keeps its source-price fallback, checkout requires usable
 conversion rates, and Stripe test checkout continues to override the default
-with USD. Manual currency selection and location-based defaults remain planned.
+with USD. The header supports [manual display currency](display-currency.md); location-based defaults remain planned.

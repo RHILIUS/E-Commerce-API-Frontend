@@ -5,8 +5,11 @@ import type { CartResponse } from "./types";
 import { cartErrorMessage } from "./utils";
 
 /** Own cart requests, visible-page stock refresh, and mutation/refresh race prevention. */
-export function useCart() {
-  const [data, setData] = useState<CartResponse | null>(null);
+export function useCart(currency?: string) {
+  const [data, setData] = useState<{
+    currency?: string;
+    response: CartResponse;
+  } | null>(null);
   const [error, setError] = useState("");
   const [refreshError, setRefreshError] = useState("");
   const [pending, setPending] = useState(false);
@@ -18,10 +21,10 @@ export function useCart() {
     if (mutating.current || request.current) return;
     const controller = new AbortController();
     request.current = controller;
-    return fetchCarts(controller.signal)
+    return fetchCarts(controller.signal, currency)
       .then((response) => {
         if (alive.current && !controller.signal.aborted) {
-          setData(response);
+          setData({ currency, response });
           setRefreshError("");
         }
       })
@@ -35,7 +38,12 @@ export function useCart() {
       .finally(() => {
         if (request.current === controller) request.current = null;
       });
-  }, []);
+  }, [currency]);
+
+  const latestRefresh = useRef(refresh);
+  useEffect(() => {
+    latestRefresh.current = refresh;
+  }, [refresh]);
 
   useEffect(() => {
     alive.current = true;
@@ -67,7 +75,7 @@ export function useCart() {
     try {
       const response = await operation();
       if (alive.current) {
-        setData(response);
+        setData({ currency, response });
         setRefreshError("");
         success = true;
       }
@@ -77,20 +85,23 @@ export function useCart() {
       mutating.current = false;
       if (alive.current) {
         setPending(false);
-        if (!success) void refresh();
+        // A currency switch during a mutation needs a fresh response in the new currency.
+        if (!success || latestRefresh.current !== refresh)
+          void latestRefresh.current();
       }
     }
     return success;
   };
 
   return {
-    data,
+    data: data && data.currency === currency ? data.response : null,
     error,
     refreshError,
     pending,
     refresh,
     updateQuantity: (id: number, quantity: number) =>
-      mutate(() => updateCartQuantity(id, quantity)),
-    removeItems: (ids: number[]) => mutate(() => removeCartItems(ids)),
+      mutate(() => updateCartQuantity(id, quantity, currency)),
+    removeItems: (ids: number[]) =>
+      mutate(() => removeCartItems(ids, currency)),
   };
 }

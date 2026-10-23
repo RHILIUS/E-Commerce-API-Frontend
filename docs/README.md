@@ -20,6 +20,7 @@ the frontend uses to talk to the backend.
 | Area        | Guide                                                | What it explains                                                   |
 | ----------- | ---------------------------------------------------- | ------------------------------------------------------------------ |
 | Foundations | [Frontend architecture](architecture.md)             | How pages, shared state, requests, and folders fit together        |
+| Browsing    | [Display currency](ecommerce/display-currency.md)    | Choosing and remembering browsing currency                         |
 | Browsing    | [Product catalog](ecommerce/product-catalog.md)      | Loading and displaying the product list                            |
 | Browsing    | [Product page](ecommerce/product-page.md)            | Product details and purchase actions                               |
 | Browsing    | [Store page](ecommerce/store-page.md)                | Browsing a store and its products                                  |
