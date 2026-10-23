@@ -24,11 +24,22 @@ function DialogTitle({ className, ...props }: DialogPrimitive.Title.Props) {
 function DialogContent({
   className,
   children,
+  backdropClassName,
+  closeButtonClassName,
   ...props
-}: DialogPrimitive.Popup.Props) {
+}: DialogPrimitive.Popup.Props & {
+  backdropClassName?: string;
+  closeButtonClassName?: string;
+}) {
   return (
     <DialogPrimitive.Portal>
-      <DialogPrimitive.Backdrop className="bg-foreground/10 fixed inset-0 z-50 backdrop-blur-xs" />
+      <DialogPrimitive.Backdrop
+        data-slot="dialog-backdrop"
+        className={cn(
+          "bg-foreground/10 fixed inset-0 z-50 backdrop-blur-xs",
+          backdropClassName,
+        )}
+      />
       <DialogPrimitive.Popup
         data-slot="dialog-content"
         className={cn(
@@ -43,7 +54,10 @@ function DialogContent({
             <Button
               variant="ghost"
               size="icon"
-              className="absolute top-2 right-2 size-11"
+              className={cn(
+                "absolute top-2 right-2 size-11",
+                closeButtonClassName,
+              )}
             />
           }
           aria-label="Close"

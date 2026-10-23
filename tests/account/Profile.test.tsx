@@ -398,3 +398,67 @@ test("preserves profile edits across tabs and disables unchanged actions", async
   await user.type(name, member.fullName);
   expect(screen.getByRole("button", { name: "Save changes" })).toBeDisabled();
 });
+
+test("profile photo opens a preview independently of editing and preserves drafts", async () => {
+  server.use(
+    http.get("http://localhost/api/account/profile/photo/", () =>
+      HttpResponse.json({
+        profile_image: "https://example.com/avatar.webp",
+        original_image: "https://example.com/source.webp",
+        source_id: "users/profile/originals/source.webp",
+        crop: { x: 0.25, y: 0, width: 0.5, height: 1 },
+      }),
+    ),
+  );
+  const user = userEvent.setup();
+  // jsdom ignores focus options; model preventScroll support used by dialog dismissal.
+  const nativeFocus = HTMLElement.prototype.focus;
+  vi.spyOn(HTMLElement.prototype, "focus").mockImplementation(function (
+    this: HTMLElement,
+    options,
+  ) {
+    void options?.preventScroll;
+    nativeFocus.call(this, options);
+  });
+  const router = open();
+  const name = await screen.findByLabelText("Full name");
+  await user.clear(name);
+  await user.type(name, "Unsaved name");
+  const trigger = await screen.findByRole("button", {
+    name: "View profile photo",
+  });
+  trigger.focus();
+  await user.keyboard("{Enter}");
+  const viewer = await screen.findByRole("dialog", {
+    name: "Your profile photo",
+  });
+  expect(
+    within(viewer).getByRole("img", { name: "Your profile" }),
+  ).toHaveAttribute("src", "https://example.com/avatar.webp");
+  expect(
+    within(viewer).queryByRole("button", { name: "Save photo" }),
+  ).not.toBeInTheDocument();
+  await user.keyboard("{Escape}");
+  await waitFor(() =>
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+  );
+  expect(trigger).toHaveFocus();
+  expect(name).toHaveValue("Unsaved name");
+  expect(router.state.location.pathname).toBe("/account");
+  await user.click(trigger);
+  await user.click(
+    document.querySelector<HTMLElement>('[data-slot="dialog-backdrop"]')!,
+  );
+  await waitFor(() =>
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+  );
+  expect(trigger).toHaveFocus();
+});
+
+test("profile without a photo has no empty preview control", async () => {
+  open();
+  await screen.findByRole("button", { name: "Upload photo" });
+  expect(
+    screen.queryByRole("button", { name: "View profile photo" }),
+  ).not.toBeInTheDocument();
+});

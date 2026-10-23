@@ -1,13 +1,8 @@
 import { Expand } from "lucide-react";
 import { useState } from "react";
 
+import { ImageViewer } from "@/app/components/ImageViewer";
 import { Button } from "@/app/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogTrigger,
-} from "@/app/components/ui/dialog";
 import { cn } from "@/app/lib/utils";
 import type { ProductDetailImage } from "@/ecommerce/types";
 
@@ -63,25 +58,17 @@ export const ProductGallery = ({
     >
       <div className="bg-muted relative aspect-154/116 overflow-hidden rounded-lg border">
         {selected ? (
-          <Dialog>
-            <DialogTrigger
-              aria-label="Expand product image"
-              className="focus-visible:ring-ring absolute inset-0 block size-full cursor-zoom-in outline-none focus-visible:ring-3 focus-visible:ring-inset"
-            >
-              <GalleryImage
-                key={selected.image}
-                image={selected}
-                name={name}
-                archived={archived}
-                contain
-              />
-              <span className="bg-background/90 text-foreground absolute right-3 bottom-3 rounded-md border p-2">
-                <Expand className="size-5" aria-hidden="true" />
-              </span>
-            </DialogTrigger>
-            <DialogContent className="inset-0 h-dvh w-full max-w-none translate-x-0 translate-y-0 grid-rows-[minmax(0,1fr)] rounded-none border-0 px-4 pt-16 pb-4 sm:px-8 sm:pb-8">
-              <DialogTitle className="sr-only">{name} — full image</DialogTitle>
-              <div className="relative min-h-0 min-w-0">
+          <ImageViewer
+            src={selected.image}
+            alt={selected.alt_text || name}
+            title={`${name} — full image`}
+            imageClassName={archived ? "grayscale" : undefined}
+            trigger={
+              <button
+                type="button"
+                aria-label="Expand product image"
+                className="focus-visible:ring-ring absolute inset-0 block size-full cursor-zoom-in outline-none focus-visible:ring-3 focus-visible:ring-inset"
+              >
                 <GalleryImage
                   key={selected.image}
                   image={selected}
@@ -89,14 +76,18 @@ export const ProductGallery = ({
                   archived={archived}
                   contain
                 />
-                {archived && (
-                  <span className="bg-background pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg border p-4 font-semibold">
-                    ARCHIVED
-                  </span>
-                )}
-              </div>
-            </DialogContent>
-          </Dialog>
+                <span className="bg-background/90 text-foreground absolute right-3 bottom-3 rounded-md border p-2">
+                  <Expand className="size-5" aria-hidden="true" />
+                </span>
+              </button>
+            }
+          >
+            {archived && (
+              <span className="bg-background pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg border p-4 font-semibold">
+                ARCHIVED
+              </span>
+            )}
+          </ImageViewer>
         ) : (
           <p className="text-muted-foreground flex h-full items-center justify-center text-sm">
             No image available

@@ -8,7 +8,7 @@ import {
 import userEvent from "@testing-library/user-event";
 import { delay, http, HttpResponse } from "msw";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
-import { beforeEach, describe, expect, test } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { Toaster } from "@/app/components/ui/toast";
 import ProtectedRoute from "@/app/routes/ProtectedRoute";
@@ -196,6 +196,35 @@ describe("Product Page", () => {
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
     );
     expect(trigger).toHaveFocus();
+  });
+
+  test("dismisses on the blurred backdrop without changing the page", async () => {
+    const user = userEvent.setup();
+    // jsdom ignores focus options; model preventScroll support used by dialog dismissal.
+    const nativeFocus = HTMLElement.prototype.focus;
+    vi.spyOn(HTMLElement.prototype, "focus").mockImplementation(function (
+      this: HTMLElement,
+      options,
+    ) {
+      void options?.preventScroll;
+      nativeFocus.call(this, options);
+    });
+    const router = renderPage();
+    const trigger = await screen.findByRole("button", {
+      name: "Expand product image",
+    });
+    await user.click(trigger);
+    const viewer = await screen.findByRole("dialog");
+    await user.click(within(viewer).getByRole("img"));
+    expect(viewer).toBeVisible();
+    await user.click(
+      document.querySelector<HTMLElement>('[data-slot="dialog-backdrop"]')!,
+    );
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
+    expect(trigger).toHaveFocus();
+    expect(router.state.location.pathname).toBe("/products/1");
   });
 
   test("keeps failed viewer media readable and dismissible", async () => {

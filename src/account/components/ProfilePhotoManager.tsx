@@ -2,6 +2,7 @@ import { UserRound } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import Cropper, { type Area } from "react-easy-crop";
 
+import { ImageViewer } from "@/app/components/ImageViewer";
 import { Button } from "@/app/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/app/components/ui/dialog";
 import { Input } from "@/app/components/ui/input";
@@ -54,11 +55,26 @@ export function ProfilePhotoManager() {
             <Skeleton className="size-full" />
           ) : state.photo?.profile_image &&
             failedImage !== state.photo.profile_image ? (
-            <img
+            <ImageViewer
               src={state.photo.profile_image}
               alt="Your profile"
-              className="size-full object-cover"
-              onError={() => setFailedImage(state.photo?.profile_image ?? null)}
+              title="Your profile photo"
+              trigger={
+                <button
+                  type="button"
+                  aria-label="View profile photo"
+                  className="focus-visible:ring-ring size-full cursor-zoom-in rounded-full outline-none focus-visible:ring-3 focus-visible:ring-inset"
+                >
+                  <img
+                    src={state.photo.profile_image}
+                    alt="Your profile"
+                    className="size-full object-cover"
+                    onError={() =>
+                      setFailedImage(state.photo?.profile_image ?? null)
+                    }
+                  />
+                </button>
+              }
             />
           ) : (
             <UserRound
