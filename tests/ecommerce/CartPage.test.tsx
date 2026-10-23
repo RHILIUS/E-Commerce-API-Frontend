@@ -2,12 +2,13 @@ import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
-import { beforeEach, describe, expect, test } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { Toaster } from "@/app/components/ui/toast";
 import ProtectedRoute from "@/app/routes/ProtectedRoute";
 import { AuthProvider } from "@/authentication/contexts/Auth/AuthProvider";
 import { checkoutProtectedRoutes } from "@/checkout/routes";
+import * as cartStoreCard from "@/ecommerce/cart/CartStoreCard";
 import type { CartResponse } from "@/ecommerce/cart/types";
 import { formatMoney, selectedTotals } from "@/ecommerce/cart/utils";
 import {
@@ -327,6 +328,21 @@ describe("Shopping cart", () => {
   });
 
   test("blocks removal above the API limit without losing selection", async () => {
+    // This boundary belongs to the page; other tests cover the full store-card UI.
+    // Keep all 501 items in the real API data without mounting 501 rich product rows.
+    vi.spyOn(cartStoreCard, "CartStoreCard").mockImplementation(
+      ({ cart, selected, toggle }) => {
+        const last = cart.items.at(-1)!;
+        return (
+          <input
+            type="checkbox"
+            aria-label={`Select ${last.product.name}`}
+            checked={selected.has(last.id)}
+            onChange={(event) => toggle([last.id], event.currentTarget.checked)}
+          />
+        );
+      },
+    );
     const item = data.carts[0].items[0];
     data.carts = [
       {
@@ -355,7 +371,7 @@ describe("Shopping cart", () => {
       screen.getByRole("checkbox", { name: "Select Product 501" }),
     );
     expect(screen.getByRole("button", { name: "Remove" })).toBeEnabled();
-  }, 30000);
+  });
 
   test("adds the chosen product quantity and exposes the saved cart", async () => {
     let added: unknown;

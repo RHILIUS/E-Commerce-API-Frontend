@@ -7,6 +7,8 @@ export default mergeConfig(
   defineConfig({
     test: {
       environment: "jsdom",
+      // Keep DOM-heavy suites responsive on local development machines and CI.
+      maxWorkers: 2,
       env: {
         VITE_API_URL: "http://localhost",
       },

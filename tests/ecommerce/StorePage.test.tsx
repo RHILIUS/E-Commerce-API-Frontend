@@ -1,4 +1,10 @@
-import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { delay, http, HttpResponse } from "msw";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
@@ -8,7 +14,7 @@ import { AuthProvider } from "@/authentication/contexts/Auth/AuthProvider";
 import StorePage from "@/ecommerce/pages/StorePage";
 
 import { render } from "../render";
-import { server } from "../server";
+import { server, waitForMockRequests } from "../server";
 
 const endpoint = "http://localhost/api/shop/stores/1/";
 const store = {
@@ -185,7 +191,7 @@ describe("Store Page", () => {
     );
     expect(await screen.findByText("No results found.")).toBeVisible();
     expect(router.state.location.search).toBe("?tab=products&q=MISSING");
-    await router.navigate(-1);
+    await act(() => router.navigate(-1));
     await screen.findByRole("article", { name: "Running Shoes 11" });
     expect(
       screen.getByRole("searchbox", { name: "Search this store" }),
@@ -280,9 +286,14 @@ describe("Store Page", () => {
   });
 
   test("old searches cannot overwrite newer results", async () => {
+    let markStarted!: () => void;
+    const slowStarted = new Promise<void>((resolve) => {
+      markStarted = resolve;
+    });
     server.use(
       http.get(`${endpoint}products/`, async ({ request }) => {
         if (new URL(request.url).searchParams.get("q") === "slow") {
+          markStarted();
           await delay(120);
           return HttpResponse.json({
             count: 1,
@@ -301,9 +312,14 @@ describe("Store Page", () => {
     );
     const router = renderStore("/stores/1?tab=products&q=slow");
     await screen.findByRole("heading", { name: "Example Store" });
-    await router.navigate("/stores/1?tab=products&q=fast");
+    await slowStarted;
+    await act(() => router.navigate("/stores/1?tab=products&q=fast"));
     expect(
       await screen.findByRole("article", { name: "Running Shoes 2" }),
+    ).toBeVisible();
+    await act(() => waitForMockRequests());
+    expect(
+      screen.getByRole("article", { name: "Running Shoes 2" }),
     ).toBeVisible();
     await waitFor(() =>
       expect(

@@ -1,16 +1,23 @@
 import "@testing-library/jest-dom/vitest";
 
-import { cleanup } from "@testing-library/react";
+import { act, cleanup } from "@testing-library/react";
 import { afterAll, afterEach, beforeAll, vi } from "vitest";
 
 import { toast } from "@/app/lib/toast";
 
-import { server } from "./server";
+import { server, waitForMockRequests } from "./server";
 
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
-afterEach(() => {
-  toast.close();
-  cleanup();
+afterEach(async () => {
+  if (typeof window !== "undefined") {
+    await act(async () => {
+      toast.close();
+      cleanup();
+      await waitForMockRequests();
+    });
+  } else {
+    await waitForMockRequests();
+  }
   server.resetHandlers();
 });
 afterAll(() => server.close());

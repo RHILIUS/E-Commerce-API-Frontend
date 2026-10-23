@@ -98,6 +98,17 @@ Tests live in `tests/`. Browser-oriented tests use a simulated browser and mocke
 API responses, so they do not require a running backend. Tests also cover the
 Cloudflare API proxy.
 
+Vitest limits both watch mode and single runs to two workers so DOM-heavy suites
+can run alongside the development stack. The global test timeout remains five
+seconds. Override the worker limit for a particular environment with
+`npm run test:run -- --maxWorkers=1` when needed.
+
+Tests must await interactions and route transitions. Shared cleanup unmounts the
+interface and waits for outstanding mocked request handlers before resetting
+handlers, including delayed handlers whose browser request was cancelled. Avoid
+raising timeouts to compensate for unawaited work; scope expensive child rendering
+to the behavior under test.
+
 ## Deploy the website
 
 The frontend is configured for Cloudflare Pages. The build produces browser files
