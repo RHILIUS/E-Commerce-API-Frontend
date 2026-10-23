@@ -383,7 +383,7 @@ describe("Shopping cart", () => {
           short_description: "A camera",
           description: "Camera details",
           stock: 4,
-          sold_count: 0,
+          ordered_count: 0,
           status: "active",
           can_purchase: true,
           display_price: { amount: "12.34", currency: "PHP" },

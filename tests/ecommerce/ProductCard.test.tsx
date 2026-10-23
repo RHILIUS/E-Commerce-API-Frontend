@@ -22,7 +22,7 @@ describe("ProductCard currency formatting", () => {
             description: "Summary",
             price,
             currency,
-            soldCount: 1,
+            orderedCount: 1,
             imageUrl: null,
             imageAlt: "",
           }}
@@ -30,6 +30,7 @@ describe("ProductCard currency formatting", () => {
       </MemoryRouter>,
     );
     expect(screen.getByText(expected)).toBeVisible();
+    expect(screen.getByText("1 unit ordered")).toBeVisible();
     expect(screen.getByRole("link", { name: "View Product" })).toHaveAttribute(
       "href",
       "/products/1",

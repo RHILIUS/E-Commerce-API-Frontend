@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/app/components/ui/card";
 import { Skeleton } from "@/app/components/ui/skeleton";
 import type { Product } from "@/ecommerce/types";
 
-const soldFormatter = new Intl.NumberFormat("en", {
+const orderedFormatter = new Intl.NumberFormat("en", {
   notation: "compact",
   maximumFractionDigits: 1,
 });
@@ -65,7 +65,8 @@ export const ProductCard = ({
               }).format(product.price)}
             </p>
             <p className="text-muted-foreground text-xs leading-4 whitespace-nowrap">
-              {soldFormatter.format(product.soldCount).toLowerCase()} sold
+              {orderedFormatter.format(product.orderedCount).toLowerCase()}{" "}
+              {product.orderedCount === 1 ? "unit" : "units"} ordered
             </p>
           </div>
         </CardContent>

@@ -35,6 +35,13 @@ The landing-page route (`/`) is public and remains under `RootLayout` and
 `AuthProvider`. Guest requests omit the Bearer token and receive the backend's
 popularity-based ordering. Signed-in requests retain personalized ranking.
 
+Ranking and ordered counts include units in every non-cancelled order, including
+unpaid and refunded purchases. Cancellation always excludes an order. Personal
+category preferences use the viewer's lifetime quantities; product popularity uses
+everyone's quantities over seven days by default. Displayed ordered counts use
+lifetime product quantities. These figures measure demand rather than completed
+sales. Changes appear on the next request; loaded cards are not automatically reordered.
+
 While the session is being restored, the header shows an account placeholder.
 Guests see **Log in** and **Sign up** links; signed-in visitors see the existing
 account controls. Logging out on the landing page keeps its URL and search

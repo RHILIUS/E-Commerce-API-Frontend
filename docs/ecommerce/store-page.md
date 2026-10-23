@@ -9,15 +9,15 @@ shared Header, product cards, and responsive conventions govern the implementati
 
 `/stores/:storeId` is public, including for guests. ProductPage links the store
 name and Visit store action to this route. The page shows the banner/logo (with
-missing/failed-image placeholders), click-to-open full banner and logo images, active listing count, qualifying lifetime units
-sold, store creation date, and public business address. About shows the description,
+missing/failed-image placeholders), click-to-open full banner and logo images, active listing count, non-cancelled lifetime units
+ordered, store creation date, and public business address. About shows the description,
 public email, public phone, and address; missing optional text is `Not provided`.
 Store member identities and account contact details are never returned.
 
-- Home: New Products, Trending Products, and Best Sellers, up to ten each.
+- Home: New Products, Trending Products, and Most Ordered, up to ten each.
   Sections have no pagination. View all opens All Products with the corresponding
-  sort. Trending/Best Sellers previews contain only products with positive sales.
-- All Products: ten per page, Latest by default; Oldest, Popular, and Best Sellers
+  sort. Trending/Most Ordered previews contain only products with positive sales.
+- All Products: ten per page, Latest by default; Oldest, Popular, and Most Ordered
   are also available. All active products remain browsable, including zero-sale
   and out-of-stock products. Cards reuse the landing design with an explicit
   out-of-stock label where the store API supplies zero stock.
@@ -49,17 +49,14 @@ See [backend contract](../../../backend/docs/api/ecommerce/store-page.md).
 - `GET /api/shop/stores/:id/home/`: three bounded product sections.
 - `GET /api/shop/stores/:id/products/`: paginated, filtered and sorted products.
 
-Qualifying units come from **paid Stripe orders** and **delivered/completed COD
-orders**, excluding cancelled orders and successful full-order refunds. Trending
-and Popular use the rolling **30 days by order placement time**, inclusive of the
-cutoff and excluding future orders. Best Sellers and Items sold use all qualifying
-history. Ties prefer newest product creation, then highest ID. Oldest reverses
-both date and ID. Store totals retain archived/deleted-product order history;
-product lists exclude drafts and archived products for every viewer, even members.
+Ordered units include every non-cancelled order, regardless of payment or refund
+status. Pending, accepted, packed, shipment-arranged, shipped, delivered, and
+completed orders contribute; successful refunds retain their contribution unless
+the order is cancelled. Future orders do not contribute. These are demand counts,
+not completed sales or revenue.
 
-Store-card sold counts use qualifying lifetime units, not the legacy stored
-`Product.sold_count`. The landing page and ProductPage still expose that legacy
-counter and the landing ranking still uses its prior personalized/non-cancelled
-order logic. These existing screens can therefore show different sales counts or
-rankings; this feature does not redefine them. Display currencies reuse existing
-backend conversion and fallback behavior without frontend exchange calculations.
+Trending and Popular use 30 days by order placement, including the cutoff.
+Most Ordered and Units ordered use lifetime quantities. Store totals retain
+archived/deleted-product history. Product lists include active products only.
+Landing ranking shares the counting rule, with lifetime personal preferences and
+a recent window of seven days by default. Display currencies reuse backend rules.

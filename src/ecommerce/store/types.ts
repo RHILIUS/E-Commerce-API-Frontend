@@ -18,7 +18,7 @@ export type PublicStore = {
     postal_code: string;
   } | null;
   listed_product_count: number;
-  items_sold: number;
+  items_ordered: number;
   categories: { id: number; name: string; product_count: number }[];
 };
 
@@ -31,12 +31,12 @@ export type StoreProductsResponse = Omit<ProductCatalogResponse, "results"> & {
 export type StoreHomeResponse = {
   new_products: StoreProduct[];
   trending_products: StoreProduct[];
-  best_sellers: StoreProduct[];
+  most_ordered: StoreProduct[];
 };
 export const storeSortLabels = {
   latest: "Latest",
   oldest: "Oldest",
   popular: "Popular",
-  best_sellers: "Best Sellers",
+  most_ordered: "Most Ordered",
 } as const;
 export type StoreSort = keyof typeof storeSortLabels;

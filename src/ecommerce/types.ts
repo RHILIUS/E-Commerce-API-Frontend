@@ -5,7 +5,7 @@ export type Product = {
   description: string;
   price: number;
   currency: string;
-  soldCount: number;
+  orderedCount: number;
   imageUrl: string | null;
   imageAlt: string;
   isOutOfStock?: boolean;
@@ -20,7 +20,7 @@ export type ProductDetail = {
   price: string;
   currency: string;
   display_price: { amount: string; currency: string };
-  sold_count: number;
+  ordered_count: number;
   stock: number;
   status: "active" | "archived" | "draft";
   archived_at: string | null;
@@ -62,7 +62,7 @@ export type ProductCatalogResponse = {
     price: string;
     currency: string;
     display_price: { amount: string; currency: string };
-    sold_count: number;
+    ordered_count: number;
     default_image: {
       image: string;
       alt_text: string;

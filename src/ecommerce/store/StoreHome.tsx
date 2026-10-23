@@ -18,16 +18,16 @@ const sections = [
   {
     key: "trending_products",
     title: "Trending Products",
-    description: "Most purchased in the last 30 days.",
+    description: "Most units ordered in the last 30 days.",
     sort: "popular",
     empty: "No trending products yet.",
   },
   {
-    key: "best_sellers",
-    title: "Best Sellers",
-    description: "Customer favorites, across all time.",
-    sort: "best_sellers",
-    empty: "No best sellers yet.",
+    key: "most_ordered",
+    title: "Most Ordered",
+    description: "Most units ordered across all time.",
+    sort: "most_ordered",
+    empty: "No orders yet.",
   },
 ] as const;
 
