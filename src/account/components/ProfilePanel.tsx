@@ -55,11 +55,6 @@ export function ProfilePanel() {
           {state.message}
         </p>
       )}
-      {state.notice && (
-        <p role="status" className="text-sm">
-          {state.notice}
-        </p>
-      )}
     </section>
   );
 }

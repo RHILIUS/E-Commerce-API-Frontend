@@ -163,11 +163,6 @@ export function ProfilePhotoManager() {
           Reload photo
         </Button>
       )}
-      {state.notice && (
-        <p role="status" className="text-sm">
-          {state.notice}
-        </p>
-      )}
       <Dialog
         open={Boolean(editor)}
         onOpenChange={(open) => {

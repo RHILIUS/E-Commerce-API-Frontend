@@ -31,7 +31,9 @@ Shipment Arranged and later orders cannot be cancelled. The backend rechecks
 under locks, restores inventory once and safely accepts repeated requests.
 Unresolved online checkout payments use **View payment** and the existing
 whole-checkout payment-recovery flow, since a live Stripe checkout cannot be
-partially cancelled per store. COD cancellation creates no refund.
+partially cancelled per store. COD cancellation creates no refund. A confirmed
+cancellation shows an “Order cancelled.” toast. Refund instructions and status
+remain visible on the page and order card rather than depending on the toast.
 
 Paid Stripe test orders request a refund for exactly this store order's USD
 amount to the original test card. The confirmation dialog names the destination.

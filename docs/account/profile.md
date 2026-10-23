@@ -45,7 +45,7 @@ appearances.
 3. The backend checks the values and saves the personal details and address
    together. Either both are saved or neither is saved. It creates the personal
    address if one does not exist yet.
-4. The frontend displays the returned saved values and a confirmation message.
+4. The frontend displays the returned saved values and a dismissible “Profile saved.” toast notification.
    It also updates the name and address country held in the shared account state.
 
 The address country is used by country-dependent product pricing, cart data, and
@@ -109,6 +109,10 @@ the backend retains an optimized source on the first successful re-crop.
 Dialog and new shadcn Slider supply themed controls. Dialogs scroll within short
 viewports. The Figma node registry records this implementation without a canvas
 change or verified mapping.
+
+Confirmed photo saves and removals show dismissible toast notifications. Validation
+and uncertain-result messages stay beside the photo controls so recovery steps
+remain available.
 
 ## Photo errors and the account menu
 

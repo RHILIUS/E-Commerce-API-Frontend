@@ -26,6 +26,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/app/components/ui/tabs";
+import { toast } from "@/app/lib/toast";
 import { formatMoney } from "@/ecommerce/cart/utils";
 import { Header } from "@/ecommerce/components/Header";
 import { cancelOrder } from "@/ecommerce/orders/api";
@@ -71,12 +72,17 @@ export default function UserOrdersPage() {
     try {
       const updated = await cancelOrder(order.id);
       setSelected(null);
+      toast.add({
+        id: "order-cancelled",
+        type: "success",
+        title: "Order cancelled.",
+      });
       setNotice(
         updated.refund?.status === "succeeded"
-          ? "Order cancelled. The refund to your original Stripe test card is confirmed."
+          ? "The refund to your original Stripe test card is confirmed."
           : updated.refund
-            ? "Order cancelled. See the Cancelled tab for your card refund status."
-            : "Order cancelled.",
+            ? "See the Cancelled tab for your card refund status."
+            : "",
       );
       reload();
       heading.current?.focus();

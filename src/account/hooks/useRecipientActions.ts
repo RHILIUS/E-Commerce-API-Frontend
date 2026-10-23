@@ -1,5 +1,7 @@
 import { useRef, useState } from "react";
 
+import { toast } from "@/app/lib/toast";
+
 import {
   createRecipient,
   deleteRecipient,
@@ -23,12 +25,10 @@ export function useRecipientActions(
   const [error, setError] = useState("");
   const [fields, setFields] = useState<Record<string, string>>({});
   const [needsReload, setNeedsReload] = useState(false);
-  const [notice, setNotice] = useState("");
   const inFlight = useRef(false);
   const clearError = () => {
     setError("");
     setFields({});
-    setNotice("");
   };
   const reload = async () => {
     if (inFlight.current) return;
@@ -59,7 +59,11 @@ export function useRecipientActions(
     try {
       if (action.type === "delete") {
         onChange(await deleteRecipient(action.id, action.replacement));
-        setNotice("Recipient deleted.");
+        toast.add({
+          id: "recipient-deleted",
+          type: "success",
+          title: "Recipient deleted.",
+        });
       } else {
         const saved =
           action.type === "default"
@@ -82,11 +86,16 @@ export function useRecipientActions(
             ? saved.id
             : undefined,
         );
-        setNotice(
-          action.type === "default"
-            ? "Default recipient updated."
-            : "Recipient saved.",
-        );
+        toast.add({
+          id: "recipient-saved",
+          type: "success",
+          title:
+            action.type === "default"
+              ? "Default recipient updated."
+              : action.id === undefined
+                ? "Recipient added."
+                : "Recipient updated.",
+        });
       }
       return "saved";
     } catch (failure) {
@@ -110,5 +119,5 @@ export function useRecipientActions(
       setBusy(false);
     }
   };
-  return { busy, error, fields, needsReload, notice, run, reload, clearError };
+  return { busy, error, fields, needsReload, run, reload, clearError };
 }

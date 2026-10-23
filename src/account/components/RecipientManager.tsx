@@ -91,9 +91,6 @@ export function RecipientManager({
           Reload recipients
         </Button>
       )}
-      <p role="status" className="text-muted-foreground text-sm empty:hidden">
-        {actions.notice}
-      </p>
       {recipients.length === 0 ? (
         <div className="bg-muted/30 space-y-2 rounded-xl border border-dashed px-4 py-8 text-center">
           <MapPin

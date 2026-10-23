@@ -6,6 +6,7 @@ import { beforeEach, expect, test } from "vitest";
 
 import { accountProtectedRoutes } from "@/account/routes";
 import type { Recipient } from "@/account/types";
+import { Toaster } from "@/app/components/ui/toast";
 import ProtectedRoute from "@/app/routes/ProtectedRoute";
 import { AuthProvider } from "@/authentication/contexts/Auth/AuthProvider";
 import LoginPage from "@/authentication/pages/LoginPage";
@@ -34,6 +35,7 @@ function renderAccount() {
   render(
     <AuthProvider>
       <RouterProvider router={router} />
+      <Toaster />
     </AuthProvider>,
   );
   return router;
@@ -122,9 +124,16 @@ test("load failure can be retried and empty recipients can be added", async () =
   await user.type(screen.getByLabelText("Phone number"), "9123456789");
   await user.click(screen.getByRole("button", { name: "Save recipient" }));
   await waitFor(() =>
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    expect(
+      screen.queryByRole("dialog", { name: /^(Add|Edit) recipient$/ }),
+    ).not.toBeInTheDocument(),
   );
   expect(screen.getByText("New person")).toBeVisible();
+  expect(
+    (await screen.findByText("Recipient added.")).closest(
+      '[data-slot="toast"]',
+    ),
+  ).toBeVisible();
   expect(screen.getByText("Default", { exact: true })).toBeVisible();
   expect(body).toMatchObject({
     name: "New person",
@@ -190,6 +199,7 @@ test("deleting the default requires a replacement and blocks duplicate submissio
   );
   expect(calls).toBe(1);
   expect(replacement).toBe("8");
+  expect(screen.getAllByText("Recipient deleted.")).toHaveLength(1);
   expect(screen.queryByText(recipient.name)).not.toBeInTheDocument();
   expect(screen.getByText("Default", { exact: true })).toBeVisible();
   expect(screen.getByRole("button", { name: "Add recipient" })).toHaveFocus();
@@ -252,7 +262,9 @@ test("an unconfirmed save with a failed reload blocks another mutation until rec
   );
   await user.click(screen.getByRole("button", { name: "Save changes" }));
   await waitFor(() =>
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    expect(
+      screen.queryByRole("dialog", { name: /^(Add|Edit) recipient$/ }),
+    ).not.toBeInTheDocument(),
   );
   expect(screen.getByRole("button", { name: "Add recipient" })).toBeDisabled();
   await user.click(screen.getByRole("button", { name: "Reload recipients" }));

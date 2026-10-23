@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
+import { toast } from "@/app/lib/toast";
 import { useAuth } from "@/authentication/contexts/Auth/useAuth";
 
 import { fetchProfile, saveProfile } from "../api/profileApi";
@@ -15,7 +16,6 @@ export function useProfile() {
   const [busy, setBusy] = useState(false);
   const [fields, setFields] = useState<Record<string, string>>({});
   const [message, setMessage] = useState("");
-  const [notice, setNotice] = useState("");
   const [revision, setRevision] = useState(0);
   const inFlight = useRef(false);
 
@@ -51,7 +51,6 @@ export function useProfile() {
   const clearFeedback = () => {
     setFields({});
     setMessage("");
-    setNotice("");
   };
   const save = async (input: ProfileInput) => {
     if (inFlight.current) return;
@@ -60,7 +59,11 @@ export function useProfile() {
     clearFeedback();
     try {
       accept(await saveProfile(input));
-      setNotice("Profile saved.");
+      toast.add({
+        id: "profile-saved",
+        type: "success",
+        title: "Profile saved.",
+      });
     } catch (error) {
       const parsed = profileError(error);
       setFields(parsed.fields);
@@ -88,7 +91,6 @@ export function useProfile() {
     busy,
     fields,
     message,
-    notice,
     revision,
     save,
     retry: () => {

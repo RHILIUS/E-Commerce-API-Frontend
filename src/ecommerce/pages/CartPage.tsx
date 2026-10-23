@@ -13,6 +13,7 @@ import {
 import { Button } from "@/app/components/ui/button";
 import { Checkbox } from "@/app/components/ui/checkbox";
 import { Skeleton } from "@/app/components/ui/skeleton";
+import { toast } from "@/app/lib/toast";
 import { useAuth } from "@/authentication/contexts/Auth/useAuth";
 import { checkoutPath } from "@/checkout/utils/source";
 import { CartStoreCard } from "@/ecommerce/cart/CartStoreCard";
@@ -67,7 +68,12 @@ function CartContent() {
   const confirmRemove = async () => {
     if (await cart.removeItems(removing)) {
       toggle(removing, false);
-      setNotice("Selected products removed from your cart.");
+      setNotice("");
+      toast.add({
+        id: "cart-removed",
+        type: "success",
+        title: "Selected products removed from your cart.",
+      });
       setRemoving([]);
     }
   };

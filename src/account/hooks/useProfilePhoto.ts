@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { toast } from "@/app/lib/toast";
 import { useAuth } from "@/authentication/contexts/Auth/useAuth";
 
 import {
@@ -16,7 +17,6 @@ export function useProfilePhoto() {
   const userId = user?.id;
   const [photo, setPhoto] = useState<ProfilePhoto | null>(null);
   const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const inFlight = useRef(false);
@@ -60,12 +60,15 @@ export function useProfilePhoto() {
     inFlight.current = true;
     setBusy(true);
     setError("");
-    setNotice("");
     try {
       const value = await operation();
       if (mounted.current) {
         accept(value);
-        setNotice(message);
+        toast.add({
+          id: "profile-photo-updated",
+          type: "success",
+          title: message,
+        });
       }
       return "saved";
     } catch (cause) {
@@ -130,11 +133,9 @@ export function useProfilePhoto() {
   return {
     photo,
     error,
-    notice,
     busy,
     clearFeedback: () => {
       setError("");
-      setNotice("");
     },
     retry: () => {
       setError("");

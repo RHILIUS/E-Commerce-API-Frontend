@@ -309,12 +309,20 @@ describe("Shopping cart", () => {
       "Couldn't remove these products. Try again.",
     );
     expect(data.carts).toHaveLength(2);
+    expect(
+      screen.queryByText("Selected products removed from your cart."),
+    ).not.toBeInTheDocument();
     rejectRemoval = false;
     await user.click(
       within(dialog).getByRole("button", { name: "Remove products" }),
     );
     expect(
       await screen.findByRole("heading", { name: "Your cart is empty" }),
+    ).toBeVisible();
+    expect(
+      (
+        await screen.findByText("Selected products removed from your cart.")
+      ).closest('[data-slot="toast"]'),
     ).toBeVisible();
   });
 

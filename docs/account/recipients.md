@@ -22,6 +22,10 @@ app router under the shared protected-route guard.
 Checkout retains only its selection summary and chooser wrapper. Confirmation
 and saved-order summaries reuse the address display with purchase snapshots.
 
+Confirmed recipient additions, edits, deletions, and default changes show
+dismissible toast notifications in both Account and Checkout. Validation and
+unconfirmed-result messages stay inline; they do not produce success toasts.
+
 Add/edit share the validated country/phone controls. Making a default uses PATCH
 with `is_default: true`. The default label and account preference are separate
 from selecting a recipient for a particular checkout. Editing or changing defaults

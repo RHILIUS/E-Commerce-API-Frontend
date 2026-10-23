@@ -7,6 +7,7 @@ import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { accountProtectedRoutes } from "@/account/routes";
 import type { Profile, ProfileInput } from "@/account/types";
 import api from "@/app/api/axios";
+import { Toaster } from "@/app/components/ui/toast";
 import ProtectedRoute from "@/app/routes/ProtectedRoute";
 import { AuthProvider } from "@/authentication/contexts/Auth/AuthProvider";
 import { useAuth } from "@/authentication/contexts/Auth/useAuth";
@@ -57,6 +58,7 @@ function open() {
     <AuthProvider>
       <Session />
       <RouterProvider router={router} />
+      <Toaster />
     </AuthProvider>,
   );
   return router;
@@ -135,7 +137,9 @@ test("saves the complete profile and synchronizes the session", async () => {
   await user.type(name, "New name");
   await user.click(screen.getByRole("button", { name: "Save changes" }));
   expect(await screen.findByRole("button", { name: "Saving…" })).toBeDisabled();
-  expect(await screen.findByText("Profile saved.")).toBeVisible();
+  const success = await screen.findByText("Profile saved.");
+  expect(success.closest('[data-slot="toast"]')).toBeVisible();
+  expect(screen.getAllByText("Profile saved.")).toHaveLength(1);
   expect(body).toMatchObject({
     full_name: "New name",
     phone_number: profile.phone_number,
@@ -200,6 +204,7 @@ test("retries loading and reconciles an uncertain save", async () => {
   await user.type(screen.getByLabelText("Full name"), " draft");
   await user.click(screen.getByRole("button", { name: "Save changes" }));
   await screen.findByText(/Your current profile has been reloaded/);
+  expect(screen.queryByText("Profile saved.")).not.toBeInTheDocument();
   expect(screen.getByLabelText("Full name")).toHaveValue("Saved on server");
   await waitFor(() =>
     expect(screen.getByLabelText("Session")).toHaveTextContent(
@@ -246,7 +251,9 @@ test("re-crops and removes photos without discarding personal-detail drafts", as
   await user.clear(name);
   await user.type(name, "Unfinished details");
   await user.click(await screen.findByRole("button", { name: "Adjust crop" }));
-  const dialog = screen.getByRole("dialog");
+  const dialog = screen.getByRole("dialog", {
+    name: /^(Edit profile photo|Remove profile photo\?|Your profile photo)$/,
+  });
   await user.click(
     within(dialog).getByRole("button", { name: "Position photo" }),
   );
@@ -260,12 +267,20 @@ test("re-crops and removes photos without discarding personal-detail drafts", as
   expect(detailSaves).toBe(0);
   await user.click(screen.getByRole("button", { name: "Remove photo" }));
   await user.click(
-    within(screen.getByRole("dialog")).getByRole("button", { name: "Cancel" }),
+    within(
+      screen.getByRole("dialog", {
+        name: /^(Edit profile photo|Remove profile photo\?|Your profile photo)$/,
+      }),
+    ).getByRole("button", { name: "Cancel" }),
   );
   expect(screen.getByRole("button", { name: "Adjust crop" })).toBeVisible();
   await user.click(screen.getByRole("button", { name: "Remove photo" }));
   await user.click(
-    within(screen.getByRole("dialog")).getByRole("button", {
+    within(
+      screen.getByRole("dialog", {
+        name: /^(Edit profile photo|Remove profile photo\?|Your profile photo)$/,
+      }),
+    ).getByRole("button", {
       name: "Remove photo",
     }),
   );
@@ -304,7 +319,9 @@ test("uploads an image and normalized crop as multipart and releases the preview
     screen.getByLabelText("Choose profile photo"),
     new File(["image"], "photo.jpg", { type: "image/jpeg" }),
   );
-  const dialog = screen.getByRole("dialog");
+  const dialog = screen.getByRole("dialog", {
+    name: /^(Edit profile photo|Remove profile photo\?|Your profile photo)$/,
+  });
   await user.click(
     within(dialog).getByRole("button", { name: "Position photo" }),
   );
@@ -337,7 +354,11 @@ test("rejects oversized uploads before opening the crop editor", async () => {
   expect(
     await screen.findByText("Choose an image no larger than 5 MB."),
   ).toBeVisible();
-  expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  expect(
+    screen.queryByRole("dialog", {
+      name: /^(Edit profile photo|Remove profile photo\?|Your profile photo)$/,
+    }),
+  ).not.toBeInTheDocument();
 });
 
 test("reloads an uncertain photo change before allowing another edit", async () => {
@@ -368,7 +389,11 @@ test("reloads an uncertain photo change before allowing another edit", async () 
   await user.click(screen.getByRole("button", { name: "Position photo" }));
   await user.click(screen.getByRole("button", { name: "Save photo" }));
   await screen.findByText(/Your current photo has been reloaded/);
-  expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  expect(
+    screen.queryByRole("dialog", {
+      name: /^(Edit profile photo|Remove profile photo\?|Your profile photo)$/,
+    }),
+  ).not.toBeInTheDocument();
   expect(screen.getByAltText("Your profile")).toHaveAttribute(
     "src",
     "https://example.com/avatar-2.webp",
@@ -440,7 +465,11 @@ test("profile photo opens a preview independently of editing and preserves draft
   ).not.toBeInTheDocument();
   await user.keyboard("{Escape}");
   await waitFor(() =>
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    expect(
+      screen.queryByRole("dialog", {
+        name: /^(Edit profile photo|Remove profile photo\?|Your profile photo)$/,
+      }),
+    ).not.toBeInTheDocument(),
   );
   expect(trigger).toHaveFocus();
   expect(name).toHaveValue("Unsaved name");
@@ -450,7 +479,11 @@ test("profile photo opens a preview independently of editing and preserves draft
     document.querySelector<HTMLElement>('[data-slot="dialog-backdrop"]')!,
   );
   await waitFor(() =>
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    expect(
+      screen.queryByRole("dialog", {
+        name: /^(Edit profile photo|Remove profile photo\?|Your profile photo)$/,
+      }),
+    ).not.toBeInTheDocument(),
   );
   expect(trigger).toHaveFocus();
 });

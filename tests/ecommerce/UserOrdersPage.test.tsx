@@ -4,6 +4,7 @@ import { http, HttpResponse } from "msw";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import { beforeEach, expect, test } from "vitest";
 
+import { Toaster } from "@/app/components/ui/toast";
 import ProtectedRoute from "@/app/routes/ProtectedRoute";
 import { AuthProvider } from "@/authentication/contexts/Auth/AuthProvider";
 import { statusLabels, type UserOrder } from "@/ecommerce/orders/types";
@@ -27,6 +28,7 @@ function show(path = "/orders") {
   render(
     <AuthProvider>
       <RouterProvider router={router} />
+      <Toaster />
     </AuthProvider>,
   );
   return router;
@@ -119,6 +121,11 @@ test("cancellation requires confirmation, updates history and preserves order on
   );
   await waitFor(() => expect(screen.getAllByRole("article")).toHaveLength(3));
   expect(calls).toBe(1);
+  expect(
+    (await screen.findByText("Order cancelled.")).closest(
+      '[data-slot="toast"]',
+    ),
+  ).toBeVisible();
 });
 
 test("paid confirmation states original card and pending refund can be checked", async () => {
