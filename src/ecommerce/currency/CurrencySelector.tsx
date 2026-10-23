@@ -53,7 +53,7 @@ export function CurrencySelector() {
       </ComboboxTrigger>
       <ComboboxContent
         align="start"
-        className="w-[min(21rem,calc(100vw-2rem))] min-w-0"
+        className="w-[min(21rem,calc(100vw-2rem))] min-w-64"
       >
         <p className="px-3 pt-3 text-sm font-medium">Display currency</p>
         <p className="text-muted-foreground px-3 pt-1 pb-2 text-xs">
