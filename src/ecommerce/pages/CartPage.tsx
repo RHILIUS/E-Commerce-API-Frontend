@@ -30,8 +30,8 @@ const CartPage = () => {
 
 function CartContent() {
   const navigate = useNavigate();
-  const { currency } = useDisplayCurrency();
-  const cart = useCart(currency);
+  const { currency, defaultCurrency } = useDisplayCurrency();
+  const cart = useCart(currency, defaultCurrency);
   const [selection, setSelection] = useState<Set<number>>(new Set());
   const [removing, setRemoving] = useState<number[]>([]);
   const [notice, setNotice] = useState("");

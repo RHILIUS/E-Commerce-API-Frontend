@@ -15,19 +15,23 @@ type DetailResult = {
 /** Discard stale responses and hide prior data when the route or viewer changes. */
 export const useProductDetail = (id: string) => {
   const { accessToken, user, isLoading: authLoading } = useAuth();
-  const { currency } = useDisplayCurrency();
+  const {
+    currency,
+    defaultCurrency,
+    loading: currencyLoading,
+  } = useDisplayCurrency();
   const [attempt, setAttempt] = useState(0);
   const key = JSON.stringify([
     id,
     accessToken,
     user?.address_country_code,
-    currency,
+    currency ?? defaultCurrency,
     attempt,
   ]);
   const [result, setResult] = useState<DetailResult | null>(null);
 
   useEffect(() => {
-    if (authLoading) return;
+    if (authLoading || currencyLoading) return;
     const controller = new AbortController();
     productDetailApi(id, controller.signal, accessToken, currency).then(
       (data) => {
@@ -45,9 +49,10 @@ export const useProductDetail = (id: string) => {
       },
     );
     return () => controller.abort();
-  }, [id, accessToken, currency, authLoading, key]);
+  }, [id, accessToken, currency, authLoading, currencyLoading, key]);
 
-  const current = !authLoading && result?.key === key ? result : null;
+  const current =
+    !authLoading && !currencyLoading && result?.key === key ? result : null;
   return {
     product: current?.data,
     error: current?.error,

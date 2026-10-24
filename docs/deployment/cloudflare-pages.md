@@ -96,3 +96,54 @@ Stripe webhooks go directly to the backend's signed webhook endpoint.
 
 The [shared production architecture](../../../docs/architecture/production-deployment.md)
 explains the hosting context.
+
+## Enable country defaults in an isolated preview
+
+Automatic country defaults are implemented but disabled without a dedicated
+`COUNTRY_HINT_SECRET` shared by the Pages Function and Django. They use country-level
+Cloudflare request metadata, not browser GPS or IP-header guesses. A manual currency
+choice still wins; otherwise defaults use personal address, supported detected
+currency, then USD. This affects browsing estimates only.
+
+The proxy strips client country-hint headers and signs its own hint. Django checks
+the signature against the request method, backend origin, full path/query and time.
+The hint lasts five minutes with 30 seconds of future clock skew. Bad or absent
+hints are ignored, leaving direct API, admin and Stripe webhook access unchanged.
+There is no new country endpoint and no change to trusted-IP proxy counts.
+
+1. Prepare an isolated HTTPS backend and a Pages preview with `VITE_API_URL=/` and
+   that backend's `API_ORIGIN`. A preview must not use production data by accident.
+2. Generate a dedicated secret with at least 32 random bytes, for example with
+   `openssl rand -hex 32` in your own terminal. Store the same value as the Pages
+   preview runtime **secret** `COUNTRY_HINT_SECRET` and in the isolated backend's
+   `.env`. Never put it in a `VITE_*` variable, commit it, print it in diagnostics,
+   return it in responses, or reuse Django/payment credentials. Use separate keys
+   for production and previews. A local frontend `.env` does not configure Pages.
+3. Recreate the isolated backend application services to load their environment and
+   deploy the preview. No database migration or reset is needed. Keep server clocks
+   synchronized. Existing Nginx HTTPS forwarding and allowed hosts must match the
+   HTTPS origin configured in Pages; an origin mismatch invalidates the hint.
+4. In a guest browser with no remembered manual choice, inspect
+   `GET /api/shop/currencies/` through the Pages hostname. Where Cloudflare supplies
+   a recognized country with a supported currency, expect `default_source: country`
+   and its currency. Missing metadata legitimately gives `fallback`; mocked local
+   tests do not prove actual Cloudflare metadata availability.
+5. Supply fake country-hint headers to the Pages API request. They must not override
+   the country chosen by Cloudflare. Send an unsigned request directly to the
+   backend: it must use address/USD defaults, regardless of fake country headers.
+   Do not include authentication when testing the guest fallback.
+6. Choose a different display currency, navigate, sign in/out, and return to
+   Automatic. Manual selection must stay in control; an account's address currency
+   must take priority in Automatic. Checkout must retain its existing policy.
+7. Remove the hint configuration to confirm fallback behavior. Key rotation needs
+   matching values in both runtimes; a temporary mismatch falls back rather than
+   rejecting ordinary browsing requests.
+
+Use the existing API's default currency/source for diagnostics; no raw IP, precise
+location, signing secret or signature needs to be exposed. Do not treat a successful
+preview build as evidence that country metadata, key agreement or Nginx forwarding
+works. Those require requests through the actual deployed chain. No deployment is
+performed by local tests.
+
+See the [backend signature contract](../../../backend/docs/api/ecommerce/currencies.md#signed-country-hints)
+and [Cloudflare request metadata](https://developers.cloudflare.com/workers/runtime-apis/request/#incomingrequestcfproperties).

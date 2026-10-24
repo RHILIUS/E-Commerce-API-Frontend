@@ -13,8 +13,9 @@ and shared with other tabs. Reloading restores it after checking it against the
 backend's supported options. Unknown saved values are ignored.
 
 Choose **Automatic** to clear the explicit preference. The backend then uses the
-signed-in customer's personal-address currency, or USD for guests and unresolved
-addresses. Automatic country detection is not enabled. Phone-number country and
+signed-in customer's personal-address currency, then a supported country currency
+from a verified Cloudflare hint, then USD. Country hints require optional matching
+server-side configuration; direct local requests normally have no hint. Phone-number country and
 delivery recipient do not choose the browsing currency.
 
 If browser storage is blocked, a selection still works in memory for this visit.
@@ -42,8 +43,8 @@ uses metadata from `GET /api/shop/currencies/`, not phone-library country option
 The backend discovers the provider's full current currency list, caches it daily,
 and uses Babel for names and precision. An optional backend restriction may narrow
 that list. A provider outage can reuse validated metadata for up to seven days;
-without usable metadata, the selector offers retry. Requests using Automatic do
-not require that list. Currency-list availability does not guarantee that every
+without usable metadata, the selector offers retry. Automatic country suggestions use that list when available; discovery failures
+fall back to USD without blocking browsing. Address defaults do not require it. Currency-list availability does not guarantee that every
 product has a usable conversion rate.
 
 [CurrencyProvider](../../src/ecommerce/currency/CurrencyProvider.tsx) owns the
@@ -62,3 +63,17 @@ that edit. After it settles, a fresh read retrieves the current currency.
 
 See the [shared currency-selection process](../../../docs/specific-business-processes/guide/ecommerce/display-currency.md)
 for frontend, backend, and exchange-rate responsibilities.
+
+## Runtime country hints
+
+Country detection runs in the Pages Function, not browser JavaScript. The Function
+replaces incoming country headers with signed Cloudflare metadata. Django ignores
+missing, expired, forged or unsupported hints. No permission prompt or precise
+location is needed, and a VPN may change the approximate country. Manual selection
+lets the customer correct it. See [isolated preview setup](../deployment/cloudflare-pages.md#enable-country-defaults-in-an-isolated-preview).
+
+Product and store browsing wait for the metadata attempt before their first request,
+avoiding duplicate loads while the default resolves. A metadata error still allows
+browsing through the backend fallback. Browsing history includes the resolved automatic currency so cached prices from a
+different default are not restored. A changed default refreshes cart prices without
+replaying an in-flight edit. Existing purchase snapshots stay in their saved currency.

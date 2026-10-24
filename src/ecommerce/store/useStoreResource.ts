@@ -10,18 +10,22 @@ type StoreResult<T> = { key: string; data?: T; status?: number };
 /** Load a public store resource, refreshing viewer prices and discarding stale requests. */
 export const useStoreResource = <T>(path: string) => {
   const { accessToken, user, isLoading: authLoading } = useAuth();
-  const { currency } = useDisplayCurrency();
+  const {
+    currency,
+    defaultCurrency,
+    loading: currencyLoading,
+  } = useDisplayCurrency();
   const [attempt, setAttempt] = useState(0);
   const key = JSON.stringify([
     path,
     accessToken,
     user?.address_country_code,
-    currency,
+    currency ?? defaultCurrency,
     attempt,
   ]);
   const [result, setResult] = useState<StoreResult<T> | null>(null);
   useEffect(() => {
-    if (authLoading) return;
+    if (authLoading || currencyLoading) return;
     const controller = new AbortController();
     api
       .get<T>(path, {
@@ -46,8 +50,9 @@ export const useStoreResource = <T>(path: string) => {
         },
       );
     return () => controller.abort();
-  }, [path, accessToken, currency, authLoading, key]);
-  const current = !authLoading && result?.key === key ? result : null;
+  }, [path, accessToken, currency, authLoading, currencyLoading, key]);
+  const current =
+    !authLoading && !currencyLoading && result?.key === key ? result : null;
   return {
     data: current?.data,
     error: current?.status,

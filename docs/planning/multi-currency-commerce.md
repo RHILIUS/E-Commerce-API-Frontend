@@ -2,8 +2,9 @@
 
 Status: staged design. Shared default resolution and manual browsing selection
 are implemented; [display currency](../ecommerce/display-currency.md) describes
-current behavior. Automatic location defaults, selected-currency checkout, and
-accounting/payout extensions below remain proposals. It covers the frontend, backend, and deployment;
+current behavior. Signed country defaults are implemented locally and need runtime
+configuration and deployed verification. Selected-currency checkout and accounting/payout
+extensions below remain proposals. It covers the frontend, backend, and deployment;
 exact server contracts belong in backend documentation when implemented.
 
 Customers should be able to choose a browsing currency and, where supported,
@@ -87,7 +88,7 @@ currency even if the header preference changes.
 Currency metadata and browsing/cart `display_currency` inputs are implemented.
 Checkout currency inputs and allocation extensions remain proposals. Read the
 [implemented backend contract](../../../backend/docs/api/ecommerce/currencies.md)
-for current behavior; country-based defaults are not enabled.
+for current behavior; country-based defaults require configured signed hints.
 
 | Surface                                                   | Proposed contract                                                                                                                                                                                                                                                                  |
 | --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -146,16 +147,18 @@ be established first. An internal balance does not guarantee a payout route.
 
 ## Country detection boundary
 
-Prefer country metadata from the existing Cloudflare edge, without a location
-permission prompt. Do not trust browser-supplied country headers. A later deployment
-change must overwrite untrusted inputs and authenticate the forwarding path or use
-another verified origin boundary. Nginx/backend direct access must not make a
-forged location authoritative. Unknown/local/preview requests resolve without it.
+The Pages Function signs `request.cf.country` with a dedicated runtime secret.
+Django verifies the country, request method, backend origin, full path/query and
+short timestamp window before using it. Client country headers are replaced;
+direct requests without verified hints use address/USD defaults. The same optional
+`COUNTRY_HINT_SECRET` belongs in Pages secrets and backend `.env`, never the browser
+build. With blank configuration, detection stays disabled.
 
-Do not assume `CF-IPCountry` survives a Pages Function subrequest. Verify
-`request.cf.country` availability and propagation in the actual deployment before
-choosing the implementation. Country is only a browsing hint, never authorization,
-tax residency, delivery eligibility, or payment-account verification.
+Implementation and mocked tests do not prove Cloudflare metadata availability or
+key agreement in a deployed chain. Follow [isolated preview setup](../deployment/cloudflare-pages.md#enable-country-defaults-in-an-isolated-preview)
+before release. No production or preview deployment is performed by this plan.
+Country is a browsing hint, never authorization, tax residency, delivery eligibility,
+or payment-account verification. Checkout continues using its existing rules.
 
 ## Migration and rollout
 

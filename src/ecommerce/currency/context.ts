@@ -10,7 +10,7 @@ export type CurrencyOption = {
 export type CurrencyOptions = {
   currencies: CurrencyOption[];
   default_currency: string;
-  default_source: "address" | "fallback";
+  default_source: "address" | "country" | "fallback";
 };
 export type CurrencyPreference = {
   currency: string | undefined;

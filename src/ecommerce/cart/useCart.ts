@@ -5,9 +5,10 @@ import type { CartResponse } from "./types";
 import { cartErrorMessage } from "./utils";
 
 /** Own cart requests, visible-page stock refresh, and mutation/refresh race prevention. */
-export function useCart(currency?: string) {
+export function useCart(currency?: string, defaultCurrency?: string) {
+  const currencyKey = currency ?? defaultCurrency;
   const [data, setData] = useState<{
-    currency?: string;
+    key?: string;
     response: CartResponse;
   } | null>(null);
   const [error, setError] = useState("");
@@ -24,7 +25,7 @@ export function useCart(currency?: string) {
     return fetchCarts(controller.signal, currency)
       .then((response) => {
         if (alive.current && !controller.signal.aborted) {
-          setData({ currency, response });
+          setData({ key: currencyKey, response });
           setRefreshError("");
         }
       })
@@ -38,7 +39,7 @@ export function useCart(currency?: string) {
       .finally(() => {
         if (request.current === controller) request.current = null;
       });
-  }, [currency]);
+  }, [currency, currencyKey]);
 
   const latestRefresh = useRef(refresh);
   useEffect(() => {
@@ -75,7 +76,7 @@ export function useCart(currency?: string) {
     try {
       const response = await operation();
       if (alive.current) {
-        setData({ currency, response });
+        setData({ key: currencyKey, response });
         setRefreshError("");
         success = true;
       }
@@ -94,7 +95,7 @@ export function useCart(currency?: string) {
   };
 
   return {
-    data: data && data.currency === currency ? data.response : null,
+    data: data && data.key === currencyKey ? data.response : null,
     error,
     refreshError,
     pending,

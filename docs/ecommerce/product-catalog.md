@@ -27,7 +27,8 @@ Rankings can change between requests, so already displayed product IDs are not
 appended twice. Page-based ranking does not guarantee a stable snapshot while
 products or order activity change.
 
-The catalog waits for authentication restoration before requesting products
+The catalog waits for authentication restoration and the currency metadata attempt
+before requesting products
 and uses the shared Bearer-token client. Initial loading failures offer a retry;
 obsolete requests are cancelled when the search or viewer changes.
 

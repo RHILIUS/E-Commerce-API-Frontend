@@ -16,14 +16,18 @@ export const useProductCatalog = (query: string) => {
   const history = useContext(CatalogHistoryContext);
   const location = useLocation();
   const navigationType = useNavigationType();
-  const { currency } = useDisplayCurrency();
+  const {
+    currency,
+    defaultCurrency,
+    loading: currencyLoading,
+  } = useDisplayCurrency();
   const [attempt, setAttempt] = useState(0);
   const key = JSON.stringify([
     location.key,
     query,
     accessToken,
     user?.address_country_code,
-    currency,
+    currency ?? defaultCurrency,
     attempt,
   ]);
   const [result, setResult] = useState<CatalogResult | null>(null);
@@ -33,7 +37,7 @@ export const useProductCatalog = (query: string) => {
   const cached =
     navigationType === "POP" ? history?.get(historyKey) : undefined;
   useEffect(() => {
-    if (authLoading) return;
+    if (authLoading || currencyLoading) return;
     if (navigationType === "POP" && history?.has(historyKey)) {
       return () => {
         moreRequest.current?.abort();
@@ -76,17 +80,19 @@ export const useProductCatalog = (query: string) => {
     accessToken,
     currency,
     authLoading,
+    currencyLoading,
     key,
     history,
     historyKey,
     navigationType,
   ]);
 
-  const current = authLoading
-    ? null
-    : result?.key === key
-      ? result
-      : (cached ?? null);
+  const current =
+    authLoading || currencyLoading
+      ? null
+      : result?.key === key
+        ? result
+        : (cached ?? null);
 
   useEffect(() => {
     if (!current || current.error || current.isLoadingMore || !history) return;

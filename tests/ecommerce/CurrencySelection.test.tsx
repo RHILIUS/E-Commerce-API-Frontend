@@ -211,3 +211,41 @@ test("restores and selects provider currencies beyond the original sample option
   await choose(/INR — Indian Rupee/);
   expect(localStorage.getItem(key)).toBe("INR");
 });
+
+test("Automatic uses the country default while manual selection keeps priority", async () => {
+  server.use(
+    http.get("http://localhost/api/shop/currencies/", () =>
+      HttpResponse.json({
+        currencies: [
+          {
+            code: "USD",
+            name: "US Dollar",
+            minor_unit: 2,
+            display_supported: true,
+            stripe_supported: true,
+          },
+          {
+            code: "PHP",
+            name: "Philippine Peso",
+            minor_unit: 2,
+            display_supported: true,
+            stripe_supported: false,
+          },
+        ],
+        default_currency: "PHP",
+        default_source: "country",
+      }),
+    ),
+  );
+  render(controls());
+  await screen.findByRole("combobox", { name: "Display currency: PHP" });
+  expect(screen.getByLabelText("Preference")).toHaveTextContent("automatic");
+  await choose(/USD — US Dollar/);
+  expect(screen.getByLabelText("Preference")).toHaveTextContent("USD");
+  await choose(/Automatic \(PHP\)/);
+  expect(screen.getByLabelText("Preference")).toHaveTextContent("automatic");
+  expect(localStorage.getItem(key)).toBeNull();
+  expect(
+    screen.getByRole("combobox", { name: "Display currency: PHP" }),
+  ).toBeVisible();
+});

@@ -1,7 +1,63 @@
 type ProxyContext = {
-  request: Request;
-  env: { API_ORIGIN?: string };
+  request: Request & { cf?: { country?: string | null } };
+  env: { API_ORIGIN?: string; COUNTRY_HINT_SECRET?: string };
 };
+
+/** Replace untrusted country hints with request-bound, signed Cloudflare metadata. */
+async function attachCountryHint(
+  incoming: ProxyContext["request"],
+  upstream: Request,
+  url: URL,
+  secret?: string,
+) {
+  for (const name of [
+    "X-Shop-Country",
+    "X-Shop-Country-Time",
+    "X-Shop-Country-Signature",
+    "CF-IPCountry",
+  ]) {
+    upstream.headers.delete(name);
+  }
+  const country = incoming.cf?.country;
+  const encoder = new TextEncoder();
+  if (
+    !country ||
+    !/^[A-Z]{2}$/.test(country) ||
+    country === "XX" ||
+    !secret ||
+    encoder.encode(secret).length < 32
+  )
+    return;
+  const timestamp = String(Math.floor(Date.now() / 1000));
+  const message = JSON.stringify([
+    "country-hint-v1",
+    timestamp,
+    country,
+    upstream.method,
+    url.origin,
+    url.pathname + url.search,
+  ]);
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const signature = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    encoder.encode(message),
+  );
+  upstream.headers.set("X-Shop-Country", country);
+  upstream.headers.set("X-Shop-Country-Time", timestamp);
+  upstream.headers.set(
+    "X-Shop-Country-Signature",
+    Array.from(new Uint8Array(signature), (byte) =>
+      byte.toString(16).padStart(2, "0"),
+    ).join(""),
+  );
+}
 
 // Return non-cacheable errors without exposing upstream configuration or credentials.
 function proxyError(status: number, detail: string): Response {
@@ -42,6 +98,12 @@ export async function onRequest({
   upstreamUrl.host = origin.host;
   const upstreamRequest = new Request(upstreamUrl, request);
   upstreamRequest.headers.delete("Host");
+  await attachCountryHint(
+    request,
+    upstreamRequest,
+    upstreamUrl,
+    env.COUNTRY_HINT_SECRET,
+  );
 
   let upstream: Response;
   try {

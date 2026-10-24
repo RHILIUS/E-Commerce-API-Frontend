@@ -136,3 +136,21 @@ test("a currency change during a cart edit reads new prices without repeating th
   expect(updateCartQuantity).toHaveBeenCalledExactlyOnceWith(1, 2, "PHP");
   await waitFor(() => expect(result.current.data).toEqual({ carts: [] }));
 });
+
+test("a changed automatic default refreshes cart prices without sending an explicit override", async () => {
+  const { result, rerender } = renderHook(
+    ({ defaultCurrency }) => useCart(undefined, defaultCurrency),
+    {
+      initialProps: { defaultCurrency: "PHP" },
+    },
+  );
+  await waitFor(() => expect(result.current.data).toEqual({ carts: [] }));
+  rerender({ defaultCurrency: "EUR" });
+  expect(result.current.data).toBeNull();
+  await waitFor(() => expect(fetchCarts).toHaveBeenCalledTimes(2));
+  expect(fetchCarts).toHaveBeenLastCalledWith(
+    expect.any(AbortSignal),
+    undefined,
+  );
+  await waitFor(() => expect(result.current.data).toEqual({ carts: [] }));
+});
