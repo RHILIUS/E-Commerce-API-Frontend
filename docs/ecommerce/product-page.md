@@ -41,3 +41,9 @@ same unavailable screen. Other request failures offer a retry.
 Layouts stack below the desktop breakpoint and share semantic theme tokens for
 light and dark modes. The existing Header retains its guest/member behavior.
 There are no sample products or Figma asset URLs in the production page.
+
+## Display currency
+
+The shared header supports [display-currency selection](display-currency.md).
+Browsing requests and cart edit responses use that preference; original store
+prices and checkout rules remain separate.

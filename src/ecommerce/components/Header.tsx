@@ -31,6 +31,7 @@ import { Skeleton } from "@/app/components/ui/skeleton";
 import { cn } from "@/app/lib/utils";
 import { useAuth } from "@/authentication/contexts/Auth/useAuth";
 import avatarImage from "@/ecommerce/assets/avatar.webp";
+import { CurrencySelector } from "@/ecommerce/currency/CurrencySelector";
 import { useFloatingHeader } from "@/ecommerce/hooks/useFloatingHeader";
 
 type HeaderProps = {
@@ -92,17 +93,20 @@ export const Header = ({ searchQuery, onSearch }: HeaderProps) => {
               : "w-full border border-x-transparent border-t-transparent",
           )}
         >
-          <div className="mx-auto grid w-full max-w-400 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 px-3 sm:px-5 lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:gap-x-8">
-            <Link
-              to="/"
-              aria-label="E-Commerce home"
-              className="text-foreground focus-visible:ring-ring/50 flex min-h-18 w-fit min-w-0 items-center gap-2 rounded-md font-semibold tracking-tight outline-none focus-visible:ring-3"
-            >
-              <img src="/favicon.svg" alt="" className="size-9 shrink-0" />
-              <span className="hidden text-lg min-[430px]:block lg:text-xl">
-                E-Commerce
-              </span>
-            </Link>
+          <div className="mx-auto grid w-full max-w-400 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-1 px-3 sm:gap-x-2 sm:px-5 lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:gap-x-8">
+            <div className="col-start-1 row-start-1 flex min-w-0 items-center justify-start gap-0.5 sm:gap-2">
+              <Link
+                to="/"
+                aria-label="E-Commerce home"
+                className="text-foreground focus-visible:ring-ring/50 flex min-h-18 w-fit min-w-0 shrink-0 items-center gap-2 rounded-md font-semibold tracking-tight outline-none focus-visible:ring-3"
+              >
+                <img src="/favicon.svg" alt="" className="size-9 shrink-0" />
+                <span className="hidden text-lg sm:block lg:text-xl">
+                  E-Commerce
+                </span>
+              </Link>
+              <CurrencySelector />
+            </div>
             <form
               id={searchId}
               role="search"
@@ -154,12 +158,12 @@ export const Header = ({ searchQuery, onSearch }: HeaderProps) => {
                 </InputGroupAddon>
               </InputGroup>
             </form>
-            <div className="col-start-2 row-start-1 flex min-w-0 items-center gap-1 justify-self-end lg:col-start-3 lg:gap-2">
+            <div className="col-start-2 row-start-1 flex min-w-0 items-center gap-0 justify-self-end sm:gap-1 lg:col-start-3 lg:gap-2">
               <Button
                 ref={searchToggleRef}
                 type="button"
                 variant={isSearchOpen ? "secondary" : "ghost"}
-                className="size-11 rounded-xl lg:hidden"
+                className="h-11 w-10 rounded-xl min-[375px]:w-11 lg:hidden"
                 aria-label={isSearchOpen ? "Close search" : "Open search"}
                 aria-expanded={isSearchOpen}
                 aria-controls={searchId}
@@ -173,7 +177,9 @@ export const Header = ({ searchQuery, onSearch }: HeaderProps) => {
                   <Search className="size-5" aria-hidden="true" />
                 )}
               </Button>
-              <ThemeToggle />
+              <div className="max-[374px]:[&_button]:w-10">
+                <ThemeToggle />
+              </div>
               {auth.isLoading ? (
                 <div role="status" aria-label="Loading account">
                   <Skeleton className="h-11 w-24 sm:w-32" aria-hidden="true" />
@@ -201,7 +207,7 @@ export const Header = ({ searchQuery, onSearch }: HeaderProps) => {
                           size="icon"
                           aria-label="Account"
                           disabled={isLoggingOut}
-                          className="size-11 overflow-hidden rounded-lg p-0"
+                          className="ml-2 size-11 overflow-hidden rounded-lg p-0 sm:ml-1 lg:ml-0"
                         >
                           <img
                             key={imageKey}
@@ -278,12 +284,12 @@ export const Header = ({ searchQuery, onSearch }: HeaderProps) => {
                 </>
               ) : (
                 // If Unauthenticated
-                <>
+                <div className="flex items-center gap-0 min-[375px]:gap-1">
                   <Button
                     role="link"
                     nativeButton={false}
                     variant="ghost"
-                    className="min-h-11 px-2"
+                    className="min-h-11 px-1 min-[375px]:px-2"
                     render={<Link to="/login" />}
                   >
                     Log in
@@ -291,12 +297,12 @@ export const Header = ({ searchQuery, onSearch }: HeaderProps) => {
                   <Button
                     role="link"
                     nativeButton={false}
-                    className="min-h-11 px-2"
+                    className="min-h-11 px-1 min-[375px]:px-2"
                     render={<Link to="/register/enter-email" />}
                   >
                     Sign up
                   </Button>
-                </>
+                </div>
               )}
             </div>
           </div>

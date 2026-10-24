@@ -60,3 +60,9 @@ Most Ordered and Units ordered use lifetime quantities. Store totals retain
 archived/deleted-product history. Product lists include active products only.
 Landing ranking shares the counting rule, with lifetime personal preferences and
 a recent window of seven days by default. Display currencies reuse backend rules.
+
+## Display currency
+
+The shared header supports [display-currency selection](display-currency.md).
+Browsing requests and cart edit responses use that preference; original store
+prices and checkout rules remain separate.

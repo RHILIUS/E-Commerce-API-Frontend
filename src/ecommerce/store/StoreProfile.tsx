@@ -1,12 +1,7 @@
 import { Expand, MapPin, Store as StoreIcon } from "lucide-react";
 import { type ReactNode, useState } from "react";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogTrigger,
-} from "@/app/components/ui/dialog";
+import { ImageViewer } from "@/app/components/ImageViewer";
 
 import type { PublicStore } from "./types";
 
@@ -44,35 +39,30 @@ const StoreImageViewer = ({
   const [failed, setFailed] = useState(false);
   if (!src || failed) return fallback;
   return (
-    <Dialog>
-      <DialogTrigger
-        aria-label={`View full ${label}`}
-        className="focus-visible:ring-ring relative block size-full cursor-zoom-in outline-none focus-visible:ring-3 focus-visible:ring-inset"
-      >
-        <img
-          src={src}
-          alt={alt}
-          className="size-full object-cover"
-          onError={() => setFailed(true)}
-        />
-        {showExpandIcon && (
-          <span className="bg-background/90 text-foreground absolute right-3 bottom-3 rounded-md border p-2">
-            <Expand className="size-5" aria-hidden="true" />
-          </span>
-        )}
-      </DialogTrigger>
-      <DialogContent className="inset-0 h-dvh w-full max-w-none translate-x-0 translate-y-0 grid-rows-[minmax(0,1fr)] rounded-none border-0 px-4 pt-16 pb-4 sm:px-8 sm:pb-8">
-        <DialogTitle className="sr-only">{alt} — full image</DialogTitle>
-        <div className="min-h-0 min-w-0">
+    <ImageViewer
+      src={src}
+      alt={alt}
+      title={`${alt} — full image`}
+      trigger={
+        <button
+          type="button"
+          aria-label={`View full ${label}`}
+          className="focus-visible:ring-ring relative block size-full cursor-zoom-in outline-none focus-visible:ring-3 focus-visible:ring-inset"
+        >
           <img
             src={src}
             alt={alt}
-            className="size-full object-contain"
+            className="size-full object-cover"
             onError={() => setFailed(true)}
           />
-        </div>
-      </DialogContent>
-    </Dialog>
+          {showExpandIcon && (
+            <span className="bg-background/90 text-foreground absolute right-3 bottom-3 rounded-md border p-2">
+              <Expand className="size-5" aria-hidden="true" />
+            </span>
+          )}
+        </button>
+      }
+    />
   );
 };
 

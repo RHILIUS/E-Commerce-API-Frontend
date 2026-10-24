@@ -179,3 +179,90 @@ describe("Pages API proxy", () => {
     expect(upstream).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("signed country hints", () => {
+  const secret = "country-hint-test-only-secret-000000000000";
+
+  it("replaces browser hints with a request-bound signature matching the Django fixture", async () => {
+    vi.spyOn(Date, "now").mockReturnValue(1780000000000);
+    const upstream = vi.fn().mockResolvedValue(Response.json({}));
+    vi.stubGlobal("fetch", upstream);
+    const request = new Request(
+      `${pagesOrigin}/api/shop/products/?q=caf%C3%A9+camera`,
+      {
+        headers: {
+          "X-Shop-Country": "US",
+          "X-Shop-Country-Time": "forged",
+          "X-Shop-Country-Signature": "forged",
+          "CF-IPCountry": "US",
+        },
+      },
+    );
+    Object.defineProperty(request, "cf", { value: { country: "PH" } });
+    await onRequest({
+      request,
+      env: { API_ORIGIN, COUNTRY_HINT_SECRET: secret },
+    });
+    const forwarded: Request = upstream.mock.calls[0][0];
+    expect(forwarded.headers.get("X-Shop-Country")).toBe("PH");
+    expect(forwarded.headers.get("X-Shop-Country-Time")).toBe("1780000000");
+    expect(forwarded.headers.get("CF-IPCountry")).toBeNull();
+    expect(forwarded.headers.get("X-Shop-Country-Signature")).toBe(
+      "0fc0202ba0f767217e8f9f113f6fc9e24446b1f495314cea08d6412aaf3ea96a",
+    );
+    expect([...forwarded.headers.values()].join(" ")).not.toContain(secret);
+  });
+
+  it.each([undefined, null, "XX", "T1", "ph", "INVALID"])(
+    "ignores absent/unknown edge country %s and strips browser hints",
+    async (country) => {
+      const upstream = vi.fn().mockResolvedValue(Response.json({}));
+      vi.stubGlobal("fetch", upstream);
+      const request = new Request(`${pagesOrigin}/api/shop/currencies/`, {
+        headers: {
+          "X-Shop-Country": "PH",
+          "X-Shop-Country-Time": "1780000000",
+          "X-Shop-Country-Signature": "forged",
+          "CF-IPCountry": "PH",
+        },
+      });
+      Object.defineProperty(request, "cf", { value: { country } });
+      await onRequest({
+        request,
+        env: { API_ORIGIN, COUNTRY_HINT_SECRET: secret },
+      });
+      const forwarded: Request = upstream.mock.calls[0][0];
+      for (const name of [
+        "X-Shop-Country",
+        "X-Shop-Country-Time",
+        "X-Shop-Country-Signature",
+        "CF-IPCountry",
+      ]) {
+        expect(forwarded.headers.get(name)).toBeNull();
+      }
+    },
+  );
+
+  it.each([undefined, "too-short"])(
+    "keeps proxy requests usable when the hint secret is %s",
+    async (hintSecret) => {
+      const upstream = vi.fn().mockResolvedValue(Response.json({}));
+      vi.stubGlobal("fetch", upstream);
+      const request = new Request(`${pagesOrigin}/api/shop/currencies/`, {
+        headers: {
+          "X-Shop-Country": "PH",
+          "X-Shop-Country-Signature": "forged",
+        },
+      });
+      Object.defineProperty(request, "cf", { value: { country: "PH" } });
+      const response = await onRequest({
+        request,
+        env: { API_ORIGIN, COUNTRY_HINT_SECRET: hintSecret },
+      });
+      expect(response.status).toBe(200);
+      expect(
+        upstream.mock.calls[0][0].headers.get("X-Shop-Country"),
+      ).toBeNull();
+    },
+  );
+});

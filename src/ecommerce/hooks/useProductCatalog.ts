@@ -3,6 +3,7 @@ import { useLocation, useNavigationType } from "react-router-dom";
 
 import { useAuth } from "@/authentication/contexts/Auth/useAuth";
 import { productCatalogApi } from "@/ecommerce/api";
+import { useDisplayCurrency } from "@/ecommerce/currency/context";
 import { catalogProduct } from "@/ecommerce/utils/catalogProduct";
 
 import { CatalogHistoryContext, type CatalogResult } from "./catalogHistory";
@@ -15,12 +16,18 @@ export const useProductCatalog = (query: string) => {
   const history = useContext(CatalogHistoryContext);
   const location = useLocation();
   const navigationType = useNavigationType();
+  const {
+    currency,
+    defaultCurrency,
+    loading: currencyLoading,
+  } = useDisplayCurrency();
   const [attempt, setAttempt] = useState(0);
   const key = JSON.stringify([
     location.key,
     query,
     accessToken,
     user?.address_country_code,
+    currency ?? defaultCurrency,
     attempt,
   ]);
   const [result, setResult] = useState<CatalogResult | null>(null);
@@ -30,7 +37,7 @@ export const useProductCatalog = (query: string) => {
   const cached =
     navigationType === "POP" ? history?.get(historyKey) : undefined;
   useEffect(() => {
-    if (authLoading) return;
+    if (authLoading || currencyLoading) return;
     if (navigationType === "POP" && history?.has(historyKey)) {
       return () => {
         moreRequest.current?.abort();
@@ -38,7 +45,7 @@ export const useProductCatalog = (query: string) => {
       };
     }
     const controller = new AbortController();
-    productCatalogApi(1, query, controller.signal, accessToken).then(
+    productCatalogApi(1, query, controller.signal, accessToken, currency).then(
       (data) => {
         if (!controller.signal.aborted) {
           setResult({
@@ -71,18 +78,21 @@ export const useProductCatalog = (query: string) => {
   }, [
     query,
     accessToken,
+    currency,
     authLoading,
+    currencyLoading,
     key,
     history,
     historyKey,
     navigationType,
   ]);
 
-  const current = authLoading
-    ? null
-    : result?.key === key
-      ? result
-      : (cached ?? null);
+  const current =
+    authLoading || currencyLoading
+      ? null
+      : result?.key === key
+        ? result
+        : (cached ?? null);
 
   useEffect(() => {
     if (!current || current.error || current.isLoadingMore || !history) return;
@@ -102,6 +112,7 @@ export const useProductCatalog = (query: string) => {
         query,
         controller.signal,
         accessToken,
+        currency,
       );
       if (controller.signal.aborted) return false;
       // Rankings can shift between requests; keep already displayed cards unique.
